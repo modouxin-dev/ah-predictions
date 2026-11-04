@@ -275,6 +275,11 @@ def compact_block(p: dict, stats: dict | None = None, extra: list[str] | None = 
     return "\n".join(lines)
 
 
+def league_short(k: str) -> str:
+    m = re.search(r"（([^ （）·]+)", k)
+    return m.group(1) if m else k.split("（")[0]
+
+
 def stats_table(stats: dict | None, top: int = 3) -> str:
     s = stats or {}
     o = s.get("overall") or {}
@@ -282,14 +287,14 @@ def stats_table(stats: dict | None, top: int = 3) -> str:
         return "📈 <b>历史战绩</b>：暂无已结算推荐"
 
     def row(name, d):
-        return [name[:8], d.get("picks", 0), f"{d.get('win', 0)}+{d.get('half_win', 0)}" if d.get("half_win") else d.get("win", 0),
+        return [name[:10], d.get("picks", 0), f"{d.get('win', 0)}+{d.get('half_win', 0)}" if d.get("half_win") else d.get("win", 0),
                 d.get("push", 0), d.get("loss", 0) + d.get("half_loss", 0), f"{d.get('hit_rate', 0):.0%}", f"{d.get('units', 0):+.1f}"]
     rows = [row("总体", o)]
     hi = (s.get("by_confidence") or {}).get("高")
     if hi and hi.get("picks"):
         rows.append(row("高信心", hi))
     bl = sorted((s.get("by_league") or {}).items(), key=lambda kv: -kv[1].get("picks", 0))[:top]
-    rows += [row(k.split("（")[0], v) for k, v in bl]
+    rows += [row(league_short(k), v) for k, v in bl]
     return "📈 <b>历史战绩</b>\n" + pre_table(["", "场次", "赢", "走", "输", "命中", "盈亏"], rows)
 
 
