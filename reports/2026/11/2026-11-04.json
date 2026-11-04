@@ -35,7 +35,33 @@
         "https://www.freetips.com/football/buriram-united-vs-kashima-antlers-predictions-20261103-0023/",
         "https://www.thestatszone.com/buriram-united-vs-kashima-antlers-preview-prediction-2026-27-afc-champions-league-elite-league-stage-234369",
         "https://www.sportingnews.com/th/football/news/live-watch-buriram-united-vs-kashima-antlers-afc-champions-league-elite-2026-27/46ca4217ef41f2e462870bac"
-      ]
+      ],
+      "final_check": {
+        "checked_at": "2026-11-04T11:33:00Z",
+        "decision": "cancel",
+        "decision_cn": "取消推荐",
+        "current_line": "鹿岛 -0.25（武里南受让平半）",
+        "current_odds": {
+          "home": 0.9,
+          "away": 0.92
+        },
+        "line_open": -0.5,
+        "line_at_report": -0.75,
+        "eu_odds": {
+          "home": 2.8,
+          "draw": 3.5,
+          "away": 2.1
+        },
+        "ou_line": 2.75,
+        "lineups": "官方首发截至检查时未能从 J.League/AFC 页面获取；FotMob/SportyTrader 仅显示上一场首发，未作为依据。",
+        "injuries": "未查到新的临场伤停；已知鹿岛缺安西幸辉，武里南缺 Supachai Chaided、Nathan Pelae。",
+        "reason": "临场盘口由报告时的鹿岛 -0.75(0.78) 骤降两档至 -0.25(0.92)，低于初盘 -0.5，大小球由3降至2.75；原推荐的核心依据（资金流向鹿岛）已反转，且无法确认首发，按准确率优先原则取消。",
+        "sources": [
+          "https://live.titan007.com/vbsxml/goal3.xml?r=0071 (抓取约 11:31 UTC)",
+          "https://www.jleague.jp/en/match/acle/2026/110402/",
+          "https://www.fotmob.com/matches/kashima-antlers-vs-buriram-united/6lyt7z5"
+        ]
+      }
     },
     {
       "match_id": "titan007-3073152",
