@@ -1,19 +1,67 @@
 {
-  "updated_at": "2026-11-04T10:41:29Z",
-  "hit_rate_definition": "(win+half_win)/(picks-push)",
-  "roi_definition": "units/picks（每注1单位）",
+  "updated_at": "2026-11-04T12:08:28Z",
+  "hit_rate_definition": "(win + 0.5*half_win)/(picks - push - void)",
+  "roi_definition": "units/(picks - push - void)（每注1单位）",
   "overall": {
-    "picks": 0,
+    "picks": 1,
     "win": 0,
     "half_win": 0,
     "push": 0,
     "half_loss": 0,
     "loss": 0,
+    "void": 1,
     "hit_rate": 0.0,
     "units": 0.0,
-    "roi": 0.0
+    "roi": 0.0,
+    "decided": 0,
+    "hits": 0.0
   },
-  "by_league": {},
-  "by_confidence": {},
-  "by_line": {}
+  "by_league": {
+    "AFC Champions League Elite（亚冠精英·东区 第4轮）": {
+      "picks": 1,
+      "win": 0,
+      "half_win": 0,
+      "push": 0,
+      "half_loss": 0,
+      "loss": 0,
+      "void": 1,
+      "hit_rate": 0.0,
+      "units": 0.0,
+      "roi": 0.0,
+      "decided": 0,
+      "hits": 0.0
+    }
+  },
+  "by_confidence": {
+    "取消/其他": {
+      "picks": 1,
+      "win": 0,
+      "half_win": 0,
+      "push": 0,
+      "half_loss": 0,
+      "loss": 0,
+      "void": 1,
+      "hit_rate": 0.0,
+      "units": 0.0,
+      "roi": 0.0,
+      "decided": 0,
+      "hits": 0.0
+    }
+  },
+  "by_line": {
+    "-0.75": {
+      "picks": 1,
+      "win": 0,
+      "half_win": 0,
+      "push": 0,
+      "half_loss": 0,
+      "loss": 0,
+      "void": 1,
+      "hit_rate": 0.0,
+      "units": 0.0,
+      "roi": 0.0,
+      "decided": 0,
+      "hits": 0.0
+    }
+  }
 }

@@ -30,7 +30,9 @@ def validate(report: dict) -> None:
 
 def render_md(report: dict) -> str:
     env = Environment(loader=FileSystemLoader(str(TEMPLATES)), trim_blocks=True, lstrip_blocks=True)
-    return env.get_template("report.md.j2").render(r=report)
+    from . import policy
+    view = {**report, "picks": policy.published(report)}
+    return env.get_template("report.md.j2").render(r=view)
 
 
 def append_ledger(report: dict, path: Path = DATA / "predictions.csv") -> int:
@@ -43,7 +45,8 @@ def append_ledger(report: dict, path: Path = DATA / "predictions.csv") -> int:
         w = csv.DictWriter(f, fieldnames=CSV_FIELDS)
         if not exists:
             w.writeheader()
-        for p in report["picks"]:
+        from . import policy
+        for p in policy.published(report):
             if (report["date"], p["match_id"]) in seen:
                 continue
             w.writerow({
@@ -63,6 +66,11 @@ def main() -> None:
     a = ap.parse_args()
     jp, mp = report_paths(a.date)
     rep = json.loads(jp.read_text(encoding="utf-8"))
+    from . import policy
+    before = json.dumps(rep, ensure_ascii=False, sort_keys=True)
+    policy.apply(rep)
+    if json.dumps(rep, ensure_ascii=False, sort_keys=True) != before:
+        jp.write_text(json.dumps(rep, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     validate(rep)
     mp.write_text(render_md(rep), encoding="utf-8")
     print(f"wrote {mp}; ledger +{append_ledger(rep)}")

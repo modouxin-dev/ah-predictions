@@ -112,3 +112,15 @@ Key 只从环境变量 `API_FOOTBALL_KEY` 读取，不写进仓库。联赛 id �
 - 覆盖（tournamentId）：亚冠精英 463、亚冠二 668、卡塔尔联 825、沙特联 955、日职 196、日职乙 402、韩K 410、中超 649、澳超 136、欧冠 7、英冠 18。
 - 亚盘：每家公司取主盘（两边赔率最接近的线），与其他来源同结构。默认只请求亚洲公司（Pinnacle、SBOBet、Singbet、Dafabet、3et、Saba、PS3838、198bet）。
 - `python -m ah consensus DATE`：The Odds API 不覆盖或没匹配上的推荐（如亚冠、卡塔尔）改用 OddsPapi，报告中“多家公司共识”标注来源 OddsPapi。每联赛每天 1 次 `/fixtures` + 每个推荐 1 次 `/odds`。
+
+## 准确率优先策略（先知）
+
+命中率优先于推送数量：宁可少推，不推不确定的场次。配置见 `config/settings.yaml` 的 `policy`，实现见 `src/ah/policy.py`。
+
+- 只发布信心「高」的推荐，每日最多 3 场，且必须有真实赔率。
+- 推荐盘口与多家公司中位数相差超过 0.25 时降一档，超过 0.5 直接撤下。
+- 中/低信心的场次只写入报告 JSON 的内部字段 `watchlist`，不推送 Telegram，也不在网站上作为推荐展示。
+- 赛前最终确认时信心下降直接撤销（`policy.cancel_on_drop`，或 `final_check.decision: cancel`）。
+- 策略自 2026-11-05 起生效；2026-11-04 的报告保留为历史记录，不改写（已撤销的场次不再展示）。
+- 战绩统计（`python -m ah stats` → `data/stats.json`，网站「统计」页）：总体、分联赛、分信心等级（高/中/低）、盈亏单位。命中率 = (赢 + 0.5×赢半) / (场次 − 走 − 取消)。Telegram 消息附带一行战绩摘要（`stats.summary_line`）。
+- 所有 Telegram 消息、报告与网站页脚都附带：「基于数据的分析参考，亚盘有风险，不构成投注建议。」

@@ -1,8 +1,8 @@
 bot_name: 先知                    # 机器人名称（报告/推送/站点统一署名）
 timezone: "America/Los_Angeles"  # 用户时区（报告内时间统一用 UTC）
 report_window_hours: 36          # 覆盖未来多少小时开球的比赛
-max_picks_per_day: 5
-min_confidence_to_publish: low   # high | medium | low
+max_picks_per_day: 3
+min_confidence_to_publish: high  # high | medium | low（见 policy）
 confidence_thresholds:           # analyze.score 加权分阈值
   high: 7.0
   medium: 4.5
@@ -26,3 +26,13 @@ push_rules:                      # 由 Grok Bot 定时任务执行（报告研�
   targets:
     telegram_chat_id: "-1004312560482"
     web: "https://modouxin-dev.github.io/ah-predictions/"
+
+# 准确率优先策略（宁可少推，不推不确定的场次）—— src/ah/policy.py
+policy:
+  min_confidence_to_publish: 高      # 只发布「高」；中/低 进 JSON watchlist，不推送、不在网站展示为推荐
+  max_picks_per_day: 3
+  require_real_odds: true
+  consensus_alignment: "pick line within 0.25 of multi-book median, else downgrade or skip"
+  alignment_tolerance: 0.25         # >0.25 降一档；>0.5 直接撤下
+  prematch_cancel_on_confidence_drop: true
+  effective_from: "2026-11-05"      # 此前报告（2026-11-04）保留为历史记录，不改写

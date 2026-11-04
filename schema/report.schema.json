@@ -9,6 +9,7 @@
     "odds_format": {"type": "string"},
     "odds_source_note": {"type": "string"},
     "not_covered": {"type": "string"},
+    "watchlist": {"type": "array", "items": {"type": "object"}},
     "picks": {
       "type": "array",
       "items": {

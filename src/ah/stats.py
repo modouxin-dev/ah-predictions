@@ -10,19 +10,22 @@ from pathlib import Path
 
 WIN_LIKE = {"win", "half_win"}
 LOSS_LIKE = {"loss", "half_loss"}
+OUTCOMES = {"win", "half_win", "push", "half_loss", "loss", "void"}
+CONF_CN = {"high": "高", "medium": "中", "low": "低", "高": "高", "中": "中", "低": "低"}
 
 
 def _bucket() -> dict:
-    return {"picks": 0, "win": 0, "half_win": 0, "push": 0, "half_loss": 0, "loss": 0,
+    return {"picks": 0, "win": 0, "half_win": 0, "push": 0, "half_loss": 0, "loss": 0, "void": 0,
             "hit_rate": 0.0, "units": 0.0, "roi": 0.0}
 
 
 def _finish(b: dict) -> dict:
-    decided = b["picks"] - b["push"]
-    wins = b["win"] + b["half_win"]
-    b["hit_rate"] = round(wins / decided, 4) if decided else 0.0
+    decided = b["picks"] - b["push"] - b["void"]
+    b["decided"] = decided
+    b["hits"] = b["win"] + 0.5 * b["half_win"]
+    b["hit_rate"] = round(b["hits"] / decided, 4) if decided else 0.0
     b["units"] = round(b["units"], 4)
-    b["roi"] = round(b["units"] / b["picks"], 4) if b["picks"] else 0.0
+    b["roi"] = round(b["units"] / decided, 4) if decided else 0.0
     return b
 
 
@@ -33,8 +36,10 @@ def compute(rows: list[dict]) -> dict:
         if str(r.get("settled", "")).lower() != "true" or not r.get("ah_outcome"):
             continue
         out = r["ah_outcome"]
+        if out not in OUTCOMES:
+            continue
         units = float(r.get("units") or 0)
-        keys = {"by_league": r.get("league", "?"), "by_confidence": r.get("confidence", "?"),
+        keys = {"by_league": r.get("league", "?"), "by_confidence": CONF_CN.get(r.get("confidence", ""), "取消/其他"),
                 "by_line": f"{float(r['line']):+g}"}
         for b in [overall] + [groups[g][k] for g, k in keys.items()]:
             b["picks"] += 1
@@ -42,11 +47,21 @@ def compute(rows: list[dict]) -> dict:
             b["units"] += units
     return {
         "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "hit_rate_definition": "(win+half_win)/(picks-push)",
-        "roi_definition": "units/picks（每注1单位）",
+        "hit_rate_definition": "(win + 0.5*half_win)/(picks - push - void)",
+        "roi_definition": "units/(picks - push - void)（每注1单位）",
         "overall": _finish(overall),
         **{g: {k: _finish(v) for k, v in sorted(d.items())} for g, d in groups.items()},
     }
+
+
+def summary_line(s: dict) -> str:
+    """Telegram 用一行战绩摘要。"""
+    o = s.get("overall", {})
+    if not o.get("decided"):
+        return "📊 历史战绩：暂无已结算推荐"
+    hi = s.get("by_confidence", {}).get("高")
+    hi_txt = f"；高信心 {hi['hit_rate']:.1%}（{hi['decided']}场）" if hi and hi.get("decided") else ""
+    return f"📊 历史命中率 {o['hit_rate']:.1%}（{o['decided']}场，{o['units']:+.2f}单位）{hi_txt}"
 
 
 def main() -> None:

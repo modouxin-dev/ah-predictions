@@ -18,16 +18,18 @@ import sys
 
 import requests
 
+from . import policy
 from .render_report import report_paths
 
 CONF = {"high": "高", "medium": "中", "low": "低"}
 
 
-def summary(rep: dict, site_url: str | None = None) -> str:
+def summary(rep: dict, site_url: str | None = None, stats: dict | None = None) -> str:
     lines = [f"【先知】⚽ 亚盘日报 {rep['date']}", ""]
-    if not rep["picks"]:
-        lines.append("今日无推荐。")
-    for i, p in enumerate(rep["picks"], 1):
+    picks = policy.published(rep)
+    if not picks:
+        lines.append("今日无高信心推荐（宁缺毋滥）。")
+    for i, p in enumerate(picks, 1):
         team = p.get("pick_team", p[p["pick_side"]])
         odds = f" @{p['odds']}" if p.get("odds") is not None else ""
         lines.append(f"{i}. {p['home']} vs {p['away']}（{p['kickoff_utc'][11:16]} UTC）")
@@ -35,7 +37,10 @@ def summary(rep: dict, site_url: str | None = None) -> str:
     lines.append(f"\n观察未推：{len(rep['watched'])} 场")
     if site_url:
         lines.append(f"完整报告：{site_url}")
-    lines.append("仅供参考，不构成投注建议。")
+    if stats is not None:
+        from .stats import summary_line
+        lines.append(summary_line(stats))
+    lines.append(policy.DISCLAIMER)
     return "\n".join(lines)
 
 
@@ -45,7 +50,10 @@ def main() -> None:
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
     rep = json.loads(report_paths(a.date)[0].read_text(encoding="utf-8"))
-    text = summary(rep, os.environ.get("SITE_URL"))
+    from . import DATA
+    sp = DATA / "stats.json"
+    st = json.loads(sp.read_text(encoding="utf-8")) if sp.exists() else None
+    text = summary(rep, os.environ.get("SITE_URL"), st)
     token, chat = os.environ.get("TELEGRAM_BOT_TOKEN"), os.environ.get("TELEGRAM_CHAT_ID") or _default_chat()
     if a.dry_run or not (token and chat):
         print(text)
