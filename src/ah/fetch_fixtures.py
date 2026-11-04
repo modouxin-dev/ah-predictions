@@ -40,10 +40,17 @@ def parse(js: str) -> list[dict]:
 
 def fetch() -> list[dict]:
     """titan007 当日赛程（备用源）。"""
-    r = requests.get(URL.format(random.randint(1000, 9999)), headers=HEADERS, timeout=20)
-    r.raise_for_status()
+    from . import source_status
+    try:
+        r = requests.get(URL.format(random.randint(1000, 9999)), headers=HEADERS, timeout=20)
+        r.raise_for_status()
+    except requests.RequestException as e:
+        source_status.record("titan007", False, f"赛程 {type(e).__name__}: {e}")
+        raise
     r.encoding = "utf-8"
-    return parse(r.text)
+    out = parse(r.text)
+    source_status.record("titan007", bool(out), None if out else "赛程：返回内容无法解析")
+    return out
 
 
 def load_leagues() -> list[dict]:

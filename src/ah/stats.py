@@ -29,9 +29,20 @@ def _finish(b: dict) -> dict:
     return b
 
 
+def depth_label(line: float) -> str:
+    a = abs(float(line))
+    return {0: "平手 0", 0.25: "平半 0.25", 0.5: "半球 0.5", 0.75: "半一 0.75", 1.0: "一球 1"}.get(a, "深盘 ≥1.25" if a >= 1.25 else f"{a:g}")
+
+
+def role_label(line: float) -> str:
+    x = float(line)
+    return "让球方（上盘）" if x < 0 else "受让方（下盘）" if x > 0 else "平手盘"
+
+
 def compute(rows: list[dict]) -> dict:
     overall = _bucket()
-    groups = {k: defaultdict(_bucket) for k in ("by_league", "by_confidence", "by_line")}
+    groups = {k: defaultdict(_bucket) for k in ("by_league", "by_confidence", "by_line", "by_depth", "by_role")}
+    series = []
     for r in rows:
         if str(r.get("settled", "")).lower() != "true" or not r.get("ah_outcome"):
             continue
@@ -40,18 +51,40 @@ def compute(rows: list[dict]) -> dict:
             continue
         units = float(r.get("units") or 0)
         keys = {"by_league": r.get("league", "?"), "by_confidence": CONF_CN.get(r.get("confidence", ""), "取消/其他"),
-                "by_line": f"{float(r['line']):+g}"}
+                "by_line": f"{float(r['line']):+g}", "by_depth": depth_label(r["line"]), "by_role": role_label(r["line"])}
         for b in [overall] + [groups[g][k] for g, k in keys.items()]:
             b["picks"] += 1
             b[out] += 1
             b["units"] += units
+        if out != "void":
+            series.append({"date": r.get("date", ""), "kickoff_utc": r.get("kickoff_utc", ""), "match_id": r.get("match_id", ""),
+                           "match": f"{r.get('home', '')} vs {r.get('away', '')}", "league": r.get("league", ""),
+                           "outcome": out, "units": round(units, 4)})
+    series.sort(key=lambda x: (x["date"], x["kickoff_utc"]))
+    cum = 0.0
+    for x in series:
+        cum += x["units"]
+        x["cum_units"] = round(cum, 4)
     return {
         "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "hit_rate_definition": "(win + 0.5*half_win)/(picks - push - void)",
         "roi_definition": "units/(picks - push - void)（每注1单位）",
         "overall": _finish(overall),
         **{g: {k: _finish(v) for k, v in sorted(d.items())} for g, d in groups.items()},
+        "series": series,
     }
+
+
+def window(series: list[dict], end: str, days: int) -> dict:
+    """截至 end(YYYY-MM-DD，含) 的近 days 天：{decided, hit_rate, units}（series 已排除取消）。"""
+    from datetime import date, timedelta
+    e = date.fromisoformat(end)
+    start = (e - timedelta(days=days - 1)).isoformat()
+    xs = [x for x in series if start <= x["date"] <= end]
+    dec = [x for x in xs if x["outcome"] != "push"]
+    hits = sum(1 if x["outcome"] == "win" else 0.5 if x["outcome"] == "half_win" else 0 for x in dec)
+    return {"decided": len(dec), "hit_rate": round(hits / len(dec), 4) if dec else None,
+            "units": round(sum(x["units"] for x in xs), 4), "picks": len(xs)}
 
 
 def summary_line(s: dict) -> str:

@@ -1,4 +1,7 @@
 bot_name: 先知                    # 机器人名称（报告/推送/站点统一署名）
+# 网站 VIP 前端门禁：只存 SHA-256（不存明文）。改密码：printf '%s' 新密码 | sha256sum
+# 注意：仅前端隐藏，数据仍公开在仓库与站点 HTML 中。
+vip_password_sha256: "6d19ca72de1fe7973e5a763cdbaf47af34674d4f45a8a2cacd881b751d680a4f"
 timezone: "America/Los_Angeles"  # 用户时区（报告内时间统一用 UTC）
 report_window_hours: 36          # 覆盖未来多少小时开球的比赛
 max_picks_per_day: 3

@@ -205,6 +205,9 @@ def main() -> None:
     elif not a.no_autofill:
         print("[autofill] 未设置 API_FOOTBALL_KEY，跳过自动回填比分")
     print(f"settled {settle_csv(Path(a.csv))} rows")
+    from .records import sync_from_csv
+    for x in sync_from_csv(Path(a.csv)):
+        print(f"[records] 结果已写入报告 {x}")
 
 
 if __name__ == "__main__":

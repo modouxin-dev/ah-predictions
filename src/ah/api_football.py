@@ -147,12 +147,18 @@ class Client:
             {"t": datetime.fromtimestamp(self.now(), tz=timezone.utc).strftime("%H:%M:%S"),
              "endpoint": endpoint, "params": params, "status": r.status_code}]
         self._save_usage(u)
+        from . import source_status
+        q = {"used": u["used"], "remaining": u["remaining"] if u["remaining"] is not None else DAILY_LIMIT - u["used"],
+             "limit": DAILY_LIMIT, "period": "日"}
         if r.status_code != 200:
+            source_status.record("api_football", False, f"HTTP {r.status_code} {endpoint}", q)
             raise ApiFootballError(f"HTTP {r.status_code} {endpoint}")
         data = r.json()
         errs = data.get("errors")
         if errs:  # API 以 200 + errors 返回计划限制等错误
+            source_status.record("api_football", False, f"{endpoint} errors: {json.dumps(errs, ensure_ascii=False)}", q)
             raise ApiFootballError(f"{endpoint} errors: {json.dumps(errs, ensure_ascii=False)}")
+        source_status.record("api_football", True, quota=q)
         if ttl == 0:
             if tk == "fixtures/lineups" and data.get("response"):
                 self._cache_put(path, data, permanent=True)

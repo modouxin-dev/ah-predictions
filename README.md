@@ -124,3 +124,22 @@ Key 只从环境变量 `API_FOOTBALL_KEY` 读取，不写进仓库。联赛 id �
 - 策略自 2026-11-05 起生效；2026-11-04 的报告保留为历史记录，不改写（已撤销的场次不再展示）。
 - 战绩统计（`python -m ah stats` → `data/stats.json`，网站「统计」页）：总体、分联赛、分信心等级（高/中/低）、盈亏单位。命中率 = (赢 + 0.5×赢半) / (场次 − 走 − 取消)。Telegram 消息附带一行战绩摘要（`stats.summary_line`）。
 - 所有 Telegram 消息、报告与网站页脚都附带：「基于数据的分析参考，亚盘有风险，不构成投注建议。」
+
+## Web 看板（GitHub Pages）
+
+`python -m ah site` 生成 `site/`：今日 / 推荐记录 / 战绩 / 数据源 / 规则（另有历史日报）。所有时间为北京时间。
+排序、筛选、图表与 VIP 门禁由 `templates/site/app.js` 在浏览器完成（无外部依赖）。
+VIP 密码只以 SHA-256 存在 `config/settings.yaml: vip_password_sha256`；**仅前端隐藏，数据仍公开在仓库与站点中。**
+
+### 赛前确认 / 赛后回测记录（写入 reports/YYYY/MM/YYYY-MM-DD.json 每个 pick）
+
+```bash
+PYTHONPATH=src python -m ah prematch-record --date 2026-11-04 --match-id titan007-3073152 \
+  --decision 保留|调整|撤销 --reason "…" [--new-line -0.5 --new-odds 0.92] [--confidence 高|中|低] [--source URL]
+PYTHONPATH=src python -m ah backtest-record --date 2026-11-04 --match-id titan007-3073152 \
+  --score 2-1 --review "复盘…" [--source URL]          # 已撤销的推荐可省略 --score
+PYTHONPATH=src python -m ah settle                      # 自动回填比分后同步到报告 JSON（不覆盖复盘）
+PYTHONPATH=src python -m ah sources                     # 从本地用量文件刷新 data/source_status.json
+```
+
+两个命令都会同步 `data/predictions.csv` 并重算 `data/stats.json`。复核信心低于原信心时自动改为「撤销」（作废，不计命中率）。

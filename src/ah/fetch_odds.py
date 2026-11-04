@@ -45,10 +45,17 @@ def parse(xml: str) -> dict[str, dict]:
 
 
 def fetch() -> dict[str, dict]:
-    r = requests.get(URL.format(random.randint(1000, 9999)), headers=HEADERS, timeout=20)
-    r.raise_for_status()
+    from . import source_status
+    try:
+        r = requests.get(URL.format(random.randint(1000, 9999)), headers=HEADERS, timeout=20)
+        r.raise_for_status()
+    except requests.RequestException as e:
+        source_status.record("titan007", False, f"盘口 {type(e).__name__}: {e}")
+        raise
     r.encoding = "utf-8"
-    return parse(r.text)
+    out = parse(r.text)
+    source_status.record("titan007", bool(out), None if out else "盘口：返回内容无法解析")
+    return out
 
 
 def cross_check_odds_api(sport: str, client=None) -> dict[str, dict]:

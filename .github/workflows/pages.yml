@@ -2,7 +2,7 @@ name: pages
 on:
   push:
     branches: [main]
-    paths: ["reports/**", "data/stats.json", "src/ah/build_site.py"]
+    paths: ["reports/**", "data/**", "src/ah/**", "templates/**", "config/settings.yaml", ".github/workflows/pages.yml"]
   workflow_run:
     workflows: [daily-report, settle-and-stats]
     types: [completed]

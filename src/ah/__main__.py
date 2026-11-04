@@ -1,4 +1,4 @@
-"""python -m ah <cmd> 便捷入口：render|settle|stats|site|telegram|consensus"""
+"""python -m ah <cmd> 便捷入口：render|settle|stats|site|telegram|consensus|prematch-record|backtest-record|sources"""
 import sys
 
 cmd, sys.argv = (sys.argv[1] if len(sys.argv) > 1 else "help"), [sys.argv[0]] + sys.argv[2:]
@@ -14,5 +14,11 @@ elif cmd == "telegram":
     from .publish_telegram import main; main()
 elif cmd == "consensus":
     from .consensus import main; main()
+elif cmd == "prematch-record":
+    from .records import prematch_main; prematch_main()
+elif cmd == "backtest-record":
+    from .records import backtest_main; backtest_main()
+elif cmd == "sources":
+    from .source_status import main; main()
 else:
     print(__doc__)

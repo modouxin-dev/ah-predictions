@@ -108,6 +108,11 @@ class Client:
             u = self.usage()
             u["used"] += 1
             self._save(u)
+        from . import source_status
+        u = self.usage()
+        source_status.record("oddspapi", r.status_code == 200, f"{path} HTTP {r.status_code}",
+                             {"used": u.get("used"), "remaining": self.remaining(), "limit": u.get("limit", self.limit),
+                              "period": "月", "month": u.get("month")})
         if r.status_code != 200:
             raise OddsPapiError(f"OddsPapi {path} HTTP {r.status_code}")  # 不含 URL（含 key）
         data = r.json()

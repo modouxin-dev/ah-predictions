@@ -75,8 +75,12 @@ class Client:
                 self.sleep(max(self.reset_s, 6 * (attempt + 1)))
                 self.available = None
                 continue
+            from . import source_status
+            q = {"remaining": self.available, "limit": 10, "period": "分钟"}
             if r.status_code != 200:
+                source_status.record("football_data", False, f"{path} HTTP {r.status_code}", q)
                 raise FootballDataError(f"football-data {path} HTTP {r.status_code}")
+            source_status.record("football_data", True, quota=q)
             data = r.json()
             if ttl:
                 cp.parent.mkdir(parents=True, exist_ok=True)

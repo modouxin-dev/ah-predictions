@@ -79,6 +79,10 @@ class OddsAPI:
         p["apiKey"] = self._key
         r = self.s.get(f"{BASE_URL}/{path.lstrip('/')}", params=p, timeout=20)
         self._record(r.headers, path, cost)
+        from . import source_status
+        u = self.usage()
+        q = {"used": u.get("used"), "remaining": u.get("remaining"), "limit": 500, "period": "月"}
+        source_status.record("odds_api", r.status_code == 200, f"{path} HTTP {r.status_code}", q)
         if r.status_code != 200:
             raise RuntimeError(f"The Odds API {path} HTTP {r.status_code}")  # 不含 URL（含 key）
         return r.json()

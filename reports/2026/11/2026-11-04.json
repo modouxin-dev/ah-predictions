@@ -61,6 +61,33 @@
      "https://www.jleague.jp/en/match/acle/2026/110402/",
      "https://www.fotmob.com/matches/kashima-antlers-vs-buriram-united/6lyt7z5"
     ]
+   },
+   "prematch": {
+    "checked_at": "2026-11-04T11:33:00Z",
+    "decision": "撤销",
+    "new_line": null,
+    "new_odds": null,
+    "confidence": null,
+    "reason": "临场盘口由报告时的鹿岛 -0.75(0.78) 骤降两档至 -0.25(0.92)，低于初盘 -0.5，大小球由3降至2.75；原推荐的核心依据（资金流向鹿岛）已反转，且无法确认首发，按准确率优先原则取消。",
+    "sources": [
+     "https://live.titan007.com/vbsxml/goal3.xml?r=0071 (抓取约 11:31 UTC)",
+     "https://www.jleague.jp/en/match/acle/2026/110402/",
+     "https://www.fotmob.com/matches/kashima-antlers-vs-buriram-united/6lyt7z5"
+    ],
+    "current_line": "鹿岛 -0.25（武里南受让平半）"
+   },
+   "cancelled": true,
+   "cancel_reason": "临场盘口由报告时的鹿岛 -0.75(0.78) 骤降两档至 -0.25(0.92)，低于初盘 -0.5，大小球由3降至2.75；原推荐的核心依据（资金流向鹿岛）已反转，且无法确认首发，按准确率优先原则取消。",
+   "result": {
+    "score": null,
+    "settlement": "void",
+    "settlement_cn": "取消",
+    "units": 0.0,
+    "line": -0.75,
+    "odds": 0.78,
+    "review": "赛前已撤销（临场盘口由鹿岛 -0.75 降至 -0.25），按作废处理，不计入命中率。",
+    "settled_at": "2026-11-04T11:33:00Z",
+    "sources": []
    }
   },
   {

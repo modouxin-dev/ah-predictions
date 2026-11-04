@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-04T12:08:28Z",
+  "updated_at": "2026-11-04T12:20:37Z",
   "hit_rate_definition": "(win + 0.5*half_win)/(picks - push - void)",
   "roi_definition": "units/(picks - push - void)（每注1单位）",
   "overall": {
@@ -63,5 +63,38 @@
       "decided": 0,
       "hits": 0.0
     }
-  }
+  },
+  "by_depth": {
+    "半一 0.75": {
+      "picks": 1,
+      "win": 0,
+      "half_win": 0,
+      "push": 0,
+      "half_loss": 0,
+      "loss": 0,
+      "void": 1,
+      "hit_rate": 0.0,
+      "units": 0.0,
+      "roi": 0.0,
+      "decided": 0,
+      "hits": 0.0
+    }
+  },
+  "by_role": {
+    "让球方（上盘）": {
+      "picks": 1,
+      "win": 0,
+      "half_win": 0,
+      "push": 0,
+      "half_loss": 0,
+      "loss": 0,
+      "void": 1,
+      "hit_rate": 0.0,
+      "units": 0.0,
+      "roi": 0.0,
+      "decided": 0,
+      "hits": 0.0
+    }
+  },
+  "series": []
 }

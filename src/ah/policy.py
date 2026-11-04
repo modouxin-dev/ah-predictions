@@ -80,7 +80,8 @@ def published(report: dict, pol: dict | None = None) -> list[dict]:
     """可公开展示/推送的推荐（不修改报告）。历史报告原样返回。"""
     pol = pol or load()
     live = [p for p in report.get("picks", []) if not p.get("cancelled") and p.get("confidence") != "cancelled"
-            and (p.get("final_check") or {}).get("decision") != "cancel"]
+            and (p.get("final_check") or {}).get("decision") != "cancel"
+            and (p.get("prematch") or {}).get("decision") != "撤销"]
     if not applies(report, pol):
         return live
     return [p for p in live if check(p, pol)[0] is not None]

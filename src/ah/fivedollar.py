@@ -93,8 +93,13 @@ class Client:
                     break
                 self.sleep(min(float(h.get("Retry-After") or 30), 120))
                 continue
+            from . import source_status
+            fu = self.usage()
+            q = {"remaining": fu.get("remaining"), "limit": fu.get("limit") or 60, "period": "小时"}
             if r.status_code != 200:
+                source_status.record("fivedollar", False, f"{path} HTTP {r.status_code}", q)
                 raise FiveDollarError(f"5DollarFootballAPI {path} HTTP {r.status_code}")
+            source_status.record("fivedollar", True, quota=q)
             data = r.json().get("data")
             if ttl:
                 cp.parent.mkdir(parents=True, exist_ok=True)

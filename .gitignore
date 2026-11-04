@@ -8,3 +8,6 @@ site/*.html
 # API-Football 缓存与用量（只提交联赛 id 快照）
 data/cache/*
 !data/cache/leagues.json
+site/assets/
+site/data/
+data/*.tmp
