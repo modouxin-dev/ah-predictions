@@ -17,7 +17,9 @@ def _build(tmp_path, stats=None, status=None):
     if status is not None:
         (data / "source_status.json").write_text(json.dumps(status, ensure_ascii=False))
     site = tmp_path / "site"
-    build_site.build(site=site, data=data, now=datetime(2026, 11, 4, 12, 30, tzinfo=timezone.utc))
+    reports = tmp_path / "reports"  # 固定为 2026-11-04 的报告快照
+    shutil.copytree(build_site.REPORTS, reports, ignore=lambda d, fs: [f for f in fs if f[:10] > "2026-11-04" and f[:4] == "2026"])
+    build_site.build(site=site, reports=reports, data=data, now=datetime(2026, 11, 4, 12, 30, tzinfo=timezone.utc))
     return site
 
 

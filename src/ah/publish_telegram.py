@@ -313,7 +313,10 @@ def daily(rep: dict, stats: dict | None = None, site_url: str = SITE_URL) -> lis
     picks = policy.published(rep)
     blocks = [f"<b>【先知】⚽ 亚盘日报 {e(rep['date'])}</b>\n{date_line(rep, len(picks))}"]
     if not picks:
-        blocks.append("今日无高信心推荐（宁缺毋滥）")
+        none = "今日无高信心推荐（宁缺毋滥）"
+        if rep.get("no_pick_reason"):
+            none += "\n📌 " + e(rep["no_pick_reason"])
+        blocks.append(none)
     blocks += [DIV + "\n" + compact_block(p, stats) for p in picks]
     blocks.append(DIV + "\n" + tail(stats, site_url))
     return split(blocks)
@@ -389,12 +392,14 @@ def send(msgs: list[str], dry: bool = False) -> None:
         if not dry:
             print("[skip] TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID 未设置", file=sys.stderr)
         return
+    ids = []
     for m in msgs:
         r = requests.post(f"https://api.telegram.org/bot{token}/sendMessage",
                           json={"chat_id": chat, "text": m, "parse_mode": "HTML",
                                 "disable_web_page_preview": True}, timeout=20)
         r.raise_for_status()
-    print(f"sent {len(msgs)}")
+        ids.append((r.json().get("result") or {}).get("message_id"))
+    print(f"sent {len(msgs)} message_id={ids}")
 
 
 def _stats():

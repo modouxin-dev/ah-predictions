@@ -2,35 +2,39 @@
  "sources": {
   "api_football": {
    "quota": {
-    "used": 13,
-    "remaining": 96,
+    "used": 20,
+    "remaining": 88,
     "limit": 100,
     "period": "日",
-    "as_of": "2026-11-04T11:28:15Z"
+    "as_of": "2026-11-04T12:36:23Z"
    },
-   "last_ok_at": "2026-11-04T11:28:15Z",
-   "last_call_at": "2026-11-04T11:28:15Z"
+   "last_ok_at": "2026-11-04T12:36:23Z",
+   "last_call_at": "2026-11-04T12:36:23Z"
   },
   "odds_api": {
    "quota": {
-    "used": 3,
-    "remaining": 497,
+    "used": 5,
+    "remaining": 495,
     "limit": 500,
     "period": "月",
-    "as_of": "2026-11-04T11:43:04Z"
+    "as_of": "2026-11-04T12:35:32Z"
    },
-   "last_call_at": "2026-11-04T11:43:04Z"
+   "last_call_at": "2026-11-04T12:35:32Z",
+   "last_ok_at": "2026-11-04T12:35:32Z"
   },
   "oddspapi": {
    "quota": {
-    "used": 5,
-    "remaining": 245,
+    "used": 6,
+    "remaining": 244,
     "limit": 250,
     "period": "月",
     "month": "2026-11",
-    "as_of": "2026-11-04T12:04:59Z"
+    "as_of": "2026-11-04T12:36:54Z"
    },
-   "last_call_at": "2026-11-04T12:04:59Z"
+   "last_call_at": "2026-11-04T12:36:54Z",
+   "last_ok_at": "2026-11-04T12:36:54Z",
+   "last_error_at": "2026-11-04T12:36:53Z",
+   "last_error": "historical-odds HTTP 429"
   },
   "fivedollar": {
    "quota": {
@@ -42,9 +46,9 @@
    "last_call_at": "2026-11-04T12:00:19Z"
   },
   "titan007": {
-   "last_call_at": "2026-11-04T12:20:47Z",
-   "last_ok_at": "2026-11-04T12:20:47Z"
+   "last_call_at": "2026-11-04T12:35:21Z",
+   "last_ok_at": "2026-11-04T12:35:21Z"
   }
  },
- "updated_at": "2026-11-04T12:20:47Z"
+ "updated_at": "2026-11-04T12:36:54Z"
 }

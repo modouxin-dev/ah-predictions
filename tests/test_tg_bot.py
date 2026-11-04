@@ -15,7 +15,8 @@ NOW = 1_800_000_000.0
 @pytest.fixture
 def repo(tmp_path):
     reports, data = tmp_path / "reports", tmp_path / "data"
-    shutil.copytree(ROOT / "reports", reports)
+    # 固定为 2026-11-04 的报告快照（之后的真实报告不影响用例）
+    shutil.copytree(ROOT / "reports", reports, ignore=lambda d, fs: [f for f in fs if f[:10] > "2026-11-04" and f[:4] == "2026"])
     data.mkdir()
     for f in ("stats.json", "source_status.json"):
         shutil.copy(ROOT / "data" / f, data / f)
