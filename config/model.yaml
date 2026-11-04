@@ -1,0 +1,21 @@
+# 先知 · 模型参数（模型研究员）。研究阶段：未接入每日发布。
+version: v0
+market_baseline:            # src/ah/model/market.py::market_gate
+  model_version: market-baseline-v0
+  devig_method: multiplicative   # multiplicative | power | shin
+  default_total_goals: 2.6       # 无大小球价时，换盘估算用的总进球期望
+  min_ev_gate: 0.0               # 价格不低于 Pinnacle 无水价
+dixon_coles:                # src/ah/model/dixon_coles.py（penaltyblog）
+  xi: 0.0018                     # 时间衰减/天（文献常用值，未在测试期调参）
+  window_days: 1095
+  min_team_matches: 10           # 训练窗内少于此场次的球队不预测
+  max_goals: 12
+elo_baseline:               # src/ah/model/baseline.py
+  k: 20
+  hfa: 60
+blend:                      # src/ah/model/blend.py
+  w_model: 0.25                  # p = σ(w·logit p_模型 + (1−w)·logit p_市场)，路线图初始值
+  w_elo_in_dc: 0.3
+confidence_proposal:        # 提案，待回测/模拟单校准，见 research/outputs/backtest_results.md
+  high_min_ev: 0.03
+  medium_min_ev: 0.01

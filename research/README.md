@@ -52,3 +52,15 @@ Pinnacle “Asian Handicap” 与 “Goals Over/Under 2.5”）。使用账本 `
 ## 回测口径（backtest.py）
 见脚本 docstring；`outputs/backtest_results.md` 为最近一次运行结果。注意回测中的亚盘 log loss 用的是
 “剔除走盘的主队赢/输”二元口径，与上面账本的结算得分口径不同。
+
+## 置信度阈值（提案，未经回测支持）
+
+依据 `outputs/backtest_results.md`（E0+E1 2021-07 起，AH n=3758）：所有模型（elo/dc/dcelo/blend）
+log loss、Brier 均显著劣于 Pinnacle 收盘；按模型 EV 分桶（0–1%、1–3%、3–5%、>5%）下注，CLV 全部显著为负（约 −2.2% ~ −2.9%），
+ROI 全部不显著，且 EV 与 CLV/ROI 无单调关系。**回测不支持任何以模型 EV 为依据的正 edge 阈值。**
+
+提案（仅纸面交易）：
+- 硬门槛：`market_gate()` 相对 Pinnacle 去水公平价 EV ≥ 0（不满足一律不推）。
+- 高：市场门槛 EV ≥ +3% —— 当前仅为路线图占位值，回测无支撑；须先积累 ≥100 笔纸面交易且 CLV > 0 方可启用。
+- 中：市场门槛 EV +1%~3%；低：0~1%。
+- 模型（DC/Elo/blend）只作方向参考，不参与置信度分级。数值见 `config/model.yaml: confidence_proposal`。
