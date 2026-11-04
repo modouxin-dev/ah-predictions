@@ -9,7 +9,7 @@ elif cmd == "settle":
 elif cmd == "stats":
     from .stats import main; main()
 elif cmd == "site":
-    from .build_site import build; print(build())
+    from .build_site import main; main()
 elif cmd == "telegram":
     from .publish_telegram import main; main()
 elif cmd == "consensus":

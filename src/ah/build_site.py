@@ -1,12 +1,13 @@
 """生成 site/ 静态看板（GitHub Pages）。
 
-页面：index(今日) / records(推荐记录) / stats(战绩) / sources(数据源) / rules(规则) / history(按日报告)
+页面：index(今日) / records(推荐记录) / stats(战绩，含 CLV 与模拟单) / sources(数据源) / rules(规则) / history(按日报告)
 以及 reports/<date>.html。所有时间显示为北京时间（Asia/Shanghai）。
 同时导出 site/data/*.json；排序/筛选/图表/VIP 门禁由 site/assets/app.js 在浏览器完成（无外部依赖）。
 VIP 门禁仅前端隐藏：页面 HTML 与仓库数据仍然公开。
 """
 from __future__ import annotations
 
+import argparse
 import csv
 import html
 import json
@@ -221,9 +222,9 @@ def pick_card(p: dict, pol: dict, stats: dict | None = None) -> str:
     src = "".join(f"<a class='srcl' href='{e(u)}' rel='noopener'>{e(pt.link_label(u))}</a>"
                   for u in p.get("sources", []) if str(u).startswith("http"))
     detail = ("<div class='pick-body'><div>" + compare_table(p) + hit_chips(p, stats) +
-              "<h3>✅ 为什么推</h3><ol>" + "".join(f"<li>{e(x)}</li>" for x in p.get("reasons", [])) + "</ol>"
-              "<h3>⚠️ 风险</h3><ul>" + "".join(f"<li>{e(x)}</li>" for x in p.get("risks", [])) + "</ul>"
-              f"<h3>🔗 来源</h3><div class='srcs'>{src}</div>"
+              "<h3>✅ 为什么推</h3><ol class='reasons'>" + "".join(f"<li>{e(x)}</li>" for x in p.get("reasons", [])) + "</ol>"
+              "<h3>⚠️ 风险在哪</h3><ul class='risks'>" + "".join(f"<li>{e(x)}</li>" for x in p.get("risks", [])) + "</ul>"
+              f"<h3>🔗 数据来源</h3><div class='srcs'>{src or NONE}</div>"
               f"</div><div style='display:grid;gap:10px;align-content:start'>{prematch_panel(p, pol)}{result_panel(p)}</div></div>")
     return (f"<article class='card pick'><div class='meta'>🏆 {e(p.get('league', ''))} · 🕐 {bjt(p.get('kickoff_utc'))}"
             f"<span class='badge st-{st}'>{st}</span></div>"
@@ -233,22 +234,113 @@ def pick_card(p: dict, pol: dict, stats: dict | None = None) -> str:
             + lock(detail) + "</article>")
 
 
-def report_html(r: dict, pol: dict | None = None, stats: dict | None = None) -> str:
+def vip_inline(inner: str) -> str:
+    """行内 VIP 内容（与 lock() 同一套 .vip / body.vip-on 机制）。"""
+    return f"<span class='vip'>{inner}</span><span class='vip-lock-inline' role='button' tabindex='0'>🔒 VIP</span>"
+
+
+def conf_counts(items: list[dict]) -> dict:
+    out = {}
+    for x in items:
+        c = CONF.get(x.get("confidence") or "", "未定")
+        out[c] = out.get(c, 0) + 1
+    return out
+
+
+def report_head(r: dict, pol: dict, n_live: int, n_shown: int) -> str:
+    wl = r.get("watchlist") or []
+    chips = []
+    if r.get("screened") is not None:
+        chips.append(f"<span class='hchip'>🔎 筛选 <b>{e(str(r['screened']))}</b> 场</span>")
+    chips.append(f"<span class='hchip'>🎯 推荐 <b>{n_live}</b> 场</span>")
+    if n_shown > n_live:
+        chips.append(f"<span class='hchip'>↩️ 已撤销 <b>{n_shown - n_live}</b></span>")
+    if wl or r.get("watched"):
+        chips.append(f"<span class='hchip'>👀 观察 <b>{len(wl) or len(r.get('watched') or [])}</b> 场</span>")
+    ed = " · 提前版" if r.get("edition") == "early" else ""
+    return (f"<div class='rhead'><div class='rdate'>📅 {e(r['date'])}<small>{ed}</small></div>"
+            f"<div class='muted rgen'>生成于 {bjt(r.get('generated_at'))} · 盘口为港盘水位（十进制赔率 = 1 + 水位）</div>"
+            f"<div class='hchips'>{''.join(chips)}</div></div>")
+
+
+def no_pick_html(r: dict) -> str:
+    """无推荐状态：按 watchlist 自动统计各信心档与不推类别（不使用手写的 no_pick_reason，避免数字不一致）。"""
+    wl = r.get("watchlist") or []
+    cc = conf_counts(wl)
+    cnt = " · ".join(f"{c}信心 {cc[c]} 场" for c in ("高", "中", "低", "未定") if cc.get(c))
+    cats = {}
+    for x in wl:
+        if x.get("withheld_category"):
+            cats[x["withheld_category"]] = cats.get(x["withheld_category"], 0) + 1
+    chips = "".join(f"<span class='cat'>{e(k)} {v}</span>" for k, v in sorted(cats.items(), key=lambda kv: -kv[1]))
+    return ("<div class='nopick'><div class='np-ico'>🛡️</div><div><div class='np-title'>今日无高信心推荐</div>"
+            "<div class='np-sub'>宁缺毋滥：没有达到发布标准的场次，今天不推。</div>"
+            + (f"<div class='np-cnt'>观察名单 {len(wl)} 场：{cnt}</div>" if wl else "")
+            + (f"<div class='np-cats'>{chips}</div>" if chips else "")
+            + "</div></div>")
+
+
+def watchlist_html(r: dict) -> str:
+    wl = sorted(r.get("watchlist") or [], key=lambda x: (x.get("kickoff_utc") or "", x.get("league") or ""))
+    if not wl:
+        return ""
+    rows = []
+    for x in wl:
+        hl, ho = x.get("ah_home_line"), x.get("ah_home_line_open")
+        line = (f"{fl(ho)} → {fl(hl)}" if ho is not None and ho != hl else fl(hl)) if hl is not None else NONE
+        cons = x.get("consensus") or {}
+        cs = (f"{fl(cons.get('home_line'))}（{cons.get('agree')}/{cons.get('bookmakers')} 家）"
+              if cons.get("home_line") is not None and cons.get("bookmakers") else "")
+        conf = CONF.get(x.get("confidence") or "", "")
+        ko = bjt(x.get("kickoff_utc"), "%m-%d %H:%M").replace(" 北京时间", "") if x.get("kickoff_utc") else NONE
+        rows.append(
+            f"<tr class='crow'><td data-label='开赛' data-v='{e(x.get('kickoff_utc') or '')}'>{e(ko)}</td>"
+            f"<td data-label='对阵' class='m-full'>{e(x.get('home', ''))} vs {e(x.get('away', ''))}"
+            f"<div class='muted sm'>{e(x.get('league', ''))}</div></td>"
+            f"<td data-label='主队盘口' class='num'>{line}" + (f"<div class='muted sm'>共识 {cs}</div>" if cs else "") + "</td>"
+            f"<td data-label='信心'>" + (f"<span class='conf conf-{e(conf)}'>{e(conf)}</span>" if conf else NONE) + "</td>"
+            f"<td data-label='类别'><span class='cat'>{e(x.get('withheld_category') or NONE)}</span></td>"
+            f"<td data-label='不推原因' class='wrap-text note'>{vip_inline(e(x.get('withheld_reason') or NONE))}</td></tr>")
+    return ("<h2>👀 观察名单（不推荐）</h2>"
+            "<p class='muted'>主队视角盘口，负数 = 主队让球；初盘 → 即时。</p>"
+            + tbl(["开赛（北京时间）", "对阵", "主队盘口", "信心", "类别", "不推原因"], rows, cls="sortable cardify", tid="watch"))
+
+
+def report_html(r: dict, pol: dict | None = None, stats: dict | None = None, after_head: str = "") -> str:
     pol = pol or policy.load()
-    out = [f"<p class='muted'>报告日期 {e(r['date'])} · 生成于 {bjt(r.get('generated_at'))} · {e(r.get('odds_format', ''))}</p>"]
     live = policy.published(r, pol)
     shown = [p for p in records.published_picks(r, pol)]
+    out = [report_head(r, pol, len(live), len(shown)), after_head]
     if not live:
-        out.append("<div class='empty'>今日无高信心推荐（宁缺毋滥）。</div>")
+        out.append(no_pick_html(r))
     out.extend(pick_card(p, pol, stats) for p in shown if p in live)
     gone = [p for p in shown if p not in live]
     if gone:
-        out.append("<h2>已撤销</h2>" + "".join(pick_card(p, pol, stats) for p in gone))
+        out.append("<h2>↩️ 已撤销</h2>" + "".join(pick_card(p, pol, stats) for p in gone))
+    out.append(watchlist_html(r))
     w = r.get("watched") or []
-    rows = [f"<tr><td>{e(x.get('league', ''))}</td><td>{e(x.get('home', ''))} vs {e(x.get('away', ''))}</td>"
-            f"<td class='wrap-text'>{e(x.get('reason_skipped', ''))}</td></tr>" for x in w]
-    out.append("<h2>观察但不推荐</h2>" + lock(tbl(["赛事", "对阵", "原因"], rows, cls="", empty="暂无观察场次")))
+    if w:
+        rows = [f"<tr><td>{e(x.get('league', ''))}</td><td>{e(x.get('home', ''))} vs {e(x.get('away', ''))}</td>"
+                f"<td class='wrap-text'>{e(x.get('reason_skipped', ''))}</td></tr>" for x in w]
+        out.append("<h2>👀 观察但不推荐</h2>" + lock(tbl(["赛事", "对阵", "原因"], rows, cls="", empty="暂无观察场次")))
     return "".join(out)
+
+
+def stats_brief(s: dict | None) -> str:
+    """首页底部统计表：总体 / 分联赛 / 分信心命中率（VIP，与战绩页一致）。"""
+    if not s:
+        return ""
+    def rows(d):
+        return [f"<tr><td>{e(k)}</td><td class='num'>{v['picks']}</td><td class='num'>{v['decided']}</td>"
+                f"<td class='num'>{pct(v['hit_rate']) if v['decided'] else NONE}</td><td class='num'>{units_html(v['units'])}</td></tr>"
+                for k, v in d.items()]
+    head = ["分组", "场次", "有效", "命中率", "盈亏"]
+    body = ("<div class='grid3'>"
+            + "<div><h3>总体</h3>" + tbl(head, rows({"全部": s.get("overall", {})}) if s.get("overall") else [], cls="", empty="暂无已结算推荐") + "</div>"
+            + "<div><h3>分联赛</h3>" + tbl(head, rows(s.get("by_league", {})), cls="", empty="暂无已结算推荐") + "</div>"
+            + "<div><h3>分信心</h3>" + tbl(head, rows(s.get("by_confidence", {})), cls="", empty="暂无已结算推荐") + "</div></div>")
+    return (f"<h2>📊 战绩概览</h2><p class='muted'>{e(summary_line(s))} · 完整图表见 <a href='stats.html'>战绩页</a></p>"
+            + lock(body))
 
 
 # ---------- 推荐记录 ----------
@@ -361,6 +453,172 @@ def stats_html(s: dict | None, today: str) -> str:
                       + charts + tables + note)
 
 
+# ---------- CLV / 模拟单（data/paper_trades.csv，回测审计员生成；字段见 docs/paper_trades.md） ----------
+
+# 列名映射集中在这里：规范名 -> CSV 中可接受的列名（按顺序取第一个非空值；大小写/空白不敏感）。格式调整时只改这里。
+PAPER_COLUMNS: dict[str, tuple[str, ...]] = {
+    "date": ("date",), "match_id": ("match_id",), "league": ("league",), "home": ("home",), "away": ("away",),
+    "kickoff_bj": ("kickoff_bj",), "kickoff_utc": ("kickoff_utc",),
+    "status": ("status",), "confidence": ("confidence",),
+    "pick": ("pick", "pick_team"), "line": ("line",),
+    "odds_taken": ("odds_taken", "odds"), "odds_close": ("odds_close", "close_odds"), "odds_format": ("odds_format",),
+    "line_close": ("line_close", "close_line"), "line_move": ("line_move",),
+    "clv": ("clv",), "clv_pct": ("clv_pct",), "clv_line": ("clv_line",),
+    "model_p": ("model_p",), "brier": ("brier",),
+    "stake": ("stake",), "outcome": ("ah_outcome", "outcome", "settlement"), "score": ("result",),
+    "pnl": ("pnl", "units"), "settled_at": ("settled_at",), "settled": ("settled",), "note": ("note",),
+}
+PAPER_NUM = ("line", "odds_taken", "odds_close", "line_close", "line_move", "clv", "clv_pct", "clv_line",
+             "model_p", "brier", "stake", "pnl")
+PAPER_RESULT = {  # 结算取值归一化 -> records.SETTLE_CN 的键
+    "win": "win", "赢": "win", "half_win": "half_win", "halfwin": "half_win", "赢半": "half_win",
+    "push": "push", "走": "push", "走水": "push", "half_loss": "half_loss", "halfloss": "half_loss", "输半": "half_loss",
+    "loss": "loss", "lose": "loss", "输": "loss", "void": "void", "取消": "void",
+}
+PAPER_STATUS_CN = {"active": "有效", "cancelled": "已撤销", "void": "作废", "watch": "观察"}
+
+
+def _num(x) -> float | None:
+    try:
+        return float(str(x).strip().replace("%", "")) if x is not None and str(x).strip() != "" else None
+    except ValueError:
+        return None
+
+
+def load_paper_trades(path: Path) -> list[dict]:
+    """宽容解析：文件不存在/为空/缺列/数值非法都不报错（缺的值为 None）。"""
+    try:
+        text = Path(path).read_text(encoding="utf-8-sig")
+    except (OSError, UnicodeDecodeError):
+        return []
+    reader = csv.DictReader(text.splitlines())
+    if not reader.fieldnames:
+        return []
+    norm = {str(f).strip().lower(): f for f in reader.fieldnames if f}
+    cols = {k: [norm[x.lower()] for x in alias if x.lower() in norm] for k, alias in PAPER_COLUMNS.items()}
+    rows = []
+    for raw in reader:
+        r = {k: next((str(raw.get(c) or "").strip() for c in cs if str(raw.get(c) or "").strip()), "") for k, cs in cols.items()}
+        if not any(r.values()):
+            continue
+        out = {k: (_num(v) if k in PAPER_NUM else (v or None)) for k, v in r.items()}
+        out["outcome"] = PAPER_RESULT.get((r["outcome"] or "").lower().replace(" ", "_").replace("-", "_"))
+        if out["clv"] is None and out["clv_pct"] is not None:
+            out["clv"] = out["clv_pct"] / 100
+        st = (r["status"] or "").lower()
+        out["status"] = st if st in PAPER_STATUS_CN else ("active" if (out["stake"] or 0) > 0 else st or "active")
+        if out["pnl"] is None and out["status"] == "active" and out["outcome"] and out["odds_taken"] is not None:
+            k, o = out["stake"] or 0, out["odds_taken"]   # 港盘水位，与 settle.py 一致
+            out["pnl"] = {"win": k * o, "half_win": k * o / 2, "push": 0.0, "void": 0.0, "half_loss": -k / 2, "loss": -k}[out["outcome"]]
+        rows.append(out)
+    return rows
+
+
+def paper_summary(rows: list[dict]) -> dict:
+    act = [r for r in rows if r["status"] == "active" and (r.get("stake") or 0) > 0]   # 只统计有效模拟单
+    clvs = [r["clv"] for r in act if r.get("clv") is not None]
+    settled = [r for r in act if r.get("outcome") and r["outcome"] != "void"]
+    cnt = {k: sum(1 for r in settled if r["outcome"] == k) for k in ("win", "half_win", "push", "half_loss", "loss")}
+    pnl = sum(r.get("pnl") or 0 for r in settled)
+    staked = sum(r.get("stake") or 0 for r in settled)
+    return {
+        "clv_n": len(clvs), "clv_avg": (sum(clvs) / len(clvs)) if clvs else None,
+        "clv_pos_share": (sum(1 for c in clvs if c > 0) / len(clvs)) if clvs else None,
+        "line_moved": sum(1 for r in act if r.get("clv") is None and r.get("line_move") not in (None, 0)),
+        "trades": len(act), "settled": len(settled), "pending": len(act) - len(settled),
+        "won": cnt["win"] + cnt["half_win"], "pushed": cnt["push"], "lost": cnt["loss"] + cnt["half_loss"], **cnt,
+        "pnl": pnl if settled else None, "staked": staked, "roi": (pnl / staked) if settled and staked else None,
+        "cancelled": sum(1 for r in rows if r["status"] == "cancelled"), "void": sum(1 for r in rows if r["status"] == "void"),
+        "watch": sum(1 for r in rows if r["status"] == "watch"),
+    }
+
+
+def _clv_cell(r: dict) -> str:
+    if r.get("clv") is not None:
+        return f"{r['clv'] * 100:+.2f}%"
+    if r.get("line_move") not in (None, 0):
+        return f"盘口变动 {fl(r['line_move'])}"
+    return NONE
+
+
+def _pick_cell(r: dict) -> str:
+    if not r.get("pick"):
+        return NONE
+    return f"{e(r['pick'])} {fl(r.get('line'))} @ {water(r.get('odds_taken'))}"
+
+
+def clv_html(rows: list[dict], sm: dict) -> str:
+    note = ("<p class='muted'>CLV（收盘价值）= 下注赔率 ÷ 收盘去水公平赔率 − 1，只在收盘盘口与下注盘口相同时计算；"
+            "盘口变动的场次显示「盘口变动」。长期为正说明下单时机优于市场收盘。</p>")
+    moved = f"<p class='muted'>另有 {sm['line_moved']} 场收盘盘口已变动，暂不计算 CLV。</p>" if sm["line_moved"] else ""
+    if not sm["clv_n"]:
+        return f"<div class='empty'>{NONE}</div>" + moved + note
+    avg = sm["clv_avg"]
+    cls = "pos" if avg > 0 else "neg" if avg < 0 else ""
+    return (f"<div class='summary'><div class='kpi'><b class='{cls}'>{avg * 100:+.2f}%</b><span>平均 CLV</span></div>"
+            f"<div class='kpi'><b>{pct(sm['clv_pos_share'])}</b><span>正 CLV 占比</span></div>"
+            f"<div class='kpi'><b>{sm['clv_n']}</b><span>样本数</span></div></div>" + moved + note)
+
+
+def _trade_rows(rows: list[dict]) -> list[str]:
+    out = []
+    for r in rows:
+        match = f"{r.get('home') or ''} vs {r.get('away') or ''}" if r.get("home") or r.get("away") else (r.get("match_id") or NONE)
+        oc = r.get("outcome") or ""
+        res = records.SETTLE_CN.get(oc, NONE) if oc else ("—" if r["status"] == "watch" else "待结算")
+        ko = r.get("kickoff_bj") or ""
+        ko_s = f"{ko[5:10]} {ko[11:16]}" if len(ko) >= 16 else (r.get("date") or NONE)
+        out.append(
+            f"<tr class='crow'><td data-label='开赛（北京时间）' data-v='{e(ko or r.get('date') or '')}'>{e(ko_s)}</td>"
+            f"<td data-label='状态'><span class='badge ps-{e(r['status'])}'>{PAPER_STATUS_CN.get(r['status'], e(r['status']))}</span></td>"
+            f"<td data-label='对阵' class='m-full'>{e(match)}<div class='muted sm'>{e(r.get('league') or '')}</div></td>"
+            f"<td data-label='推荐'>{_pick_cell(r)}</td>"
+            f"<td data-label='收盘'>{fl(r.get('line_close')) if r.get('line_close') is not None else NONE} @ {water(r.get('odds_close'))}</td>"
+            f"<td data-label='CLV' data-v='{'' if r.get('clv') is None else r['clv']}'>{_clv_cell(r)}</td>"
+            f"<td data-label='模型概率'>{pct(r.get('model_p'))}</td>"
+            f"<td data-label='Brier'>{NONE if r.get('brier') is None else format(r['brier'], '.3f')}</td>"
+            f"<td data-label='比分'>{e(r.get('score') or NONE)}</td>"
+            f"<td data-label='结算' class='res-{e(oc)}'>{e(res)}</td>"
+            f"<td data-label='盈亏' data-v='{'' if r.get('pnl') is None else r['pnl']}'>{units_html(r.get('pnl')) if r['status'] == 'active' else '不计'}</td>"
+            f"<td data-label='说明' class='wrap-text note'>{e(r.get('note') or '')}</td></tr>")
+    return out
+
+
+TRADE_HEAD = ["开赛（北京时间）", "状态", "对阵", "推荐", "收盘", "CLV", "模型概率", "Brier", "比分", "结算", "盈亏", "说明"]
+
+
+def paper_html(rows: list[dict], sm: dict, limit: int = 30) -> str:
+    if not rows:
+        return f"<div class='empty'>{NONE}</div>"
+    roi, pnl = sm["roi"], sm["pnl"]
+    kpis = (f"<div class='summary kpi4'><div class='kpi'><b>{sm['trades']}</b><span>有效模拟单（已结算 {sm['settled']}）</span></div>"
+            f"<div class='kpi'><b>{sm['won']}/{sm['pushed']}/{sm['lost']}</b><span>胜/走/负</span></div>"
+            f"<div class='kpi'><b>{units_html(pnl) if pnl is not None else NONE}</b><span>盈亏（单位）</span></div>"
+            f"<div class='kpi'><b class='{'pos' if roi and roi > 0 else 'neg' if roi and roi < 0 else ''}'>{pct(roi)}</b><span>ROI</span></div></div>"
+            f"<p class='muted'>已撤销 {sm['cancelled']} 笔 · 作废 {sm['void']} 笔（均不计入盈亏）· 观察 {sm['watch']} 场（只计数）。</p>")
+
+    def key(r):
+        return (r.get("kickoff_bj") or r.get("date") or "", r.get("match_id") or "")
+    main_rows = sorted([r for r in rows if r["status"] != "watch"], key=key, reverse=True)
+    watch = sorted([r for r in rows if r["status"] == "watch"], key=key, reverse=True)
+    shown = main_rows[:limit]
+    more = f"<p class='muted'>仅显示最近 {limit} 笔，共 {len(main_rows)} 笔。</p>" if len(main_rows) > limit else ""
+    body = kpis + "<h3>模拟单与撤销/作废</h3>" + tbl(TRADE_HEAD, _trade_rows(shown), cls="sortable cardify", tid="paper", empty=NONE) + more
+    if watch:
+        body += (f"<details class='watch'><summary>观察场次 {len(watch)} 场（不下注、不计盈亏，点击展开）</summary>"
+                 + tbl(TRADE_HEAD, _trade_rows(watch[:100]), cls="cardify", tid="paper-watch", empty=NONE) + "</details>")
+    note = ("<p class='muted'>模拟单为回测审计员按规则记录的纸面下单（每注 1 单位，不涉及真实资金），只统计状态「有效」且注码 &gt; 0 的单；"
+            "胜 = 赢 + 赢半，负 = 输 + 输半；ROI = 盈亏 / 已结算注码。</p>")
+    return body + note
+
+
+def paper_section(rows: list[dict]) -> str:
+    sm = paper_summary(rows)
+    return ("<section id='clv' class='paper'><h2>CLV（收盘价值）</h2>" + lock(clv_html(rows, sm)) + "</section>"
+            "<section id='paper-trades' class='paper'><h2>模拟单</h2>" + lock(paper_html(rows, sm)) + "</section>"
+            f"<p class='disc-inline'>{e(policy.DISCLAIMER)} —— 先知</p>")
+
+
 # ---------- 数据源 ----------
 
 def sources_html(st: dict) -> str:
@@ -449,10 +707,12 @@ def build(site: Path = SITE, reports: Path = REPORTS, data: Path = DATA, now: da
     bar = summary_bar(n_today, lbl, s, today)
     for r in reps:
         write(f"reports/{r['date']}.html", f"亚盘日报 {r['date']}", report_html(r, pol, s), "", "../")
-    write("index.html", "今日推荐", bar + (report_html(latest, pol, s) if latest else "<div class='empty'>暂无报告</div>"), "index.html")
+    write("index.html", "今日推荐", (report_html(latest, pol, s, after_head=bar) if latest else bar + "<div class='empty'>暂无报告</div>")
+          + stats_brief(s), "index.html")
     rows = record_rows(reps, pol)
     write("records.html", "推荐记录", records_html(list(reversed(rows)), pol), "records.html")
-    write("stats.html", "战绩", bar + stats_html(s, today), "stats.html")
+    paper = load_paper_trades(data / "paper_trades.csv")
+    write("stats.html", "战绩", bar + stats_html(s, today) + paper_section(paper), "stats.html")
     write("sources.html", "数据源状态", sources_html(st), "sources.html")
     write("rules.html", "规则说明", rules_html(pol, cfg), "rules.html")
     hist = [f"<tr><td><a href='reports/{r['date']}.html'>{r['date']}</a></td><td>{len(policy.published(r, pol))}</td>"
@@ -466,5 +726,14 @@ def build(site: Path = SITE, reports: Path = REPORTS, data: Path = DATA, now: da
     return [r["date"] for r in reps]
 
 
+def main(argv: list[str] | None = None) -> None:
+    ap = argparse.ArgumentParser(prog="python -m ah site", description="生成 site/ 静态看板（GitHub Pages）。")
+    ap.add_argument("--out", type=Path, default=SITE, help=f"输出目录（默认 {SITE}）")
+    ap.add_argument("--reports", type=Path, default=REPORTS, help="日报 JSON 目录（默认仓库 reports/）")
+    ap.add_argument("--data", type=Path, default=DATA, help="数据目录（stats.json、paper_trades.csv 等；默认仓库 data/）")
+    a = ap.parse_args(argv)
+    print(build(site=a.out, reports=a.reports, data=a.data))
+
+
 if __name__ == "__main__":
-    print("built site for", build())
+    main()

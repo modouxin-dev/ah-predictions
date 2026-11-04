@@ -119,7 +119,7 @@ def today_text(rep: dict | None, pol: dict | None = None, stats: dict | None = N
     picks = policy.published(rep, pol)
     lines = [head, pt.date_line(rep, len(picks))]
     if not picks:
-        lines += ["", "今日无高信心推荐（宁缺毋滥）"]
+        lines += ["", *pt.no_pick_lines(rep)]
     for p in picks:
         st = records.status(p)
         lines += [pt.DIV, pt.compact_block(p, stats, extra=[f"⏱ 状态：{_status_icon(st)} {st}"])]
@@ -259,7 +259,7 @@ def report_text(rep: dict | None, pol: dict | None = None) -> tuple[str, dict]:
     lines = [f"<b>【先知】📰 最新报告 {e(rep['date'])}</b>", f"🕐 {gen}" if gen else "",
              f"🎯 公开推荐 {len(picks)} 场"]
     if not picks:
-        lines.append("今日无高信心推荐（宁缺毋滥）")
+        lines += pt.no_pick_lines(rep)
     for p in picks:
         conf = pt.CONF.get(p.get("confidence"), str(p.get("confidence")))
         odds = f" @ {p['odds']}" if p.get("odds") is not None else ""

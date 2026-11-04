@@ -57,7 +57,9 @@ def test_outputs_hide_non_high_and_carry_disclaimer(tmp_path):
     assert "H1" in t and "H2" not in t and "H9" not in t and policy.DISCLAIMER in t and "历史战绩" in t
     assert policy.DISCLAIMER in publish_telegram.summary(rep([]))
     h = build_site.report_html(r)
-    assert "H1" in h and "H9" not in h and "H2" not in h
+    picks_part, _, watch_part = h.partition("观察名单")
+    assert "H1" in picks_part and "H9" not in h and "H2" not in picks_part   # 非高信心不作为推荐卡片展示
+    assert "H2" in watch_part and "不推荐" in h                              # 只出现在观察名单（不推荐）
     md = render_report.render_md(r)
     assert "H9" not in md and policy.DISCLAIMER in md and md.rstrip().endswith("—— 先知")
 

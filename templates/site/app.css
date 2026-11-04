@@ -3,7 +3,7 @@
 --win:#0a8f4a;--loss:#c62f2f;--push:#7a7f8c;--warn:#b7791f;--blue:#2459c9;--r:12px}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif}
+body{margin:0;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif}
 a{color:var(--blue)}
 .wrap{max-width:1240px;margin:0 auto;padding:0 12px}
 header.top{background:var(--brand);color:#fff;position:sticky;top:0;z-index:20;box-shadow:0 1px 4px rgba(0,0,0,.15)}
@@ -16,12 +16,16 @@ nav.main{display:flex;overflow-x:auto;gap:2px;scrollbar-width:none;background:va
 nav.main::-webkit-scrollbar{display:none}
 nav.main a{flex:1 0 auto;display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 14px;color:#e8fff6;text-decoration:none;font-size:15px;white-space:nowrap}
 nav.main a.cur{color:#fff;font-weight:700;box-shadow:inset 0 -3px 0 #f5c542}
-main{padding:12px 0 24px}
+main{padding:12px 0 24px;flex:1 0 auto;width:100%}
+footer{width:100%}
 h1{font-size:20px;margin:6px 0 10px}h2{font-size:17px;margin:20px 0 8px}h3{font-size:15px;margin:12px 0 6px}
 .muted,small{color:var(--mute)}
 .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 12px}
 .kpi{background:var(--card);border-radius:var(--r);padding:10px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,.05)}
-.kpi b{display:block;font-size:20px;line-height:1.3}.kpi span{font-size:12px;color:var(--mute)}
+.kpi{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.kpi b{display:block;font-size:20px;line-height:1.3;white-space:nowrap}
+.kpi span{display:block;margin-top:4px;font-size:12px;line-height:1.35;color:var(--mute);word-break:keep-all;overflow-wrap:anywhere}
+.summary.kpi4{grid-template-columns:repeat(2,1fr)}
 .card{background:var(--card);border-radius:var(--r);padding:14px;margin:0 0 12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 .pick-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
 .pick-head .teams{font-weight:700;font-size:16px;flex:1 1 100%}
@@ -71,7 +75,10 @@ tr.detail[hidden]{display:none}
 .src-card .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
 .dot.ok{background:var(--win)}.dot.err{background:var(--loss)}.dot.none{background:#b8bcc6}
 footer{border-top:1px solid var(--line);padding:16px 0 28px;font-size:13px;color:var(--mute)}
-footer .disc{color:#8a5a00;font-weight:600}
+footer .disc{color:#5c3b00;background:#fff4d6;border:1px solid #f0d58a;border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:15px;font-weight:700;line-height:1.5}
+footer{color:#4f5768}
+.disc-inline{margin:16px 0 0;padding:8px 12px;border-left:4px solid #d9a21b;background:#fff8e6;color:#5c3b00;font-weight:600;border-radius:0 8px 8px 0}
+section.paper{margin-top:8px}
 /* VIP 门禁（仅前端隐藏） */
 .vip-lock{display:flex;align-items:center;justify-content:center;gap:8px;min-height:64px;border:1px dashed #d9c27a;background:#fffaf0;color:#8a6d1f;border-radius:10px;padding:12px;cursor:pointer;text-align:center;font-size:14px}
 body:not(.vip-on) .vip{display:none!important}
@@ -84,8 +91,12 @@ body.vip-on .vip-lock{display:none!important}
 .modal button{flex:1;min-height:44px;border-radius:8px;border:0;font-size:15px;cursor:pointer}
 .modal .ok{background:var(--brand);color:#fff}.modal .cancel{background:#eef1f5}
 .modal .err{color:var(--loss);font-size:13px;min-height:18px}
+@media (max-width:639px){
+ .kpi{padding:10px 6px}.kpi b{font-size:18px}
+}
 @media (min-width:640px){
  .filters{grid-template-columns:repeat(4,1fr) auto}
+ .summary.kpi4{grid-template-columns:repeat(4,1fr)}
  .pick-head .teams{flex:0 1 auto}
  .chart{height:260px}
 }
@@ -104,6 +115,8 @@ body.vip-on .vip-lock{display:none!important}
 @media (min-width:1600px){.wrap{max-width:1440px}}
 header.top .bar{flex-wrap:wrap}
 nav.main{order:3;flex:1 1 100%;margin:0 -12px;padding:0 4px}
+@media (max-width:1023px){nav.main a{flex:1 1 auto;padding:0 6px;font-size:15px}}
+@media (max-width:359px){nav.main a{padding:0 4px;font-size:14px}}
 @media (min-width:1024px){
  header.top .bar{flex-wrap:nowrap}
  nav.main{order:2;flex:1 1 auto;margin:0 0 0 20px;padding:0;background:transparent}
@@ -116,7 +129,7 @@ nav.main{order:3;flex:1 1 100%;margin:0 -12px;padding:0 4px}
  .tbl:has(table.cardify){background:transparent;box-shadow:none;overflow:visible}
  table.cardify thead{display:none}
  table.cardify,table.cardify tbody{display:block}
- table.cardify tr.rec{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;background:var(--card);border-radius:12px;padding:10px 12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);min-height:44px}
+ table.cardify tr.rec,table.cardify tr.crow{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;background:var(--card);border-radius:12px;padding:10px 12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);min-height:44px}
  table.cardify tr.rec[hidden]{display:none}
  table.cardify td{display:block;border:0;padding:2px 0;white-space:normal;position:static}
  table.cardify td::before{content:attr(data-label);display:block;font-size:11px;color:var(--mute)}
@@ -145,3 +158,43 @@ table.cmp-t tbody tr:first-child{background:#e6f6ee;font-weight:700}
 .chip{font-size:12px;padding:3px 9px;border-radius:999px;background:#eef1f5;border:1px solid var(--line)}
 .srcs{display:flex;flex-wrap:wrap;gap:6px}.srcl{font-size:13px;padding:2px 8px;border-radius:6px;background:#eef4fb}
 @media (max-width:600px){.verdict .v-main{font-size:16px}.verdict .conf{margin-left:0}}
+/* 战绩页：模拟单 / CLV */
+.ps-active{color:var(--blue);border-color:var(--blue);background:#eef3ff}
+.ps-cancelled,.ps-void{color:var(--push);border-color:#b8bcc6;background:#f2f3f5}
+.ps-watch{color:var(--warn);border-color:var(--warn);background:#fff8eb}
+.sm{font-size:12px}
+td.note{min-width:240px;max-width:420px;font-size:13px}
+details.watch{margin:8px 0 12px}
+details.watch summary{cursor:pointer;min-height:44px;display:flex;align-items:center;padding:0 12px;background:var(--card);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);color:var(--ink)}
+details.watch[open] summary{margin-bottom:8px}
+@media (max-width:639px){table.cardify td.note{grid-column:1/-1;max-width:none;min-width:0}}
+/* v3 首页：日期摘要 / 无推荐状态 / 观察名单 */
+.rhead{background:var(--card);border-radius:var(--r);padding:12px 14px;margin:0 0 10px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-left:4px solid var(--brand)}
+.rdate{font-size:18px;font-weight:800}.rdate small{font-size:13px;font-weight:600;color:var(--warn);margin-left:6px}
+.rgen{font-size:13px;margin:2px 0 8px}
+.hchips{display:flex;flex-wrap:wrap;gap:6px}
+.hchip{font-size:13px;padding:3px 10px;border-radius:999px;background:#eef4f1;color:#234}
+.hchip b{color:var(--brand);font-size:14px}
+.nopick{display:flex;gap:12px;align-items:flex-start;background:linear-gradient(135deg,#f3fbf7,#fff);border:1px solid #cfe9dc;border-radius:var(--r);padding:16px;margin:0 0 12px}
+.np-ico{font-size:30px;line-height:1}
+.np-title{font-size:18px;font-weight:800;color:var(--brand)}
+.np-sub{color:var(--mute);font-size:14px;margin:2px 0 6px}
+.np-cnt{font-weight:700;font-size:14px;margin-bottom:4px}
+.np-reason{font-size:14px;line-height:1.6;color:#39404d}
+.vip-lock-inline{display:inline-block;font-size:12px;color:#8a6d1f;background:#fffaf0;border:1px dashed #d9c27a;border-radius:6px;padding:0 8px;cursor:pointer}
+body.vip-on .vip-lock-inline{display:none}
+.cat{display:inline-block;font-size:12px;padding:1px 8px;border-radius:6px;background:#f2f3f5;color:#4f5768;white-space:nowrap}
+td.num,th.num{font-variant-numeric:tabular-nums}
+.conf-中{background:#fff3dc;color:#8a5a00}.conf-低{background:#f2f3f5;color:#6b7385}
+ol.reasons li,ul.risks li{margin:4px 0}
+ul.risks li::marker{color:var(--loss)}
+.grid3 h3{margin-top:4px}
+.grid3 td:first-child{white-space:normal;min-width:110px;max-width:240px}
+@media (max-width:639px){
+ #watch tr.crow{grid-template-columns:repeat(4,auto);justify-content:space-between;gap:2px 8px;padding:8px 12px}
+ #watch td.m-full,#watch td.note{grid-column:1/-1}
+ #watch td::before{font-size:10px}
+ .nopick{padding:12px}.np-ico{font-size:24px}
+}
+@media (max-width:639px){#watch td{white-space:nowrap}#watch td.m-full,#watch td.note{white-space:normal}}
+.np-cats{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}

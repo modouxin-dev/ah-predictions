@@ -263,15 +263,15 @@ def compact_block(p: dict, stats: dict | None = None, extra: list[str] | None = 
     if probs:
         lines.append("🧮 模型概率 " + " ".join(f"{e(k)} {float(v):.0%}" for k, v in probs.items()))
     if p.get("reasons"):
-        lines += ["✅ <b>为什么推</b>", *[f"• {e(short(r))}" for r in p["reasons"][:3]]]
+        lines += ["✅ <b>为什么推</b>", *[f"• {e(short(r, 56))}" for r in p["reasons"][:3]]]
     if p.get("risks"):
-        lines.append("⚠️ " + e("；".join(short(r, 30) for r in p["risks"][:2])))
+        lines += ["⚠️ <b>风险在哪</b>", *[f"• {e(short(r, 48))}" for r in p["risks"][:2]]]
     s = stats or {}
     lg = (s.get("by_league") or {}).get(p.get("league"))
     cf = (s.get("by_confidence") or {}).get(conf)
     lines.append(f"📈 本联赛 {record_of(lg)} ｜ {e(conf)}信心 {record_of(cf)}")
     if p.get("sources"):
-        lines.append("🔗 " + links(p["sources"][:4]))
+        lines.append("🔗 <b>来源</b> " + links(p["sources"][:4]))
     return "\n".join(lines)
 
 
@@ -309,15 +309,42 @@ def date_line(rep: dict, n_pub: int) -> str:
     return f"📅 {d:%m-%d} 周{WEEK[d.weekday()]} · 筛选 {n_all} 场 · 推荐 {n_pub} 场"
 
 
+def watch_counts(rep: dict) -> tuple[dict, dict]:
+    """按 watchlist 自动统计：(各信心档场数, 各不推类别场数)。只统计，不点名（中/低信心不推送具体场次）。"""
+    conf, cat = {}, {}
+    for w in rep.get("watchlist") or []:
+        c = CONF.get(w.get("confidence") or "", "未定")
+        conf[c] = conf.get(c, 0) + 1
+        k = w.get("withheld_category")
+        if k:
+            cat[k] = cat.get(k, 0) + 1
+    return conf, cat
+
+
+def no_pick_lines(rep: dict) -> list[str]:
+    lines = ["🛡 <b>今日无高信心推荐（宁缺毋滥）</b>"]
+    conf, cat = watch_counts(rep)
+    if conf:
+        n = sum(conf.values())
+        lines.append(f"👀 观察 {n} 场：" + " · ".join(f"{CONF_ICON.get(c, '▫️')}{c} {conf[c]}"
+                                                     for c in ("高", "中", "低", "未定") if conf.get(c)))
+    if cat:
+        top = sorted(cat.items(), key=lambda kv: -kv[1])[:4]
+        lines.append("📌 未推原因：" + " · ".join(f"{e(k)} {v}" for k, v in top))
+    return lines
+
+
 def daily(rep: dict, stats: dict | None = None, site_url: str = SITE_URL) -> list[str]:
     picks = policy.published(rep)
     blocks = [f"<b>【先知】⚽ 亚盘日报 {e(rep['date'])}</b>\n{date_line(rep, len(picks))}"]
     if not picks:
-        none = "今日无高信心推荐（宁缺毋滥）"
-        if rep.get("no_pick_reason"):
-            none += "\n📌 " + e(rep["no_pick_reason"])
-        blocks.append(none)
+        blocks.append("\n".join(no_pick_lines(rep)))
     blocks += [DIV + "\n" + compact_block(p, stats) for p in picks]
+    gone = [p for p in rep.get("picks") or [] if p not in picks
+            and (p.get("cancelled") or p.get("confidence") == "cancelled")]
+    if gone:
+        blocks.append("↩️ <b>赛前已撤销</b>（不计入命中率）\n" + "\n".join(
+            f"• <s>{e(p['home'])} vs {e(p['away'])} {e(_team(p))} {ln(p['line'])}</s>" for p in gone))
     blocks.append(DIV + "\n" + tail(stats, site_url))
     return split(blocks)
 
@@ -338,7 +365,7 @@ def prematch_of(p: dict) -> dict:
 
 def prematch(p: dict, pm: dict | None = None, stats: dict | None = None) -> list[str]:
     pm = pm or prematch_of(p)
-    dec = DECISION.get(pm.get("decision"), e(pm.get("decision") or "—"))
+    dec = DECISION.get(pm.get("decision"), e(pm.get("decision") or "⏳ 暂无（尚未复核）"))
     q = dict(p)
     if pm.get("new_line") is not None:
         q["line"], q["odds"] = pm["new_line"], pm.get("new_odds")
@@ -347,7 +374,8 @@ def prematch(p: dict, pm: dict | None = None, stats: dict | None = None) -> list
     when = f" · {bj(pm['checked_at'])} 北京时间" if pm.get("checked_at") else ""
     head = f"<b>【先知】🔎 赛前确认</b>\n决定：<b>{dec}</b>{when}"
     info = [f"📊 临场：{e(pm['current_line'])}"] if pm.get("current_line") else []
-    info.append(f"📌 {e(pm.get('reason') or '—')}")
+    if pm.get("reason"):
+        info.append(f"📌 {e(pm['reason'])}")
     if "撤销" in dec:
         body = (f"🏆 {e(p.get('league', ''))} ｜ 🕐 {bj(p.get('kickoff_utc'))}\n<b>{e(p['home'])} vs {e(p['away'])}</b>\n"
                 f"🎯 原推荐 <s>{e(_team(p))} {ln(p['line'])}" + (f" @{p['odds']}" if p.get('odds') is not None else "")
@@ -369,8 +397,11 @@ def backtest(p: dict, res: dict | None = None, stats: dict | None = None) -> lis
     body = [f"🏆 {e(p.get('league', ''))} ｜ 🕐 {bj(p.get('kickoff_utc'))}",
             f"<b>{e(p['home'])} {e(res.get('score') or '—')} {e(p['away'])}</b>",
             f"🎯 推荐 {e(_team(p))} {ln(line)}" + (f" @{odds}" if odds is not None else ""),
-            f"{SETTLE_ICON.get(s, '')} 结算 <b>{e(cn)}</b> · {u}",
-            f"📌 {e(res.get('review') or '—')}"]
+            (f"{SETTLE_ICON.get(s, '')} 结算 <b>{e(cn)}</b>" + (f" · {u}" if units is not None else "")) if s else "⏳ 结算：暂无（赛果未出）"]
+    if not res.get("score"):
+        body[1] = f"<b>{e(p['home'])} vs {e(p['away'])}</b>"
+    if res.get("review"):
+        body.append(f"📌 {e(res['review'])}")
     if res.get("sources"):
         body.append("🔗 " + links(res["sources"]))
     return split(["<b>【先知】🏁 赛后回测</b>", DIV + "\n" + "\n".join(body), DIV + "\n" + tail(stats)])
