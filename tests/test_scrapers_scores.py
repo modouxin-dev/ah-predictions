@@ -33,13 +33,13 @@ def test_parse_headlines_and_video_slugs():
     assert ("headline", "FC Pohang Steelers", 3, 3, "Gamba Osaka") in got
     assert ("video_slug", "al hilal sfc", 2, 0, "shabab al ahli") in got
     assert ("video_slug", "esteghlal", 1, 0, "al shamal sc") in got
-    assert len(c) == 3                                      # 非比分标题（Inzaghi…）不产生声明；JSON-LD 与 h4 重复去重
+    assert len(c) == 3                                      # 非比分标题不产生声明；JSON-LD 与 h4 重复去重
     pohang = next(x for x in c if x["kind"] == "headline")
     assert pohang["stage"] == "MD4" and pohang["home_country"] == "KOR" and pohang["away_country"] == "JPN"
     c2 = afc.parse_scores(ACL2, afc.COMP_PAGES["acl2"], "acl2")
     heads = {(x["home"], x["home_goals"], x["away_goals"], x["away"]) for x in c2 if x["kind"] == "headline"}
     assert ("FC Seoul", 3, 0, "The Cong - Viettel FC") in heads and ("East Bengal FC", 0, 2, "Al Seeb Club") in heads
-    assert not any("preview" in x["text"].lower() for x in c2)
+    assert len(heads) == 4 and all("text" not in x for x in c + c2)          # 只存对阵+比分，不存标题原文
     slug = next(x for x in c2 if x["kind"] == "video_slug")
     assert slug["source_url"].startswith(afc.COMP_PAGES["acl2"] + "/video/acltwo-|-group-d-")
 

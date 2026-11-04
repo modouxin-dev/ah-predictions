@@ -1,0 +1,191 @@
+{
+ "source": "jleague",
+ "site_match_id": "acle/2026/110334",
+ "match_id": 1629969,
+ "competition": "acle",
+ "competition_name": "AFC Champions League Elite",
+ "round": "League Stage Matchday 4 - East",
+ "status": "post-game",
+ "kickoff_utc": "2026-11-03T12:16:00Z",
+ "kickoff_bjt": "2026-11-03T20:16:00+08:00",
+ "home": {
+  "name": "Công An Nhân Dân",
+  "site_name": "Cong An Ha Noi FC",
+  "site_team_id": "32445",
+  "alias_matched": true
+ },
+ "away": {
+  "name": "Kyoto Sanga F.C.",
+  "site_name": "Kyoto Sanga F.C.",
+  "site_team_id": "134",
+  "alias_matched": false
+ },
+ "score": {
+  "home": 0,
+  "away": 0
+ },
+ "lineups": {
+  "home": {
+   "starting_xi": [
+    {
+     "name": "NGUYEN Filip",
+     "number": 1,
+     "pos": "GK",
+     "site_player_id": null
+    },
+    {
+     "name": "DOAN Van Hau",
+     "number": 5,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "PENDANT Quang Vinh",
+     "number": 7,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "BUI Hoang Viet Anh",
+     "number": 68,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "DAMIA SABATER",
+     "number": 14,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "LEO ARTUR",
+     "number": 10,
+     "pos": "FW",
+     "site_player_id": null
+    },
+    {
+     "name": "ADOU LEYGLEY MINH",
+     "number": 38,
+     "pos": "FW",
+     "site_player_id": null
+    },
+    {
+     "name": "FRANS PUTROS",
+     "number": 55,
+     "pos": "FW",
+     "site_player_id": null
+    },
+    {
+     "name": "ALAN GRAFITE",
+     "number": 72,
+     "pos": "FW",
+     "site_player_id": null
+    },
+    {
+     "name": "LE Van Do",
+     "number": 88,
+     "pos": "FW",
+     "site_player_id": null
+    },
+    {
+     "name": "PEREA",
+     "number": 90,
+     "pos": "FW",
+     "site_player_id": null
+    }
+   ],
+   "substitutes": null,
+   "absences": null
+  },
+  "away": {
+   "starting_xi": [
+    {
+     "name": "HALLS",
+     "number": 90,
+     "pos": "GK",
+     "site_player_id": "1657714"
+    },
+    {
+     "name": "NAGATA Kodai",
+     "number": 15,
+     "pos": "DF",
+     "site_player_id": "1630198"
+    },
+    {
+     "name": "ISHIDA Yusuke",
+     "number": 40,
+     "pos": "DF",
+     "site_player_id": "1622189"
+    },
+    {
+     "name": "WEVERTON",
+     "number": 43,
+     "pos": "DF",
+     "site_player_id": "1657474"
+    },
+    {
+     "name": "SHICHI Takaaki",
+     "number": 62,
+     "pos": "DF",
+     "site_player_id": "1501895"
+    },
+    {
+     "name": "JOAO PEDRO",
+     "number": 6,
+     "pos": "MF",
+     "site_player_id": "1650730"
+    },
+    {
+     "name": "MOROOKA Hiroto",
+     "number": 24,
+     "pos": "MF",
+     "site_player_id": "1611265"
+    },
+    {
+     "name": "SATO Kyo",
+     "number": 44,
+     "pos": "MF",
+     "site_player_id": "1633161"
+    },
+    {
+     "name": "NAKANO Ryuma",
+     "number": 48,
+     "pos": "MF",
+     "site_player_id": "1622198"
+    },
+    {
+     "name": "ALEX SOUZA",
+     "number": 17,
+     "pos": "FW",
+     "site_player_id": "1655795"
+    },
+    {
+     "name": "EVERTON MACEIO",
+     "number": 38,
+     "pos": "FW",
+     "site_player_id": "1657475"
+    }
+   ],
+   "substitutes": null,
+   "absences": null
+  }
+ },
+ "field_status": {
+  "starting_xi": {
+   "status": "已获取",
+   "reason": "官网比赛页服务端数据（首发公布后才有）"
+  },
+  "substitutes": {
+   "status": "暂无",
+   "reason": "J.League 官网的控え（替补）在 Lineup 标签页由前端 JS 加载，服务端 HTML 不含；不做 JS 渲染抓取"
+  },
+  "absences": {
+   "status": "暂无",
+   "reason": "J.League 官网不公布伤病名单；出場停止（停赛）在 Lineup 标签页由前端 JS 加载，服务端 HTML 不含"
+  }
+ },
+ "source_url": "https://www.jleague.jp/en/match/acle/2026/110334/",
+ "fetched_at": "2026-11-04T13:21:08Z",
+ "raw_cache": "/workspace/ah-data/data/cache/scrapers/jleague/7997987173be0c39.body",
+ "structure_signature": "4b56e669b7aa"
+}

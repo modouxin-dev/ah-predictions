@@ -73,3 +73,22 @@ def validate(record: dict, site: str) -> dict:
         path = "/".join(str(x) for x in e.absolute_path)
         raise structure_error(site, f"schema 校验失败 {path}: {e.message[:160]}") from None
     return record
+
+
+@lru_cache(maxsize=1)
+def _crosscheck_schema() -> dict:
+    return json.loads((SCHEMA / "lineup_crosscheck.schema.json").read_text(encoding="utf-8"))
+
+
+def validate_crosscheck(res: dict) -> dict:
+    """首发核对结果过 schema（verdict 只能是 已验证/冲突/暂无/unverified）；不合格是代码问题，直接抛 ValidationError。"""
+    jsonschema.validate(res, _crosscheck_schema())
+    return res
+
+
+def acl_match_ids(cfg: dict | None = None) -> dict[int, str]:
+    """config/sources.yaml scrapers.jleague.acl_match_ids：{API-Football fixture id: J.League 比赛路径 comp/year/id}。"""
+    if cfg is None:
+        from .http import load_site_config
+        cfg = load_site_config("jleague")
+    return {int(k): str(v).strip("/") for k, v in (cfg.get("acl_match_ids") or {}).items()}

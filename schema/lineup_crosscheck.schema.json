@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Lineup cross-check result (ah.scrapers.crosscheck / python -m ah.scrapers.lineups)",
+  "type": "object",
+  "required": ["match_id", "home", "away", "kickoff_bjt", "checked_at", "sources", "teams", "verdict"],
+  "properties": {
+    "match_id": {"type": ["integer", "null"], "description": "API-Football fixture id"},
+    "site_match_id": {"type": ["string", "null"]},
+    "home": {"type": "string", "minLength": 1},
+    "away": {"type": "string", "minLength": 1},
+    "kickoff_bjt": {"type": "string", "pattern": "\\+08:00$"},
+    "checked_at": {"type": "string"},
+    "sources": {"type": "object"},
+    "verdict": {"$ref": "#/$defs/verdict"},
+    "reason": {"type": "string"},
+    "official_source": {"type": "string"},
+    "teams": {
+      "type": "object",
+      "additionalProperties": {"type": "object", "required": ["verdict"], "properties": {"verdict": {"$ref": "#/$defs/verdict"}}}
+    },
+    "substitutes": {"type": "string"},
+    "absences": {"type": "string"}
+  },
+  "$defs": {
+    "verdict": {
+      "enum": ["已验证", "冲突", "暂无", "unverified"],
+      "description": "已验证=官网与 API-Football 一致；冲突=不一致；暂无=缺任一来源/未公布；unverified=只有 API-Football 单一来源"
+    }
+  }
+}

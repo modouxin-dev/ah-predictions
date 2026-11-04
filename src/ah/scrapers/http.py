@@ -48,7 +48,8 @@ class PoliteFetcher:
     def __init__(self, site: str, base_url: str, *, min_interval_s: float = DEFAULT_MIN_INTERVAL,
                  user_agent: str = DEFAULT_UA, cache_dir: Path | None = None, session=None,
                  max_retries: int = 3, backoff_base_s: float = 2.0, timeout: float = 30.0,
-                 enabled: bool = True, disabled_reason: str = "", sleep=time.sleep, now=time.time):
+                 enabled: bool = True, disabled_reason: str = "", cache_raw: bool = True,
+                 sleep=time.sleep, now=time.time):
         self.site = site
         self.base_url = base_url.rstrip("/")
         self.min_interval_s = float(min_interval_s)
@@ -60,6 +61,7 @@ class PoliteFetcher:
         self.timeout = timeout
         self.enabled = enabled
         self.disabled_reason = disabled_reason
+        self.cache_raw = cache_raw      # False：页面正文只在内存处理、不落盘（robots.txt 除外），也就没有 TTL/条件请求
         self.sleep = sleep
         self.now = now
         self.requests_made = 0
@@ -71,7 +73,7 @@ class PoliteFetcher:
         return cls(site, cfg["base_url"], min_interval_s=cfg.get("min_interval_s", DEFAULT_MIN_INTERVAL),
                    user_agent=cfg.get("user_agent", DEFAULT_UA), max_retries=cfg.get("max_retries", 3),
                    backoff_base_s=cfg.get("backoff_base_s", 2.0), enabled=bool(cfg.get("enabled", True)),
-                   disabled_reason=cfg.get("disabled_reason", ""), **kw)
+                   disabled_reason=cfg.get("disabled_reason", ""), cache_raw=bool(cfg.get("cache_raw", True)), **kw)
 
     # ---------- 缓存 ----------
     def _paths(self, url: str) -> tuple[Path, Path]:
@@ -80,6 +82,9 @@ class PoliteFetcher:
 
     def cached(self, url: str) -> tuple[str, dict] | None:
         body, meta = self._paths(url)
+        if not self.cache_raw and not url.endswith("/robots.txt"):
+            body.unlink(missing_ok=True)        # 不落盘的站点：清掉以前留下的正文，不从正文缓存读
+            return None
         if not (body.exists() and meta.exists()):
             return None
         return body.read_text(encoding="utf-8"), json.loads(meta.read_text(encoding="utf-8"))
@@ -87,11 +92,15 @@ class PoliteFetcher:
     def _store(self, url: str, text: str, resp) -> dict:
         body, meta = self._paths(url)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
-        body.write_text(text, encoding="utf-8")
+        keep = self.cache_raw or url.endswith("/robots.txt")
+        if keep:
+            body.write_text(text, encoding="utf-8")
+        else:
+            body.unlink(missing_ok=True)
         m = {"url": url, "status": resp.status_code, "fetched_at": utcnow_iso(self.now()), "ts": self.now(),
              "etag": resp.headers.get("ETag"), "last_modified": resp.headers.get("Last-Modified"),
              "content_type": resp.headers.get("Content-Type"),
-             "sha256": hashlib.sha256(text.encode()).hexdigest(), "body_file": str(body)}
+             "sha256": hashlib.sha256(text.encode()).hexdigest(), "body_file": str(body) if keep else None}
         meta.write_text(json.dumps(m, ensure_ascii=False, indent=1), encoding="utf-8")
         return m
 

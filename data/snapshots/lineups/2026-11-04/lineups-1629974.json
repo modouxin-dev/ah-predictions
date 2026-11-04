@@ -1,0 +1,41 @@
+{
+ "match_id": 1629974,
+ "site_match_id": "acle/2026/110402",
+ "home": "Buriram United",
+ "away": "Kashima",
+ "kickoff_bjt": "2026-11-04T20:16:00+08:00",
+ "checked_at": "2026-11-04T13:20:32Z",
+ "sources": {
+  "jleague": "https://www.jleague.jp/en/match/acle/2026/110402/",
+  "api_football": "API-Football /fixtures/lineups?fixture=1629974"
+ },
+ "teams": {
+  "home": {
+   "verdict": "已验证",
+   "site_count": 11,
+   "api_count": 11
+  },
+  "away": {
+   "verdict": "冲突",
+   "site_count": 11,
+   "api_count": 11,
+   "name_mismatch": [
+    {
+     "number": 24,
+     "site": "HAYASHI Haruki",
+     "api_football": "H. Hayashu"
+    }
+   ]
+  }
+ },
+ "verdict": "冲突",
+ "reason": "两源首发不一致，见 teams 明细；不进入推荐",
+ "substitutes": "暂无",
+ "absences": "暂无",
+ "league_id": 17,
+ "league": "AFC Champions League Elite",
+ "api_football_origin": {
+  "fixture": "cache",
+  "lineups": "api"
+ }
+}
