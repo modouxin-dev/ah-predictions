@@ -198,3 +198,26 @@ ul.risks li::marker{color:var(--loss)}
 }
 @media (max-width:639px){#watch td{white-space:nowrap}#watch td.m-full,#watch td.note{white-space:normal}}
 .np-cats{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+/* 模型实验场 */
+.labbanner{margin:4px 0 12px;padding:12px 14px;border-radius:12px;background:#efe9ff;border:2px solid #7a5af5;color:#2d1a74}
+.labbanner b{display:block;font-size:17px;line-height:1.35}
+.labbanner span{display:block;font-size:13px;margin-top:4px;color:#4a3a8a}
+.demobanner{position:sticky;top:0;z-index:30;margin:0 0 10px;padding:8px 12px;border-radius:10px;background:repeating-linear-gradient(-45deg,#ffe08a,#ffe08a 12px,#ffd35c 12px,#ffd35c 24px);color:#5a3a00;font-weight:800;text-align:center;letter-spacing:.5px}
+body:has(.demobanner)::after{content:"示例数据";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-size:min(22vw,180px);font-weight:900;color:rgba(200,120,0,.10);transform:rotate(-24deg);pointer-events:none;z-index:40}
+.labtbl code,#labboard code{font-size:12.5px;background:#f2f3f5;padding:1px 5px;border-radius:5px}
+@media (max-width:639px){
+ .labtbl tr.crow{grid-template-columns:repeat(3,auto)!important;justify-content:start;column-gap:16px}
+ .labtbl td{white-space:nowrap}
+ .labtbl td.m-full{white-space:normal}
+}
+.labchips{margin:0 0 6px}
+@media (max-width:639px){
+ .labtbl tr.crow{grid-template-columns:repeat(4,auto)!important;column-gap:14px;padding:9px 12px}
+ .labtbl td .muted.sm{display:none}
+ .labtbl td.m-full .muted.sm{display:inline;margin-left:6px;font-weight:400}
+ .labtbl td.m-full div.muted.sm{display:inline}
+ #labboard th,#labboard td{padding:8px 6px;font-size:13px}
+ #labboard code{font-size:11.5px;padding:1px 3px}
+ #labboard td .muted.sm{display:none}
+}
+@media (max-width:639px){#labboard th,#labboard td{padding:8px 4px}#labboard th{font-size:12px}}

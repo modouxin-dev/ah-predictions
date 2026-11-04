@@ -6,6 +6,10 @@
   python -m ah telegram daily YYYY-MM-DD [--dry-run]
   python -m ah telegram prematch YYYY-MM-DD MATCH_ID [--dry-run]      # 读 pick.prematch（或旧 final_check）
   python -m ah telegram backtest YYYY-MM-DD MATCH_ID [--dry-run]      # 读 pick.result
+  python -m ah telegram weekly [YYYY-MM-DD] [--lab CSV] --dry-run      # 每周模型排行样稿（实验盘，无定时任务）
+
+日报可选：--announce-upgrade（开头加「🆕 看板已升级」+ 网站链接）；--lab CSV（模型实验盘，默认 data/model_lab.csv，
+不存在则整段省略）。
 """
 from __future__ import annotations
 
@@ -334,9 +338,37 @@ def no_pick_lines(rep: dict) -> list[str]:
     return lines
 
 
-def daily(rep: dict, stats: dict | None = None, site_url: str = SITE_URL) -> list[str]:
+ANNOUNCE = "🆕\ufe0f 看板已升级"
+
+
+def lab_block(rows: list[dict] | None) -> str | None:
+    """日报末尾的模型实验盘（不计入正式命中率）。按 亚盘/1X2/大小球 分组，空组省略；全空返回 None。"""
+    from . import model_lab as ml
+    groups = ml.by_market(rows or [])
+    if not groups:
+        return None
+    out = ["🧪 <b>模型实验盘</b>（不计入正式命中率）"]
+    lg = ml.legend(rows or [])
+    if lg:
+        out.append(f"<i>{e(lg)}</i>")
+    for m, rs in groups:
+        out.append(f"<b>{ml.MARKET_CN[m]}</b>")
+        for r in rs:
+            pick = " ".join(x for x in (ml.selection_text(r), ml.line_text(r)) if x)
+            odds = f" @{ml.odds_text(r)}" if ml.odds_text(r) else ""
+            out.append(f"<code>{e(ml.model_code(r['model_id']))}</code> {e(ml.short_team(r['home']))}-{e(ml.short_team(r['away']))}"
+                       f"｜<b>{e(pick)}</b>{odds}")
+    return "\n".join(out)
+
+
+def daily(rep: dict, stats: dict | None = None, site_url: str = SITE_URL, lab: list[dict] | None = None,
+          announce: bool = False) -> list[str]:
     picks = policy.published(rep)
-    blocks = [f"<b>【先知】⚽ 亚盘日报 {e(rep['date'])}</b>\n{date_line(rep, len(picks))}"]
+    head = f"<b>【先知】⚽ 亚盘日报 {e(rep['date'])}</b>\n{date_line(rep, len(picks))}"
+    if announce:
+        head = (f'<b>{ANNOUNCE}</b> 👉 <a href="{html.escape(SITE_URL, quote=True)}">'
+                f'{e(SITE_URL.removeprefix("https://").rstrip("/"))}</a>\n\n' + head)
+    blocks = [head]
     if not picks:
         blocks.append("\n".join(no_pick_lines(rep)))
     blocks += [DIV + "\n" + compact_block(p, stats) for p in picks]
@@ -345,8 +377,33 @@ def daily(rep: dict, stats: dict | None = None, site_url: str = SITE_URL) -> lis
     if gone:
         blocks.append("↩️ <b>赛前已撤销</b>（不计入命中率）\n" + "\n".join(
             f"• <s>{e(p['home'])} vs {e(p['away'])} {e(_team(p))} {ln(p['line'])}</s>" for p in gone))
+    lb = lab_block(lab)
+    if lb:
+        blocks.append(DIV + "\n" + lb)
     blocks.append(DIV + "\n" + tail(stats, site_url))
     return split(blocks)
+
+
+def weekly(rows: list[dict] | None, end: str | None = None, top: int = 12) -> list[str]:
+    """每周模型排行（实验盘）：按「模型 × 玩法」以 ROI 排名，展示场数、命中率、ROI、CLV。"""
+    from . import model_lab as ml
+    start, end = ml.week_range(end)
+    board = [a for a in ml.leaderboard(rows or [], start, end) if a["settled"]]
+    head = (f"<b>【先知】🏆 模型周排行</b>\n📅 {start[5:]} – {end[5:]} 北京时间\n"
+            "🧪 实验盘，非正式推荐，不计入正式命中率")
+    if not board:
+        body = "暂无已结算的实验盘场次"
+    else:
+        n = sum(a["settled"] for a in board)
+        rows_ = [[str(i), ml.model_code(a["model_id"]), ml.MARKET_CN[a["market"]], str(a["settled"]) + ("*" if a["settled"] < 30 else ""),
+                  "暂无" if a["hit_rate"] is None else f"{a['hit_rate']:.0%}",
+                  "暂无" if a["roi"] is None else f"{a['roi']:+.0%}",
+                  "暂无" if a["clv"] is None else f"{a['clv']:+.1%}"] for i, a in enumerate(board[:top], 1)]
+        lg = ml.legend([r for r in rows or [] if start <= r["date"] <= end])
+        body = (f"📊 本周已结算 {n} 场 · {len(board)} 个模型×玩法\n" + (f"<i>{e(lg)}</i>\n" if lg else "")
+                + pre_table(["#", "模型", "玩法", "场", "命中", "ROI", "CLV"], rows_, right_from=3)
+                + "\n<i>* 样本 &lt; 30 场，排名波动大，仅供参考。ROI 按 1 单位平注；CLV 为有收盘价场次的均值。</i>")
+    return split([head, DIV + "\n" + body, DIV + "\n" + "\n".join(footer())])
 
 
 def summary(rep: dict, site_url: str | None = None, stats: dict | None = None) -> str:
@@ -451,14 +508,23 @@ def main(argv: list[str] | None = None) -> None:
     if argv and re.match(r"\d{4}-\d{2}-\d{2}$", argv[0]):
         argv.insert(0, "daily")
     ap = argparse.ArgumentParser(prog="python -m ah telegram")
-    ap.add_argument("kind", choices=["daily", "prematch", "backtest"])
-    ap.add_argument("date")
+    ap.add_argument("kind", choices=["daily", "prematch", "backtest", "weekly"])
+    ap.add_argument("date", nargs="?", help="日报日期；weekly 为周末日期（默认今天，北京时间）")
     ap.add_argument("match_id", nargs="?")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--announce-upgrade", action="store_true", help="日报开头加「🆕 看板已升级」与网站链接")
+    ap.add_argument("--lab", help="模型实验盘 CSV（默认 data/model_lab.csv，不存在则省略该段）")
     a = ap.parse_args(argv)
+    from . import model_lab
+    if a.kind == "weekly":
+        send(weekly(model_lab.load(a.lab), a.date), a.dry_run)
+        return
+    if not a.date:
+        ap.error("需要日期 YYYY-MM-DD")
     rep = json.loads(report_paths(a.date)[0].read_text(encoding="utf-8"))
     if a.kind == "daily":
-        msgs = daily(rep, _stats(), os.environ.get("SITE_URL") or SITE_URL)
+        msgs = daily(rep, _stats(), os.environ.get("SITE_URL") or SITE_URL,
+                     lab=model_lab.for_date(model_lab.load(a.lab), a.date), announce=a.announce_upgrade)
     else:
         if not a.match_id:
             ap.error("prematch/backtest 需要 MATCH_ID")

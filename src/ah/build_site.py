@@ -18,13 +18,13 @@ from zoneinfo import ZoneInfo
 
 import yaml
 
-from . import CONFIG, DATA, REPORTS, SITE, TEMPLATES, policy, records, source_status
+from . import CONFIG, DATA, REPORTS, SITE, TEMPLATES, model_lab, policy, records, source_status
 from .stats import compute, summary_line, window
 
 BJT = ZoneInfo("Asia/Shanghai")
 CONF = {"high": "高", "medium": "中", "low": "低", "高": "高", "中": "中", "低": "低", "cancelled": "已撤销"}
 NAV = [("index.html", "今日"), ("records.html", "推荐记录"), ("stats.html", "战绩"), ("sources.html", "数据源"),
-       ("rules.html", "规则")]
+       ("rules.html", "规则"), ("model-lab.html", "实验场")]
 LOCK = "🔒 VIP 可见，输入密码解锁"
 NONE = "暂无"
 CREDIT = "Football data by 5DollarFootballAPI"
@@ -619,6 +619,69 @@ def paper_section(rows: list[dict]) -> str:
             f"<p class='disc-inline'>{e(policy.DISCLAIMER)} —— 先知</p>")
 
 
+# ---------- 模型实验场（experiment track，不计入正式命中率） ----------
+
+LAB_BANNER = ("<div class='labbanner'><b>🧪 实验，非正式推荐，不计入正式命中率</b>"
+              "<span>各模型独立出场次、单独记账（1 单位平注），只用于检验模型；正式推荐只看首页的高信心亚盘。</span></div>")
+DEMO_BANNER = "<div class='demobanner'>⚠️ 示例数据 · 仅用于版式预览，不是真实推荐</div>"
+
+
+def _lab_rows(rows: list[dict]) -> list[str]:
+    out = []
+    for r in sorted(rows, key=lambda r: (r["kickoff_bj"] or r["kickoff_utc"] or "", r["model_id"])):
+        ko = r["kickoff_bj"] or ""
+        ko_s = f"{ko[5:10]} {ko[11:16]}" if len(ko) >= 16 else (bjt(r["kickoff_utc"], "%m-%d %H:%M") if r["kickoff_utc"] else NONE)
+        res = records.SETTLE_CN.get(r["outcome"], NONE) if r["outcome"] else "待结算"
+        lbl = f"<div class='muted sm'>{e(r['model_label'])}</div>" if r["model_label"] else ""
+        out.append(
+            f"<tr class='crow'><td data-label='对阵' class='m-full'>{e(r['home'] or NONE)} vs {e(r['away'] or NONE)}"
+            + (f"<div class='muted sm'>{e(r['league'])}</div>" if r["league"] else "") + "</td>"
+            f"<td data-label='模型'><code>{e(r['model_id'])}</code>{lbl}</td>"
+            f"<td data-label='选项'><b>{e(model_lab.selection_text(r))}</b></td>"
+            f"<td data-label='盘口' class='num'>{e(model_lab.line_text(r) or ('—' if r['market'] == '1x2' else NONE))}</td>"
+            f"<td data-label='水位' class='num'>{e(model_lab.odds_text(r) or NONE)}</td>"
+            f"<td data-label='开赛'>{e(ko_s)}</td>"
+            f"<td data-label='模型概率'>{vip_inline(pct(r['model_p']))}</td>"
+            f"<td data-label='结果' class='res-{e(r['outcome'])}'>{e(res)}</td></tr>")
+    return out
+
+
+LAB_HEAD = ["对阵", "模型", "选项", "盘口", "水位", "开赛（北京时间）", "模型概率", "结果"]
+
+
+def lab_board_html(board: list[dict]) -> str:
+    rows = [f"<tr><td><code>{e(a['model_id'])}</code></td><td>{model_lab.MARKET_CN[a['market']]}</td>"
+            f"<td data-v='{a['settled']}'>{a['settled']}<span class='muted sm'> / {a['picks']}</span></td>"
+            f"<td data-v='{'' if a['hit_rate'] is None else a['hit_rate']}'>{pct(a['hit_rate'])}</td>"
+            f"<td data-v='{'' if a['roi'] is None else a['roi']}' class='{'pos' if (a['roi'] or 0) > 0 else 'neg' if (a['roi'] or 0) < 0 else ''}'>"
+            f"{model_lab.pct(a['roi'], True)}</td>"
+            f"<td data-v='{'' if a['clv'] is None else a['clv']}'>{model_lab.pct(a['clv'], True)}"
+            + (f"<span class='muted sm'>（{a['clv_n']}）</span>" if a["clv_n"] else "") + "</td></tr>" for a in board]
+    return tbl(["模型", "玩法", "场数", "命中率", "ROI", "CLV"], rows, cls="sortable", tid="labboard", empty=NONE)
+
+
+def model_lab_html(rows: list[dict], day: str, demo: bool = False) -> str:
+    today = model_lab.for_date(rows, day)
+    groups = model_lab.by_market(today)
+    head = (DEMO_BANNER if demo else "") + LAB_BANNER
+    n_set = sum(1 for r in rows if r["outcome"])
+    chips = (f"<div class='hchips labchips'><span class='hchip'>📅 {e(day)}</span><span class='hchip'>🧪 今日 <b>{len(today)}</b> 场</span>"
+             + "".join(f"<span class='hchip'>{model_lab.MARKET_CN[m]} <b>{len(rs)}</b></span>" for m, rs in groups)
+             + f"<span class='hchip'>📒 累计 <b>{len(rows)}</b> · 已结算 <b>{n_set}</b></span></div>")
+    body = head + chips + "<h2>📋 今日实验盘</h2>"
+    if not groups:
+        body += f"<div class='empty'>{NONE}（今日各模型均未出场次）</div>"
+    for m, rs in groups:
+        body += (f"<h3>{model_lab.MARKET_CN[m]} · {len(rs)} 场</h3>"
+                 + tbl(LAB_HEAD, _lab_rows(rs), cls="sortable cardify labtbl", tid=f"lab-{m}", empty=NONE))
+    board = model_lab.leaderboard(rows)
+    body += ("<h2>📊 模型 × 玩法 战绩</h2>"
+             + (lock(lab_board_html(board)) if board else f"<div class='empty'>{NONE}（暂无历史记录）</div>")
+             + "<p class='muted'>命中率 = (赢 + 0.5×赢半) / (已结算 − 走 − 取消)；ROI = 盈亏 / 投注单位（1 单位平注，按出单时水位）；"
+               "CLV 为有收盘价场次的均值（括号内为场数）。实验盘不计入正式命中率。</p>")
+    return body + f"<p class='disc-inline'>{e(policy.DISCLAIMER)} —— 先知</p>"
+
+
 # ---------- 数据源 ----------
 
 def sources_html(st: dict) -> str:
@@ -680,7 +743,8 @@ def rules_html(pol: dict, cfg: dict) -> str:
 
 # ---------- 构建 ----------
 
-def build(site: Path = SITE, reports: Path = REPORTS, data: Path = DATA, now: datetime | None = None) -> list[str]:
+def build(site: Path = SITE, reports: Path = REPORTS, data: Path = DATA, now: datetime | None = None,
+          lab: Path | None = None, lab_demo: bool = False) -> list[str]:
     pol = policy.load()
     cfg = settings()
     vip = str(cfg.get("vip_password_sha256") or "")
@@ -715,6 +779,9 @@ def build(site: Path = SITE, reports: Path = REPORTS, data: Path = DATA, now: da
     write("stats.html", "战绩", bar + stats_html(s, today) + paper_section(paper), "stats.html")
     write("sources.html", "数据源状态", sources_html(st), "sources.html")
     write("rules.html", "规则说明", rules_html(pol, cfg), "rules.html")
+    lab_rows = model_lab.load(lab or data / "model_lab.csv")
+    demo = lab_demo or any("示例" in r["note"] for r in lab_rows)
+    write("model-lab.html", "模型实验场", model_lab_html(lab_rows, latest["date"] if latest else today, demo), "model-lab.html")
     hist = [f"<tr><td><a href='reports/{r['date']}.html'>{r['date']}</a></td><td>{len(policy.published(r, pol))}</td>"
             f"<td>{len(records.published_picks(r, pol))}</td></tr>" for r in reversed(reps)]
     write("history.html", "历史日报", tbl(["日期", "当前有效推荐", "公开推荐（含撤销）"], hist, empty="暂无报告"), "")
@@ -731,8 +798,10 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--out", type=Path, default=SITE, help=f"输出目录（默认 {SITE}）")
     ap.add_argument("--reports", type=Path, default=REPORTS, help="日报 JSON 目录（默认仓库 reports/）")
     ap.add_argument("--data", type=Path, default=DATA, help="数据目录（stats.json、paper_trades.csv 等；默认仓库 data/）")
+    ap.add_argument("--lab", type=Path, default=None, help="模型实验盘 CSV（默认 <data>/model_lab.csv）")
+    ap.add_argument("--lab-demo", action="store_true", help="实验场页面加「示例数据」横幅（用样例数据预览时）")
     a = ap.parse_args(argv)
-    print(build(site=a.out, reports=a.reports, data=a.data))
+    print(build(site=a.out, reports=a.reports, data=a.data, lab=a.lab, lab_demo=a.lab_demo))
 
 
 if __name__ == "__main__":
