@@ -11,3 +11,4 @@ data/cache/*
 site/assets/
 site/data/
 data/*.tmp
+logs/

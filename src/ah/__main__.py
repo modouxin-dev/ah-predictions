@@ -1,4 +1,4 @@
-"""python -m ah <cmd> 便捷入口：render|settle|stats|site|telegram|consensus|prematch-record|backtest-record|sources"""
+"""python -m ah <cmd> 便捷入口：render|settle|stats|site|telegram|consensus|prematch-record|backtest-record|sources|tg-bot"""
 import sys
 
 cmd, sys.argv = (sys.argv[1] if len(sys.argv) > 1 else "help"), [sys.argv[0]] + sys.argv[2:]
@@ -20,5 +20,7 @@ elif cmd == "backtest-record":
     from .records import backtest_main; backtest_main()
 elif cmd == "sources":
     from .source_status import main; main()
+elif cmd == "tg-bot":
+    from .tg_bot import main; main()
 else:
     print(__doc__)
