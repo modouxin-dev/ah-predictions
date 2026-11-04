@@ -1,0 +1,52 @@
+"""发送当日推荐摘要到 Telegram。需要环境变量 TELEGRAM_BOT_TOKEN、TELEGRAM_CHAT_ID；未设置则跳过。"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+
+import requests
+
+from .render_report import report_paths
+
+CONF = {"high": "高", "medium": "中", "low": "低"}
+
+
+def summary(rep: dict, site_url: str | None = None) -> str:
+    lines = [f"⚽ 亚盘日报 {rep['date']}", ""]
+    if not rep["picks"]:
+        lines.append("今日无推荐。")
+    for i, p in enumerate(rep["picks"], 1):
+        team = p.get("pick_team", p[p["pick_side"]])
+        odds = f" @{p['odds']}" if p.get("odds") is not None else ""
+        lines.append(f"{i}. {p['home']} vs {p['away']}（{p['kickoff_utc'][11:16]} UTC）")
+        lines.append(f"   ➜ {team} {p['line']:+g}{odds} · 信心{CONF[p['confidence']]}")
+    lines.append(f"\n观察未推：{len(rep['watched'])} 场")
+    if site_url:
+        lines.append(f"完整报告：{site_url}")
+    lines.append("仅供参考，不构成投注建议。")
+    return "\n".join(lines)
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("date")
+    ap.add_argument("--dry-run", action="store_true")
+    a = ap.parse_args()
+    rep = json.loads(report_paths(a.date)[0].read_text(encoding="utf-8"))
+    text = summary(rep, os.environ.get("SITE_URL"))
+    token, chat = os.environ.get("TELEGRAM_BOT_TOKEN"), os.environ.get("TELEGRAM_CHAT_ID")
+    if a.dry_run or not (token and chat):
+        print(text)
+        if not a.dry_run:
+            print("[skip] TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID 未设置", file=sys.stderr)
+        return
+    r = requests.post(f"https://api.telegram.org/bot{token}/sendMessage",
+                      json={"chat_id": chat, "text": text, "disable_web_page_preview": True}, timeout=20)
+    r.raise_for_status()
+    print("sent")
+
+
+if __name__ == "__main__":
+    main()

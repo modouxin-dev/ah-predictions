@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Daily Asian Handicap Report",
+  "type": "object",
+  "required": ["date", "generated_at", "picks", "watched"],
+  "properties": {
+    "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "odds_format": {"type": "string"},
+    "odds_source_note": {"type": "string"},
+    "not_covered": {"type": "string"},
+    "picks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["match_id", "league", "home", "away", "kickoff_utc", "pick_side", "line", "odds", "confidence", "reasons", "risks", "sources"],
+        "properties": {
+          "match_id": {"type": "string"},
+          "league": {"type": "string"},
+          "home": {"type": "string"},
+          "away": {"type": "string"},
+          "kickoff_utc": {"type": "string", "format": "date-time"},
+          "pick_side": {"enum": ["home", "away"]},
+          "pick_team": {"type": "string"},
+          "line": {"type": "number", "multipleOf": 0.25},
+          "line_open": {"type": ["number", "null"], "multipleOf": 0.25},
+          "odds": {"type": ["number", "null"]},
+          "confidence": {"enum": ["high", "medium", "low"]},
+          "reasons": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "risks": {"type": "array", "items": {"type": "string"}},
+          "sources": {"type": "array", "items": {"type": "string", "format": "uri"}, "minItems": 1}
+        }
+      }
+    },
+    "watched": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["league", "home", "away", "reason_skipped"],
+        "properties": {
+          "league": {"type": "string"}, "home": {"type": "string"},
+          "away": {"type": "string"}, "reason_skipped": {"type": "string"}
+        }
+      }
+    }
+  }
+}

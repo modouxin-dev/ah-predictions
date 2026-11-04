@@ -1,0 +1,27 @@
+# 2026-11-04 从 box(curl/WebFetch) 实测
+working:
+  titan007_live_fixtures:
+    url: "https://live.titan007.com/vbsxml/bfdata_ut.js?r=007XXXX"
+    use: 当日赛程/比分/排名（北京时间）
+    notes: 必须带 ?r= 随机参数和 Referer；无参数直接 GET 会被断开
+  titan007_odds:
+    url: "https://live.titan007.com/vbsxml/goal3.xml?r=007XXXX"
+    use: 亚盘(初/即)、欧赔、大小球（默认公司，HK水位）
+  titan007_1x2_history:
+    url: "https://1x2d.titan007.com/<match_id>.js"
+    use: 多家公司欧赔及变化（约380KB/场，未解析）
+  websearch_previews:
+    use: 伤停/阵容/状态 —— Sports Mole、AFC官网、J.League、Football Italia、BBC、ESPN、WhoScored 预览均可通过 WebSearch 获取
+  uefa_fixtures: {url: "https://www.uefa.com/uefachampionsleague/", use: 欧冠赛程}
+  jleague_acle: {url: "https://www.jleague.jp/en/acle/game/", use: 亚冠赛程/比分}
+  oddsportal:
+    url: "https://www.oddsportal.com/"
+    status: partial  # HTTP 200 但赔率由 JS 动态加载，curl 拿不到数据；需浏览器
+  okooo:
+    url: "https://www.okooo.com/"
+    status: partial  # 首页 200，未深入测试赔率页
+blocked:
+  - {name: nowgoal.com, reason: "连接超时/拒绝"}
+  - {name: vip.titan007.com, reason: "连接被拒（亚盘变盘明细页）"}
+  - {name: zq.titan007.com, reason: "连接被拒（分析/H2H页）"}
+untested: [7m.com.cn, aiscore.com, flashscore.com, sofascore.com]

@@ -1,0 +1,41 @@
+name: daily-report
+on:
+  schedule:
+    - cron: "0 2 * * *"   # 每天 02:00 UTC（北京时间 10:00）
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: src
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - name: Fetch fixtures & odds
+        run: |
+          mkdir -p data/raw
+          python -m ah.fetch_fixtures > data/raw/fixtures_$(date -u +%F).json || echo "fixtures fetch failed"
+          python -m ah.fetch_odds > data/raw/odds_$(date -u +%F).json || echo "odds fetch failed"
+      # TODO: analyze 需要基本面特征；当前由研究代理生成 reports/YYYY/MM/DATE.json 后再进入下一步
+      - name: Render report (if JSON exists)
+        run: |
+          D=$(date -u +%F); F=reports/${D:0:4}/${D:5:2}/$D.json
+          if [ -f "$F" ]; then python -m ah render $D; else echo "no report json for $D"; fi
+      - name: Commit
+        run: |
+          git config user.name "ah-bot"; git config user.email "ah-bot@users.noreply.github.com"
+          git add reports data && git commit -m "daily report $(date -u +%F)" || echo "nothing to commit"
+          git push
+      - name: Publish Telegram
+        if: ${{ env.TELEGRAM_BOT_TOKEN != '' }}
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          D=$(date -u +%F); F=reports/${D:0:4}/${D:5:2}/$D.json
+          [ -f "$F" ] && python -m ah telegram $D || echo "skip"

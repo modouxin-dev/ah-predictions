@@ -1,0 +1,11 @@
+timezone: "Asia/Shanghai"        # TODO: 待确认用户时区（报告内时间统一用 UTC）
+report_window_hours: 36          # 覆盖未来多少小时开球的比赛
+max_picks_per_day: 5
+min_confidence_to_publish: low   # high | medium | low
+confidence_thresholds:           # analyze.score 加权分阈值
+  high: 7.0
+  medium: 4.5
+  low: 3.0
+odds_format: hk
+require_real_line: true          # 没有真实盘口的比赛绝不推荐
+stake_units: 1

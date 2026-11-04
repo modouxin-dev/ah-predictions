@@ -1,0 +1,46 @@
+{% set conf = {"high": "高", "medium": "中", "low": "低"} -%}
+# 亚盘预测日报 · {{ r.date }}
+
+> 生成时间：{{ r.generated_at }}（UTC）　|　水位格式：{{ r.odds_format | default("HK") }}
+> {{ r.odds_source_note | default("") }}
+> ⚠️ 仅为数据分析参考，不构成投注建议；盘口随时变动，请以下注时实际盘口为准。
+
+## 今日推荐（{{ r.picks | length }} 场）
+{% if not r.picks %}
+今日无符合标准的推荐。
+{% endif %}
+{% for p in r.picks %}
+
+### {{ loop.index }}. {{ p.home }} vs {{ p.away }}
+- 赛事：{{ p.league }}
+- 开球：{{ p.kickoff_utc }}（UTC）
+- **推荐盘口：{{ p.pick_team | default(p[p.pick_side]) }} {{ "%+g" | format(p.line) }}**{% if p.odds is not none %} @ {{ p.odds }}{% endif %}{% if p.line_open is defined and p.line_open is not none %}（初盘 {{ "%+g" | format(p.line_open) }}）{% endif %}{{ "" }}
+- **信心等级：{{ conf[p.confidence] }}**
+
+**推荐理由**
+{% for x in p.reasons %}
+{{ loop.index }}. {{ x }}
+{% endfor %}
+
+**风险提示**
+{% for x in p.risks %}
+- {{ x }}
+{% endfor %}
+
+**数据来源**
+{% for s in p.sources %}
+- {{ s }}
+{% endfor %}
+{% endfor %}
+
+## 观察但不推荐
+| 赛事 | 对阵 | 不推荐原因 |
+|---|---|---|
+{% for w in r.watched %}
+| {{ w.league }} | {{ w.home }} vs {{ w.away }} | {{ w.reason_skipped }} |
+{% endfor %}
+{% if r.not_covered %}
+
+## 覆盖说明
+{{ r.not_covered }}
+{% endif %}

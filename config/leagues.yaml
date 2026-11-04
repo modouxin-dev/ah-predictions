@@ -1,0 +1,20 @@
+# tier 1 = 必看，2 = 常规，3 = 有余力再看。titan007 = 球探联赛简称（用于过滤 bfdata）
+leagues:
+  - {id: acl_elite, name: AFC Champions League Elite, cn: 亚冠精英, titan007: 亚冠精英, tier: 1}
+  - {id: acl_two,   name: AFC Champions League Two,   cn: 亚冠联2,  titan007: 亚冠联2,  tier: 1}
+  - {id: j1,        name: J1 League,                cn: 日职联,   titan007: 日职联,   tier: 1}
+  - {id: k1,        name: K League 1,               cn: 韩K联,    titan007: 韩K联,    tier: 1}
+  - {id: csl,       name: Chinese Super League,     cn: 中超,     titan007: 中超,     tier: 1}
+  - {id: ucl,       name: UEFA Champions League,    cn: 欧冠,     titan007: 欧冠杯,   tier: 1}
+  - {id: epl,       name: Premier League,           cn: 英超,     titan007: 英超,     tier: 1}
+  - {id: j2,        name: J2 League,                cn: 日职乙,   titan007: 日职乙,   tier: 2}
+  - {id: aleague,   name: A-League Men,             cn: 澳超,     titan007: 澳洲甲,   tier: 2}
+  - {id: spl,       name: Saudi Pro League,         cn: 沙特联,   titan007: 沙特联,   tier: 2}
+  - {id: qsl,       name: Qatar Stars League,       cn: 卡塔尔联, titan007: 卡塔尔联, tier: 2}
+  - {id: laliga,    name: La Liga,                  cn: 西甲,     titan007: 西甲,     tier: 2}
+  - {id: seriea,    name: Serie A,                  cn: 意甲,     titan007: 意甲,     tier: 2}
+  - {id: bundesliga,name: Bundesliga,               cn: 德甲,     titan007: 德甲,     tier: 2}
+  - {id: ligue1,    name: Ligue 1,                  cn: 法甲,     titan007: 法甲,     tier: 2}
+  - {id: uel,       name: UEFA Europa League,       cn: 欧联,     titan007: 欧罗巴杯, tier: 3}
+  - {id: championship, name: EFL Championship,      cn: 英冠,     titan007: 英冠,     tier: 3}
+# 注：titan007 简称为经验值，除 亚冠精英/亚冠联2/欧冠杯/英冠/巴西甲 外均待在实际数据中核对（TODO）
