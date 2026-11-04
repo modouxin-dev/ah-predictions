@@ -9,7 +9,7 @@ roles:
   h2h:         [api_football, websearch_previews]
   form:        [api_football_local_history, football_data, websearch_previews]  # 免费档拿不到当季 standings/teams statistics
   standings:   [football_data, titan007_live_fixtures, websearch_previews]       # bfdata 带排名
-  asian_handicap_line: [titan007_odds, api_football_odds, the_odds_api]  # 多公司盘口交叉核对：api_football 优先，其次 the_odds_api，titan007 备用
+  asian_handicap_line: [titan007_odds, api_football_odds, the_odds_api, fivedollar]  # 多公司盘口交叉核对：api_football 优先，其次 the_odds_api，titan007 备用
 api_football:
   base_url: "https://v3.football.api-sports.io"
   auth: "header x-apisports-key，值取环境变量 API_FOOTBALL_KEY（CI: Secret API_FOOTBALL_KEY）；绝不写入仓库"
@@ -68,6 +68,27 @@ football_data:
   not_covered: [uel, acl_elite, acl_two, j1, j2, k1, aleague, csl, spl, qsl]
   cache: data/cache/football_data/（matches 10m, standings 6h, team matches 3h, h2h 7d）
   tested_2026-11-04: "GET /matches?competitions=CL&dateFrom=2026-11-04 → 9 场；Porto-Napoli id 575392 TIMED；/competitions/CL/standings 当季联赛阶段可用（Porto 第35、Napoli 第24）"
+fivedollar:
+  base_url: "https://api.5dollarfootballapi.com/v1"
+  docs: "https://5dollarfootballapi.com/docs"
+  auth: "请求头 Authorization: Bearer <FIVEDOLLAR_KEY>（环境变量优先，回退 ah-secrets.env）；绝不写入仓库"
+  plan: Free            # 60 次/小时 + 20 次/分钟上限；X-RateLimit-Limit/Remaining/Reset，429 带 Retry-After；近 3 个月历史
+  reserve: 5            # 剩余 <= 5 时拒绝请求；用量记录 data/cache/fivedollar_usage.json
+  role: "五大联赛 Bet365 亚盘初盘→即时盘变化（opening/closing/inplay 含水位）；也有赛程/比分/积分榜"
+  coverage:             # leagues.yaml id -> 5Dollar league id（GET /leagues 实测，免费档仅 5 个）
+    epl: 4160026622
+    ligue1: 3614399544
+    bundesliga: 686337048
+    seriea: 3405541143
+    laliga: 4212821298
+  line_convention: "asian_handicap.line = 主队让球数（负=主让），closing = 开赛前最新盘"
+  free_plan_notes:
+    - "fixture 列表（/fixtures、/leagues/{id}/fixtures）在 Free 档不带 odds；单场 /fixtures/{id} 内联盘口线，/fixtures/{id}/odds?market=asian 带水位"
+    - "/fixtures/{id}/odds/history 需 Ultra；非 bet365 公司需 Ultra"
+    - "公开展示需署名：Football data by 5DollarFootballAPI（报告模板已加）"
+  upgrade_option: "Community Access（$0，300 次/小时）可加选一个亚洲国家联赛包（如日本/韩国），适合补 J1/K1 的 Bet365 盘口变化"
+  per_pick_cost: 2      # 赛程(6h 窗口，按联赛) + 单场 odds；均有缓存
+  tested_2026-11-04: "Leeds-Tottenham(2026-11-07 12:30 UTC, id 2120212024) Bet365 初盘 主-0.25 @2.05/1.80 → 即时 0 @1.90/1.95"
 # 2026-11-04 从 box(curl/WebFetch) 实测
 working:
   titan007_live_fixtures:

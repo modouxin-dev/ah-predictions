@@ -26,6 +26,7 @@ SPORT_BY_LEAGUE = {
 }
 THRESHOLD = 0.75
 SOURCE_URL = "https://the-odds-api.com/"
+FIVEDOLLAR_URL = "https://5dollarfootballapi.com/"  # 免费档公开展示需署名：Football data by 5DollarFootballAPI
 
 
 def _leagues() -> list[dict]:
@@ -76,7 +77,19 @@ def summarize(ev: dict, pick_side: str) -> dict | None:
     }
 
 
-def attach(report: dict, fetch=None, aliases=None, leagues=None) -> dict:
+def _bet365(fd5, lid, p, aliases):
+    """五大联赛：5DollarFootballAPI Bet365 初盘→即时盘（推荐方视角）；失败返回 None。"""
+    from . import fivedollar
+    if lid not in fivedollar.LEAGUE_IDS or fd5 is None or not fd5.enabled:
+        return None
+    try:
+        return fivedollar.bet365_movement(fd5, lid, p["home"], p["away"], p["kickoff_utc"], p["pick_side"], aliases)
+    except Exception as e:  # noqa: BLE001
+        print(f"[fivedollar] skip {p.get('match_id')}: {e}", file=sys.stderr)
+        return None
+
+
+def attach(report: dict, fetch=None, aliases=None, leagues=None, fd5=None) -> dict:
     """原地更新 report['picks'][*]['market_consensus']。返回 {sport: 事件数 或 'error'} 便于日志。"""
     if fetch is None:
         from .fetch_odds import cross_check_odds_api as fetch
@@ -84,6 +97,11 @@ def attach(report: dict, fetch=None, aliases=None, leagues=None) -> dict:
     log = {}
     for p in report.get("picks", []):
         lid = league_id(p.get("league", ""), leagues)
+        mv = _bet365(fd5, lid, p, aliases)
+        if mv:
+            p["bet365_movement"] = mv
+            if FIVEDOLLAR_URL not in p["sources"]:
+                p["sources"].append(FIVEDOLLAR_URL)
         sport = SPORT_BY_LEAGUE.get(lid or "")
         if not sport:
             continue
@@ -106,7 +124,8 @@ def main() -> None:
     a = ap.parse_args()
     path, _ = report_paths(a.date)
     r = json.loads(path.read_text(encoding="utf-8"))
-    log = attach(r)
+    from .fivedollar import Client as FD5
+    log = attach(r, fd5=FD5())
     path.write_text(json.dumps(r, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     n = sum(1 for p in r["picks"] if p.get("market_consensus"))
     print(f"consensus: calls={log} picks_with_consensus={n}/{len(r['picks'])}", file=sys.stderr)

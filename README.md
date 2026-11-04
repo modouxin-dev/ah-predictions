@@ -94,3 +94,11 @@ Key 只从环境变量 `API_FOOTBALL_KEY` 读取，不写进仓库。联赛 id �
 - 免费档 10 次/分钟：按响应头 `X-Requests-Available-Minute` / `X-RequestCounter-Reset` 自动等待，遇 429 退避重试；结果缓存在 `data/cache/football_data/`。
 - 覆盖：英超 PL、英冠 ELC、欧冠 CL、法甲 FL1、德甲 BL1、意甲 SA、西甲 PD（不含欧联和所有亚洲联赛）。
 - 用途：`enrich(..., fd_code="CL")` 补当季积分榜、近 5 场状态、交锋（API-Football 免费档拿不到当季数据）；`settle` 回填比分时对欧洲比赛用它交叉核对，两源比分不一致则不结算、日志标记 mismatch 待人工确认；API-Football 匹配不到时用它回填。
+
+## 5DollarFootballAPI（五大联赛 Bet365 盘口变化）
+
+- 接口 `https://api.5dollarfootballapi.com/v1`，请求头 `Authorization: Bearer <FIVEDOLLAR_KEY>`（同上密钥文件），客户端 `src/ah/fivedollar.py`。
+- 免费档：60 次/小时（另有 20 次/分钟上限），只含英超/西甲/意甲/德甲/法甲，Bet365 全部盘口（初盘/即时/滚球），近 3 个月历史。按 `X-RateLimit-*` 记录用量（`data/cache/fivedollar_usage.json`），剩余 ≤ 5 时停止，429 按 `Retry-After` 退避；结果缓存在 `data/cache/fivedollar/`。
+- `python -m ah consensus DATE` 会为五大联赛的推荐写入 `picks[].bet365_movement`（推荐方视角的初盘→即时盘和水位、是否朝推荐方升盘），报告显示“Bet365 盘口变化”。每个推荐约 2 次请求。
+- 免费档对外展示需署名 “Football data by 5DollarFootballAPI”，报告中已自动带上。
+- 以后可升级到 Community Access（300 次/小时，可加一个亚洲国家联赛包，如日职/韩K）。

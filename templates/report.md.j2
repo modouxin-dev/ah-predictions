@@ -19,6 +19,9 @@
 {% if p.market_consensus %}{% set mc = p.market_consensus %}
 - 多家公司共识：{{ p.pick_team | default(p[p.pick_side]) }} {{ "%+g" | format(mc.pick_line) }}{% if mc.pick_water is not none %} @ {{ mc.pick_water }}{% endif %}（{{ mc.agree }}/{{ mc.bookmakers }} 家一致{% if mc.pick_line != p.line %}，与推荐盘口 {{ "%+g" | format(p.line) }} 不同{% endif %}{% if mc.pinnacle %}；Pinnacle {{ "%+g" | format(mc.pinnacle.pick_line) }} @ {{ mc.pinnacle.pick_water }}{% endif %}；来源 {{ mc.source }}）
 {% endif %}
+{% if p.bet365_movement %}{% set bm = p.bet365_movement %}
+- Bet365 盘口变化：初盘 {{ "%+g" | format(bm.open_pick_line) }}{% if bm.open_pick_water is not none %} @ {{ bm.open_pick_water }}{% endif %} → 即时 {{ "%+g" | format(bm.pick_line) }}{% if bm.pick_water is not none %} @ {{ bm.pick_water }}{% endif %}（{% if bm.toward_pick > 0 %}朝推荐方升盘{% elif bm.toward_pick < 0 %}朝推荐方降盘{% else %}盘口未变{% endif %}；Football data by 5DollarFootballAPI）
+{% endif %}
 
 **推荐理由**
 {% for x in p.reasons %}
