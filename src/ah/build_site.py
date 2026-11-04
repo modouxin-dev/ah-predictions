@@ -438,7 +438,7 @@ def build(site: Path = SITE, reports: Path = REPORTS, data: Path = DATA, now: da
     s = json.loads(sp.read_text(encoding="utf-8")) if sp.exists() else None
     if s is not None and "series" not in s and (data / "predictions.csv").exists():  # 旧 stats.json 兼容
         s = compute(list(csv.DictReader((data / "predictions.csv").open(encoding="utf-8"))))
-    st = source_status.load(data / "source_status.json")
+    st = source_status.load_latest(data / "source_status.json")
 
     def write(name, title, body, cur="", base=""):
         (site / name).write_text(page(title, body, cur, base, gen, vip), encoding="utf-8")

@@ -1,8 +1,10 @@
-"""数据源运行状态 -> data/source_status.json（网站「数据源」页）。
+"""数据源运行状态 -> var/source_status.json（运行时，已 gitignore）；data/source_status.json 为入库快照（网站「数据源」页）。
 
 各客户端每次真实请求后调用 record()：最近成功时间、最近错误、已知额度。
 绝不写入 Key：错误信息会去掉 query 参数中的 key/token，并替换所有已知密钥值。
 测试/其他场景可用环境变量 AH_SOURCE_STATUS_FILE 改写入位置。
+运行时文件每次请求都会变，不入库（避免多人共用仓库时一直留着未提交改动）；
+需要更新网站时用 scripts/publish_source_status.sh 把它复制成快照并经 safe_commit 提交。
 """
 from __future__ import annotations
 
@@ -12,9 +14,10 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
-from . import DATA
+from . import DATA, ROOT
 
-STATUS_FILE = DATA / "source_status.json"
+STATUS_FILE = ROOT / "var" / "source_status.json"   # 运行时（gitignore）
+SNAPSHOT_FILE = DATA / "source_status.json"         # 入库快照（网站/CI 构建用）
 SECRET_NAMES = ("ODDS_API_KEY", "ODDSPAPI_KEY", "API_FOOTBALL_KEY", "FOOTBALL_DATA_KEY", "FIVEDOLLAR_KEY",
                 "TELEGRAM_BOT_TOKEN", "GITHUB_AH_TOKEN")
 
@@ -62,12 +65,24 @@ def sanitize(msg: str) -> str:
 
 
 def load(p: Path | None = None) -> dict:
+    p = p or path()
+    if not p.exists() and p == STATUS_FILE:   # 运行时文件尚未生成：从入库快照接续
+        p = SNAPSHOT_FILE
     try:
-        d = json.loads((p or path()).read_text(encoding="utf-8"))
+        d = json.loads(p.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         d = {}
     d.setdefault("sources", {})
     return d
+
+
+def load_latest(snapshot: Path) -> dict:
+    """读取快照；若快照是仓库默认位置，且运行时文件更新，则用运行时文件（本机预览/机器人更及时）。"""
+    snap = load(snapshot)
+    if Path(snapshot).resolve() != SNAPSHOT_FILE.resolve() or not path().exists():
+        return snap
+    live = load(path())
+    return live if str(live.get("updated_at") or "") >= str(snap.get("updated_at") or "") else snap
 
 
 def record(source: str, ok: bool, error: str | None = None, quota: dict | None = None,

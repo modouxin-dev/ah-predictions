@@ -278,7 +278,7 @@ def render(action: str, reports: Path = REPORTS, data: Path = DATA) -> tuple[str
     if action == "today":
         out = today_text(latest_report(reports), pol, _json(data / "stats.json")), back_keyboard([[{"text": "🌐 完整看板", "url": SITE_URL}]])
     elif action == "sources":
-        out = sources_text(_json(data / "source_status.json")), back_keyboard()
+        out = sources_text(source_status.load_latest(data / "source_status.json")), back_keyboard()
     elif action == "stats":
         out = stats_text(_json(data / "stats.json")), back_keyboard(
             [[{"text": "📈 战绩页", "url": SITE_URL + "stats.html"}]])

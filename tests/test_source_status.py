@@ -48,3 +48,24 @@ def test_client_writes_status(tmp_path, monkeypatch):
     odds_api.OddsAPI(key="KEYVALUE123", session=S(), usage_file=tmp_path / "u.json").sports()
     raw = p.read_text()
     assert "KEYVALUE123" not in raw and json.loads(raw)["sources"]["odds_api"]["quota"]["remaining"] == 490
+
+
+def test_runtime_file_is_outside_data_and_falls_back_to_snapshot(tmp_path, monkeypatch):
+    import json
+    assert ss.STATUS_FILE.parent.name == "var" and ss.SNAPSHOT_FILE.parent.name == "data"
+    snap = tmp_path / "data" / "source_status.json"
+    live = tmp_path / "var" / "source_status.json"
+    snap.parent.mkdir()
+    snap.write_text(json.dumps({"updated_at": "2026-11-01T00:00:00Z", "sources": {"odds_api": {"last_ok_at": "2026-11-01T00:00:00Z"}}}))
+    monkeypatch.setattr(ss, "STATUS_FILE", live)
+    monkeypatch.setattr(ss, "SNAPSHOT_FILE", snap)
+    monkeypatch.delenv("AH_SOURCE_STATUS_FILE", raising=False)
+    assert ss.load()["sources"]["odds_api"]["last_ok_at"] == "2026-11-01T00:00:00Z"   # 运行时文件还没有 -> 读快照
+    ss.record("fivedollar", True, at="2026-11-02T00:00:00Z")
+    d = json.loads(live.read_text())
+    assert set(d["sources"]) == {"odds_api", "fivedollar"}                             # 接续快照历史
+    assert json.loads(snap.read_text())["updated_at"] == "2026-11-01T00:00:00Z"        # 快照（入库文件）不被改写
+    assert ss.load_latest(snap)["updated_at"] == "2026-11-02T00:00:00Z"                # 默认快照位置 -> 取更新的运行时
+    other = tmp_path / "x.json"
+    other.write_text(json.dumps({"updated_at": "2026-10-01T00:00:00Z", "sources": {}}))
+    assert ss.load_latest(other)["updated_at"] == "2026-10-01T00:00:00Z"               # 非默认位置（测试夹具）只读自身

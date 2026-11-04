@@ -143,3 +143,37 @@ PYTHONPATH=src python -m ah sources                     # 从本地用量文件�
 ```
 
 两个命令都会同步 `data/predictions.csv` 并重算 `data/stats.json`。复核信心低于原信心时自动改为「撤销」（作废，不计命中率）。
+
+## 多人协作提交（必读：4 个智能体 + 定时任务共用本仓库）
+
+**统一命令入口**（在仓库根目录）：
+
+```bash
+.venv/bin/python -m pytest -q                         # 测试（pytest.ini 已配置 pythonpath=src）
+PYTHONPATH=src .venv/bin/python -m ah <cmd>           # 运行模块，如 site / stats / sources / tg-bot
+```
+
+**提交与推送一律用 `scripts/safe_commit.sh`**，不要手动 `git add -A` / `git commit -a` / `reset --hard` / `push --force`：
+
+```bash
+scripts/safe_commit.sh -m "说明" path1 path2 ...      # 只提交这些路径
+scripts/safe_commit.sh --dry-run -m "说明" path1      # 只看会提交什么
+scripts/safe_commit.sh --skip-tests -m "data" data/x  # 纯数据提交可跳过测试（代码改动请勿跳过）
+scripts/safe_commit.sh --help                          # 全部选项与退出码
+```
+
+- **锁**：`flock` 锁住 `<git-common-dir>/ah-safe-commit.lock`（即主仓库 `.git/ah-safe-commit.lock`，所有 worktree 共用），默认最多等 300 秒（`--lock-timeout`），超时退出码 3。整个「提交 → rebase → 测试 → 推送」过程都在锁内。
+- **只提交指定路径**：`git add -A -- 路径` + `git commit -- 路径`，别人已暂存/未提交的改动不会被带进来；作者为 `ah-predictions-bot <modouxin-dev@users.noreply.github.com>`。
+- **rebase**：远端有新提交时 `git pull --rebase --autostash`（冲突则 abort、撤销本次提交，退出码 4）。
+- **测试**：在检出待推送 HEAD 的**干净临时 worktree** 里跑（别人未提交的半成品不会影响结果）；失败则撤销本次提交（改动留在工作区）、不推送，退出码 5。
+- **推送**：`GITHUB_AH_TOKEN`（环境变量或 `~/.config/ah-secrets.env`）通过 `GIT_CONFIG_*` 环境变量作为 `http.extraheader` 传给 git，不出现在命令行和日志里。被拒（并发推送）时自动重新 rebase、必要时重跑测试，指数退避重试最多 `--retries` 次（默认 4），仍失败退出码 6（本地提交保留）。
+- 退出码：0 成功/无改动，2 用法或仓库状态错误（detached HEAD、rebase 进行中等），3 等锁超时，4 rebase 冲突，5 测试失败，6 推送失败，7 add/commit 失败。
+- 建议每个智能体在自己的 worktree 里工作（`git worktree add ../ah-<名字> main`），避免在共享目录里切分支影响别人；锁和对象库是共用的。
+
+**数据源状态文件**：各数据客户端每次请求都会更新状态，运行时写到 `var/source_status.json`（已 gitignore），不再弄脏 `data/`。
+网站与 CI 读取入库快照 `data/source_status.json`；本机构建和 Telegram 机器人会自动选用更新的运行时文件。
+需要更新线上「数据源」页时（建议日报任务每天一次）：
+
+```bash
+scripts/publish_source_status.sh            # var/ -> data/ 快照，内容有变化才经 safe_commit 提交推送
+```

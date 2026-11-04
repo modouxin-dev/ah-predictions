@@ -32,6 +32,8 @@ jobs:
       - name: Commit
         run: |
           git config user.name "ah-bot"; git config user.email "ah-bot@users.noreply.github.com"
+          # 数据源运行状态写在 var/（不入库），这里复制为快照 data/source_status.json 一起提交
+          [ -f var/source_status.json ] && cp var/source_status.json data/source_status.json || true
           git add reports data && git commit -m "daily report $(date -u +%F)" || echo "nothing to commit"
           git push
       - name: Publish Telegram

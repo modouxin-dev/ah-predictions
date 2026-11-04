@@ -1,4 +1,5 @@
 .venv/
+.venv
 __pycache__/
 *.pyc
 .pytest_cache/
@@ -12,3 +13,5 @@ site/assets/
 site/data/
 data/*.tmp
 logs/
+# 运行时状态（数据源状态等）；入库快照见 data/source_status.json（scripts/publish_source_status.sh）
+var/
