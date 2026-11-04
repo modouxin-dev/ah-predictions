@@ -1,0 +1,5 @@
+# football-data.co.uk 原始 CSV（可由 fd_data.download() 重新下载，不提交）
+data/raw/
+__pycache__/
+outputs/*.pkl
+outputs/dc_fits.csv

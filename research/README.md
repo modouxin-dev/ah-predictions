@@ -1,0 +1,54 @@
+# research/ — 模型研究员（先知 · 亚盘）
+
+只做研究与离线输出，**不接入每日发布流程**。所有数字都必须由本目录脚本运行得到，不手填。
+
+## 环境
+- 使用仓库 `.venv`。研究依赖（未写入 `requirements.txt`，需项目负责人决定是否加入）：
+  `numpy scipy pandas tabulate penaltyblog`（`src/ah/model/` 的生产函数只依赖 numpy/scipy；`dixon_coles.py` 惰性导入 penaltyblog）。
+
+## 文件
+| 文件 | 作用 |
+|---|---|
+| `fd_data.py` | football-data.co.uk 下载（缓存 `research/data/raw/`，gitignore）与统一读取 |
+| `coverage.py` | 数据覆盖表 → `outputs/coverage.md` |
+| `backtest.py` | 滚动验证：Elo 基线 / Dixon-Coles / DC+Elo / 融合 / Pinnacle 市场 → `outputs/backtest_results.md` |
+| `paper_trades_model_p.py` | 审计员模拟单账本的“基准”概率 → `outputs/paper_trades_model_p_<时间戳>.csv` |
+
+## 模拟单账本输出（与回测审计员约定，2026-11-04）
+
+**版本**：`model_version = market-baseline-v0`，标签“基准”。只用 Pinnacle 去抽水市场价（按比例法），
+不含任何自有模型。按定义，市场基准相对 Pinnacle 自身的 edge≈0（`ev_at_pinnacle` 恰为负的抽水份额），
+`pick_side` 只是“期望结算得分更高的一方”（同分时取 EV 损失更小的一方），**仅作基准，不构成推荐**。
+
+**输入**：只读 `/workspace/ah-audit/data/paper_trades.csv`；赔率来自本仓库 `data/cache/odds/`（API-Football `/odds`，
+Pinnacle “Asian Handicap” 与 “Goals Over/Under 2.5”）。使用账本 `home_line` 对应的 Pinnacle 那条线的主客价格。
+缺少 API-Football fixture id、缺 Pinnacle 亚盘快照、账本无盘口或 Pinnacle 无此线 → `decision = 数据缺失，不推`，
+概率与 `model_p` 留空，不做任何猜测。
+
+**字段**
+- `match_id`：与账本 match_id 完全一致（`apif-<fixture>` 用于对接 API-Football）。账本若无 match_id，
+  对接键为 `date + home + away + kickoff_utc`。
+- `pick_side`（home|away）、`line`（推荐方视角）、`home_line`（主队视角）。
+- `p_win, p_half_win, p_push, p_half_loss, p_loss`：推荐方视角 5 种结算概率（由 Pinnacle 亚盘 + 大小 2.5 去抽水后
+  反解 Poisson 隐含比分矩阵，再按四分之一盘拆半注结算）。
+- `model_p`：期望结算得分 = P赢 + 0.75·P赢半 + 0.5·P走 + 0.25·P输半。
+- `generated_at`：生成时间，北京时间 ISO 8601（+08:00）。
+- `captured_at`：本地抓取该快照的时间（缓存写入时刻，+08:00）；`bookmaker_updated_at`：API-Football 返回的公司更新时间；
+  `stage`：快照所处阶段（当前为日报时点 report）。
+- `valid_prekickoff`：`generated_at < 开赛` 且 `captured_at < 开赛` 才为 true；否则为 false 并在 `note` 说明，不隐藏。
+- 另含 `pin_home_odds, pin_away_odds, pin_margin, p_over25_devig, ev_at_pinnacle, odds_source` 便于复核。
+
+**防事后**：每次运行生成新文件，文件名带北京时间戳（`paper_trades_model_p_YYYYMMDDTHHMM+0800.csv`），
+已存在则拒绝写入；审计员取开赛前最后一个版本。
+
+**校验（代码强制，`src/ah/model/scoring.py::validate_probs`，测试 `tests/test_model_scoring.py`）**
+- 整数盘：P赢半 = P输半 = 0；四分之一盘：P走 = 0；半球盘：走/赢半/输半均为 0；五项和为 1（容差 1e-9）。
+
+**评估口径（审计员已同意）**
+- 结算得分 y：赢 1、赢半 0.75、走 0.5、输半 0.25、输 0（走盘**不剔除**）。
+- Brier = mean((model_p − y)²)，只算已结算场次，按推荐方视角（`scoring.brier_settled`）。
+- 审计员做 model_p 分箱校准（各箱 model_p 均值 vs y 均值）；此账本暂不算 log loss。
+
+## 回测口径（backtest.py）
+见脚本 docstring；`outputs/backtest_results.md` 为最近一次运行结果。注意回测中的亚盘 log loss 用的是
+“剔除走盘的主队赢/输”二元口径，与上面账本的结算得分口径不同。

@@ -206,3 +206,24 @@ def implied_matrix_from_ah(home_line: float, p_home_eff: float, total: float = 2
     else:
         sup = brentq(f, lo, hi, xtol=1e-10)
     return poisson_matrix((total + sup) / 2, (total - sup) / 2, max_goals)
+
+
+def implied_matrix(home_line: float, p_home_eff: float, p_over25: float | None = None,
+                   total: float = 2.6, max_goals: int = 12) -> np.ndarray:
+    """市场隐含比分矩阵：用亚盘无水有效赢率定让球深度；若给出大 2.5 球无水概率则同时反解总进球。"""
+    if p_over25 is None:
+        return implied_matrix_from_ah(home_line, p_home_eff, total, max_goals)
+    from scipy.optimize import brentq
+
+    def over(t):
+        m = implied_matrix_from_ah(home_line, p_home_eff, t, max_goals)
+        return 1.0 - float(sum(m[i, j] for i in range(3) for j in range(3 - i))) - p_over25
+
+    lo, hi = 1.0, 5.0
+    if over(lo) > 0:
+        t = lo
+    elif over(hi) < 0:
+        t = hi
+    else:
+        t = brentq(over, lo, hi, xtol=1e-6)
+    return implied_matrix_from_ah(home_line, p_home_eff, t, max_goals)
