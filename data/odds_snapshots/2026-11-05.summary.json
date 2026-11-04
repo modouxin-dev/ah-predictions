@@ -1,0 +1,972 @@
+{
+ "report_date": "2026-11-05",
+ "updated_at": "2026-11-04T13:06:33Z",
+ "csv": "2026-11-05.csv",
+ "matches_screened": 20,
+ "skipped": [],
+ "bookmakers": [
+  "1xbet",
+  "3et",
+  "bet365",
+  "betano",
+  "betanything",
+  "betonline",
+  "betvictor",
+  "coolbet",
+  "dafabet",
+  "gtbets",
+  "marathonbet",
+  "matchbook",
+  "pinnacle",
+  "sabasports",
+  "sbobet",
+  "singbet"
+ ],
+ "counts": {
+  "open": {
+   "single": 19,
+   "missing": 1
+  },
+  "report": {
+   "verified": 16,
+   "conflict": 3,
+   "missing": 1
+  },
+  "close": {
+   "pending": 20
+  }
+ },
+ "matches": [
+  {
+   "match_id": "apif-1630393",
+   "kickoff_utc": "2026-11-04T13:45:00Z",
+   "league_id": "acl_two",
+   "home": "阿卡达格 Arkadag",
+   "away": "高尔高赫 Gol Gohar",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-04 21:45",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 5,
+     "sources": {
+      "oddspapi": {
+       "line": -0.25,
+       "books": 5
+      }
+     },
+     "book_status": {
+      "single": 5
+     }
+    },
+    "report": {
+     "verification": "verified",
+     "books": 9,
+     "sources": {
+      "api_football": {
+       "line": -0.5,
+       "books": 6
+      },
+      "oddspapi": {
+       "line": -0.5,
+       "books": 4
+      }
+     },
+     "book_status": {
+      "single": 8,
+      "verified": 1
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1630394",
+   "kickoff_utc": "2026-11-04T16:00:00Z",
+   "league_id": "acl_two",
+   "home": "科威特竞技 Al Kuwait",
+   "away": "纳萨夫 Nasaf",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 00:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 5,
+     "sources": {
+      "oddspapi": {
+       "line": -0.25,
+       "books": 5
+      }
+     },
+     "book_status": {
+      "single": 5
+     }
+    },
+    "report": {
+     "verification": "verified",
+     "books": 9,
+     "sources": {
+      "api_football": {
+       "line": 0.0,
+       "books": 7
+      },
+      "oddspapi": {
+       "line": 0.0,
+       "books": 4
+      }
+     },
+     "book_status": {
+      "single": 7,
+      "verified": 1,
+      "conflict": 1
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1630395",
+   "kickoff_utc": "2026-11-04T16:00:00Z",
+   "league_id": "acl_two",
+   "home": "赖扬 Al-Rayyan",
+   "away": "拿达 Al-Nahda",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 00:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 5,
+     "sources": {
+      "oddspapi": {
+       "line": -1.5,
+       "books": 5
+      }
+     },
+     "book_status": {
+      "single": 5
+     }
+    },
+    "report": {
+     "verification": "verified",
+     "books": 8,
+     "sources": {
+      "api_football": {
+       "line": -1.25,
+       "books": 6
+      },
+      "oddspapi": {
+       "line": -1.25,
+       "books": 4
+      }
+     },
+     "book_status": {
+      "single": 6,
+      "verified": 2
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1630396",
+   "kickoff_utc": "2026-11-04T16:00:00Z",
+   "league_id": "acl_two",
+   "home": "阿布扎比统一 Al Wahda",
+   "away": "哈尔迪亚 Khalidiya",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 00:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 5,
+     "sources": {
+      "oddspapi": {
+       "line": -1.0,
+       "books": 5
+      }
+     },
+     "book_status": {
+      "single": 5
+     }
+    },
+    "report": {
+     "verification": "verified",
+     "books": 9,
+     "sources": {
+      "api_football": {
+       "line": -1.0,
+       "books": 7
+      },
+      "oddspapi": {
+       "line": -1.0,
+       "books": 4
+      }
+     },
+     "book_status": {
+      "single": 7,
+      "verified": 2
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1635606",
+   "kickoff_utc": "2026-11-04T17:45:00Z",
+   "league_id": "ucl",
+   "home": "AEK雅典 AEK Athens",
+   "away": "皇家马德里 Real Madrid",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 01:45",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "oddspapi": {
+       "line": 1.5,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "report": {
+     "verification": "verified",
+     "books": 13,
+     "sources": {
+      "odds_api": {
+       "line": 2.0,
+       "books": 8
+      },
+      "oddspapi": {
+       "line": 2.0,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 12,
+      "verified": 1
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1635658",
+   "kickoff_utc": "2026-11-04T17:45:00Z",
+   "league_id": "ucl",
+   "home": "费内巴切 Fenerbahçe",
+   "away": "利物浦 Liverpool",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 01:45",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "oddspapi": {
+       "line": 0.75,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "report": {
+     "verification": "verified",
+     "books": 13,
+     "sources": {
+      "odds_api": {
+       "line": 1.0,
+       "books": 8
+      },
+      "oddspapi": {
+       "line": 1.25,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 12,
+      "verified": 1
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1630397",
+   "kickoff_utc": "2026-11-04T18:15:00Z",
+   "league_id": "acl_two",
+   "home": "慕哈瑞克 Muharraq",
+   "away": "阿布扎比半岛 Al-Jazira",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 02:15",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 5,
+     "sources": {
+      "oddspapi": {
+       "line": 0.75,
+       "books": 5
+      }
+     },
+     "book_status": {
+      "single": 5
+     }
+    },
+    "report": {
+     "verification": "verified",
+     "books": 9,
+     "sources": {
+      "api_football": {
+       "line": 0.75,
+       "books": 6
+      },
+      "oddspapi": {
+       "line": 0.5,
+       "books": 4
+      }
+     },
+     "book_status": {
+      "single": 8,
+      "verified": 1
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1630398",
+   "kickoff_utc": "2026-11-04T18:15:00Z",
+   "league_id": "acl_two",
+   "home": "布赖代合作 Al Taawon",
+   "away": "阿尔费萨里 Al Faisaly",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 02:15",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 5,
+     "sources": {
+      "oddspapi": {
+       "line": -0.75,
+       "books": 5
+      }
+     },
+     "book_status": {
+      "single": 5
+     }
+    },
+    "report": {
+     "verification": "conflict",
+     "books": 9,
+     "sources": {
+      "api_football": {
+       "line": -0.75,
+       "books": 7
+      },
+      "oddspapi": {
+       "line": -1.0,
+       "books": 4
+      }
+     },
+     "book_status": {
+      "single": 7,
+      "conflict": 1,
+      "verified": 1
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1635651",
+   "kickoff_utc": "2026-11-04T20:00:00Z",
+   "league_id": "ucl",
+   "home": "多特蒙德 Borussia Dortmund",
+   "away": "皇家贝蒂斯 Real Betis",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 04:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "oddspapi": {
+       "line": -0.75,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "report": {
+     "verification": "verified",
+     "books": 13,
+     "sources": {
+      "odds_api": {
+       "line": -0.5,
+       "books": 8
+      },
+      "oddspapi": {
+       "line": -0.75,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 12,
+      "verified": 1
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1635681",
+   "kickoff_utc": "2026-11-04T20:00:00Z",
+   "league_id": "ucl",
+   "home": "朗斯 RC Lens",
+   "away": "科莫 Como",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 04:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "oddspapi": {
+       "line": 0.25,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "report": {
+     "verification": "verified",
+     "books": 13,
+     "sources": {
+      "odds_api": {
+       "line": 0.5,
+       "books": 8
+      },
+      "oddspapi": {
+       "line": 0.5,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 12,
+      "verified": 1
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1635707",
+   "kickoff_utc": "2026-11-04T20:00:00Z",
+   "league_id": "ucl",
+   "home": "埃因霍温 PSV Eindhoven",
+   "away": "布鲁日 Club Brugge",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 04:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "oddspapi": {
+       "line": -0.25,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "report": {
+     "verification": "verified",
+     "books": 13,
+     "sources": {
+      "odds_api": {
+       "line": -0.5,
+       "books": 8
+      },
+      "oddspapi": {
+       "line": -0.5,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 12,
+      "verified": 1
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1635710",
+   "kickoff_utc": "2026-11-04T20:00:00Z",
+   "league_id": "ucl",
+   "home": "RB莱比锡 RB Leipzig",
+   "away": "曼城 Manchester City",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 04:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "oddspapi": {
+       "line": 1.0,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "report": {
+     "verification": "verified",
+     "books": 13,
+     "sources": {
+      "odds_api": {
+       "line": 1.0,
+       "books": 8
+      },
+      "oddspapi": {
+       "line": 1.25,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 12,
+      "verified": 1
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1635726",
+   "kickoff_utc": "2026-11-04T20:00:00Z",
+   "league_id": "ucl",
+   "home": "布拉格斯拉维亚 Slavia Praha",
+   "away": "阿森纳 Arsenal",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 04:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "oddspapi": {
+       "line": 1.5,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "report": {
+     "verification": "verified",
+     "books": 13,
+     "sources": {
+      "odds_api": {
+       "line": 1.5,
+       "books": 8
+      },
+      "oddspapi": {
+       "line": 1.75,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 12,
+      "verified": 1
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1635745",
+   "kickoff_utc": "2026-11-04T20:00:00Z",
+   "league_id": "ucl",
+   "home": "维京 Viking",
+   "away": "萨巴赫 Sabah",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 04:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "oddspapi": {
+       "line": -1.0,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "report": {
+     "verification": "verified",
+     "books": 13,
+     "sources": {
+      "odds_api": {
+       "line": -1.5,
+       "books": 8
+      },
+      "oddspapi": {
+       "line": -1.5,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 12,
+      "verified": 1
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1630399",
+   "kickoff_utc": "2026-11-05T10:00:00Z",
+   "league_id": "acl_two",
+   "home": "杰志 Kitchee",
+   "away": "金边皇冠 Phnom Penh Crown",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 18:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 3,
+     "sources": {
+      "oddspapi": {
+       "line": 0.0,
+       "books": 3
+      }
+     },
+     "book_status": {
+      "single": 3
+     }
+    },
+    "report": {
+     "verification": "verified",
+     "books": 8,
+     "sources": {
+      "api_football": {
+       "line": -0.25,
+       "books": 6
+      },
+      "oddspapi": {
+       "line": -0.25,
+       "books": 3
+      }
+     },
+     "book_status": {
+      "single": 7,
+      "verified": 1
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1630400",
+   "kickoff_utc": "2026-11-05T10:00:00Z",
+   "league_id": "acl_two",
+   "home": "狮城水手 Lion City Sailors",
+   "away": "阿德莱德联 Adelaide United",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 18:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 3,
+     "sources": {
+      "oddspapi": {
+       "line": -0.25,
+       "books": 3
+      }
+     },
+     "book_status": {
+      "single": 3
+     }
+    },
+    "report": {
+     "verification": "conflict",
+     "books": 8,
+     "sources": {
+      "api_football": {
+       "line": -0.5,
+       "books": 6
+      },
+      "oddspapi": {
+       "line": -0.75,
+       "books": 3
+      }
+     },
+     "book_status": {
+      "single": 7,
+      "conflict": 1
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1630401",
+   "kickoff_utc": "2026-11-05T10:00:00Z",
+   "league_id": "acl_two",
+   "home": "町田泽维亚 Machida Zelvia",
+   "away": "上海申花 Shanghai Shenhua",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 18:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 3,
+     "sources": {
+      "oddspapi": {
+       "line": -1.25,
+       "books": 3
+      }
+     },
+     "book_status": {
+      "single": 3
+     }
+    },
+    "report": {
+     "verification": "conflict",
+     "books": 8,
+     "sources": {
+      "api_football": {
+       "line": -1.25,
+       "books": 6
+      },
+      "oddspapi": {
+       "line": -1.5,
+       "books": 3
+      }
+     },
+     "book_status": {
+      "single": 7,
+      "conflict": 1
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1630402",
+   "kickoff_utc": "2026-11-05T12:15:00Z",
+   "league_id": "acl_two",
+   "home": "古晋城 Kuching City",
+   "away": "江原FC Gangwon",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 20:15",
+   "phases": {
+    "open": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    },
+    "report": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1630403",
+   "kickoff_utc": "2026-11-05T12:15:00Z",
+   "league_id": "acl_two",
+   "home": "BG巴吞联 BG Pathum United",
+   "away": "大埔 Tai Po",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 20:15",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 3,
+     "sources": {
+      "oddspapi": {
+       "line": -1.5,
+       "books": 3
+      }
+     },
+     "book_status": {
+      "single": 3
+     }
+    },
+    "report": {
+     "verification": "verified",
+     "books": 7,
+     "sources": {
+      "api_football": {
+       "line": -1.75,
+       "books": 6
+      },
+      "oddspapi": {
+       "line": -1.75,
+       "books": 2
+      }
+     },
+     "book_status": {
+      "single": 6,
+      "verified": 1
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  },
+  {
+   "match_id": "apif-1630404",
+   "kickoff_utc": "2026-11-05T12:15:00Z",
+   "league_id": "acl_two",
+   "home": "柴桢 Svay Rieng",
+   "away": "淡滨尼流浪 Tampines Rovers",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-05 20:15",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 3,
+     "sources": {
+      "oddspapi": {
+       "line": -1.0,
+       "books": 3
+      }
+     },
+     "book_status": {
+      "single": 3
+     }
+    },
+    "report": {
+     "verification": "verified",
+     "books": 8,
+     "sources": {
+      "api_football": {
+       "line": -1.25,
+       "books": 6
+      },
+      "oddspapi": {
+       "line": -1.25,
+       "books": 3
+      }
+     },
+     "book_status": {
+      "single": 7,
+      "verified": 1
+     }
+    },
+    "close": {
+     "verification": "pending"
+    }
+   }
+  }
+ ],
+ "runs": [
+  {
+   "at": "2026-11-04T13:03:28Z",
+   "phases": [
+    "report",
+    "open"
+   ],
+   "calls": {
+    "oddspapi_billable": 0,
+    "oddspapi_free": 34,
+    "api_football": 9
+   },
+   "quota_after": {
+    "oddspapi": {
+     "used": 9,
+     "remaining": 241,
+     "limit": 250,
+     "month": "2026-11"
+    },
+    "odds_api": {
+     "used": 6,
+     "remaining": 494
+    },
+    "api_football": {
+     "used": 32,
+     "remaining": 68
+    }
+   }
+  },
+  {
+   "at": "2026-11-04T13:06:33Z",
+   "phases": [
+    "report",
+    "open"
+   ],
+   "calls": {
+    "oddspapi_free": 4
+   },
+   "quota_after": {
+    "oddspapi": {
+     "used": 9,
+     "remaining": 241,
+     "limit": 250,
+     "month": "2026-11"
+    }
+   }
+  }
+ ]
+}

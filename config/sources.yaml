@@ -140,3 +140,17 @@ blocked:
   - {name: vip.titan007.com, reason: "连接被拒（亚盘变盘明细页）"}
   - {name: zq.titan007.com, reason: "连接被拒（分析/H2H页）"}
 untested: [7m.com.cn, aiscore.com, flashscore.com, sofascore.com]
+# ---------------------------------------------------------------------------
+# 赔率快照（src/ah/odds_snapshots.py，数据官负责），文档 docs/odds_snapshots.md。
+# 输出 data/odds_snapshots/<日报日期>.csv / .summary.json / .map.json；ah_home_line 为主队让球（负数=主让）。
+odds_snapshots:
+  stages: [open, report, close]            # close = 开赛前最后一次报价（开赛前 10 分钟内运行，或赛后 --backfill）
+  sources:
+    oddspapi:   {endpoint: "/v4/historical-odds", billable: false, max_bookmakers_per_call: 3,
+                 bookmakers: [pinnacle, sbobet, singbet, dafabet, sabasports, 3et], keep_remaining: 30,
+                 backoff: "429 指数退避 2s·2^n（最长 60s，尊重 Retry-After），最多 3 次；计费请求 5xx 不重试"}
+    odds_api:   {endpoint: "/v4/sports/{sport}/odds?markets=spreads&regions=eu", cost: "1 credit/联赛", cache_ttl_s: 600,
+                 keep_remaining: 20, note: "只有当前盘，不覆盖亚冠二级/卡塔尔"}
+    api_football: {endpoint: "/odds?fixture", cost: "1/场（日 100）", mode: auto, floor: 30,
+                   note: "auto：只在 Odds API 没覆盖时用"}
+  verification: "同一公司 ≥2 来源主盘线一致或同线赔率差 ≤0.06 → verified；不一致 conflict；单源 single；无数据 missing"

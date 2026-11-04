@@ -30,6 +30,9 @@ USAGE_FILE = DATA / "cache" / "oddspapi_usage.json"
 MONTHLY_LIMIT = 250
 RESERVE = 30
 COOLDOWN_S = 1.1
+BACKOFF_BASE_S = 2.0   # 429/5xx 指数退避：2s、4s、8s（尊重 Retry-After），上限 BACKOFF_MAX_S
+BACKOFF_MAX_S = 60.0
+RETRIES = 3
 # leagues.yaml id -> OddsPapi tournamentId（GET /v4/tournaments?sportId=10，2026-11-04 实测）
 TOURNAMENTS = {"acl_elite": 463, "acl_two": 668, "qsl": 825, "spl": 955, "j1": 196, "j2": 402,
                "k1": 410, "csl": 649, "aleague": 136, "ucl": 7, "championship": 18}
@@ -52,13 +55,15 @@ def load_ah_markets(path: Path | None = None) -> dict:
 class Client:
     def __init__(self, key: str | None = None, session=None, cache_dir: Path = CACHE_DIR,
                  usage_file: Path = USAGE_FILE, reserve: int = RESERVE, limit: int = MONTHLY_LIMIT,
-                 sleep=time.sleep, now=None):
+                 sleep=time.sleep, now=None, retries: int = RETRIES):
         self._key = key if key is not None else get_secret("ODDSPAPI_KEY")
         self.s = session or requests.Session()
         self.cache_dir, self.usage_file = Path(cache_dir), Path(usage_file)
         self.reserve, self.limit, self.sleep = reserve, limit, sleep
         self.now = now or (lambda: datetime.now(timezone.utc))
         self._last = 0.0
+        self.retries = retries
+        self.backoffs: list = []   # [(path, status, sleep_s)]，便于日志/汇报
 
     def __repr__(self) -> str:
         return f"OddsPapi(enabled={self.enabled})"
@@ -99,11 +104,7 @@ class Client:
             return json.loads(cp.read_text())
         if billable and self.remaining() <= self.reserve:
             raise BudgetExceeded(f"OddsPapi 本月剩余 {self.remaining()} <= 保留 {self.reserve}")
-        wait = COOLDOWN_S - (time.time() - self._last)
-        if wait > 0:
-            self.sleep(wait)
-        r = self.s.get(f"{BASE_URL}/{path.lstrip('/')}", params={**params, "apiKey": self._key}, timeout=60)
-        self._last = time.time()
+        r = self._request(path, params, retry_5xx=not billable)
         if billable and r.status_code not in (401, 403, 429):  # 处理完成的请求无论成功与否都计数
             u = self.usage()
             u["used"] += 1
@@ -120,6 +121,28 @@ class Client:
             cp.parent.mkdir(parents=True, exist_ok=True)
             cp.write_text(json.dumps(data))
         return data
+
+    def _request(self, path: str, params: dict, retry_5xx: bool = False):
+        """带冷却与指数退避：429（及免费端点的 5xx）最多重试 self.retries 次（2s、4s、8s…，尊重 Retry-After，上限 60s）。
+        429 不计入额度（OddsPapi 未处理该请求）；计费端点的 5xx 会计数，所以不重试以保护月额度。不换 IP、不绕限。"""
+        for attempt in range(self.retries + 1):
+            wait = COOLDOWN_S - (time.time() - self._last)
+            if wait > 0:
+                self.sleep(wait)
+            r = self.s.get(f"{BASE_URL}/{path.lstrip('/')}", params={**params, "apiKey": self._key}, timeout=60)
+            self._last = time.time()
+            retry = r.status_code == 429 or (retry_5xx and r.status_code >= 500)
+            if not retry or attempt == self.retries:
+                return r
+            delay = BACKOFF_BASE_S * (2 ** attempt)
+            ra = (getattr(r, "headers", None) or {}).get("Retry-After")
+            try:
+                delay = max(delay, float(ra)) if ra is not None else delay
+            except ValueError:
+                pass
+            self.backoffs.append((path, r.status_code, min(delay, BACKOFF_MAX_S)))
+            self.sleep(min(delay, BACKOFF_MAX_S))
+        return r
 
     def account(self) -> dict:
         a = self.get("account", billable=False)
@@ -143,10 +166,10 @@ class Client:
         return self.get("odds", {"fixtureId": fixture_id, "oddsFormat": "decimal",
                                  "bookmakers": ",".join(bookmakers) if bookmakers else None}, ttl=TTL["odds"])
 
-    def historical_odds(self, fixture_id: str, bookmakers=("pinnacle",)) -> dict:
-        """免费端点（最多 3 家），可取初盘/变盘历史。"""
+    def historical_odds(self, fixture_id: str, bookmakers=("pinnacle",), ttl: int | None = None) -> dict:
+        """免费端点（最多 3 家），可取初盘/变盘历史（每条价格带 createdAt）。ttl 默认 30 分钟；收盘快照传短 ttl。"""
         return self.get("historical-odds", {"fixtureId": fixture_id, "bookmakers": ",".join(bookmakers[:3])},
-                        ttl=TTL["historical-odds"], billable=False)
+                        ttl=TTL["historical-odds"] if ttl is None else ttl, billable=False)
 
 
 # ---------- 纯函数 ----------
