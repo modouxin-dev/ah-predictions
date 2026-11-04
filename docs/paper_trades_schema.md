@@ -72,6 +72,21 @@ CLV    = o_bet × p_fair − 1                   # = 下注赔率 / 收盘无水
 | pnl | float | **别名**：= units | 同 units |
 | settled_at | ISO +08:00 | 结算时间（撤销取报告的撤销时间；之后保留不变） | 未结算时为空 |
 
+## 新增列（v2：收盘快照 + 模型）
+
+| 列 | 类型 | 含义 | 空值 |
+|---|---|---|---|
+| close_bookmaker / close_source | str | 收盘所用的公司和来源（公司优先 pinnacle > sbobet > singbet > 其他；来源优先 oddspapi > odds_api > api_football） | 无收盘时为空 |
+| model_version | str | 如 `market-baseline-v0` | 无合格模型行时为空（展示「暂无」） |
+| model_label | str | `基准` | 同上 |
+| model_pick_side / model_line | enum / float | 模型首选方向和盘口（所选方视角）；推荐行只作对照 | 同上 |
+| model_generated_at | ISO +08:00 | 模型文件生成时间 | 同上 |
+| model_y | float | 按模型方向的结算得分：赢1 / 赢半0.75 / 走0.5 / 输半0.25 / 输0 | 未结算时为空 |
+| model_note | str | 合并说明或未并入原因 | — |
+
+收盘读取：数据官的 `<报告日期>.csv`，只用 stage=close、captured_at 与 as_of 早于开球的行；ah_home_line 为主队视角，负数=主让，odds_format=decimal。close_line 记主线（is_main=1），close_odds 和 CLV 用同一公司、同一抓取时刻下注盘口那条线。路径用 `--snapshots` 或环境变量 `AH_ODDS_SNAPSHOTS` 指定。
+模型：`--model-dir` 或环境变量 `AH_MODEL_P_DIR`，校验见 `src/ah/audit/model_p.py`。Brier 改为 (model_p − y)²，y 为结算得分（取代 v1 的「仅整赢/整输」）。watch 行如果有合格的模型行，就用模型方向，stake=1，下注价为模型文件里的 Pinnacle 报告时价格（decimal）。
+
 ## 样例（来自当前 csv）
 
 ```csv

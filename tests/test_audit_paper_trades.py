@@ -36,6 +36,7 @@ def env(tmp_path):
 
 
 def run(env, **kw):
+    kw.setdefault("model_dir", env / "models")
     return pt.build(env / "reports", env / "pt.csv", env / "snaps", now=NOW, **kw)
 
 
@@ -52,7 +53,6 @@ def test_rows_status_and_perspective(env):
     assert rows["m2"]["home_line"] == "-0.75" and rows["m2"]["odds_format"] == "hk"
     assert rows["m3"]["status"] == "watch" and rows["m3"]["pick_side"] == "" and rows["m3"]["home_line"] == "1"
     assert "no_model_direction" in rows["m3"]["note"]
-    assert "不存在" in rows["m2"]["close_note"]
     assert rows["m2"]["model_p"] == "" and rows["m2"]["result"] == ""
 
 
@@ -73,23 +73,40 @@ def test_idempotent_and_keeps_backfill(env):
     assert len(by(run(env))) == 4
 
 
-def test_closing_snapshot_and_clv(env):
+SNAP_HDR = "match_id,captured_at,stage,bookmaker,ah_home_line,odds_home,odds_away,odds_format,source,verification,is_main,as_of,kickoff_utc\n"
+
+
+def _snap(env, lines):
     s = env / "snaps"
-    s.mkdir()
-    (s / "a.json").write_text(json.dumps([
-        {"match_id": "m2", "captured_at": "2026-11-04T19:00:00Z", "ah_home_line": -0.5, "odds_home": 0.9, "odds_away": 0.9},
-        {"match_id": "m2", "captured_at": "2026-11-04T19:55:00Z", "ah_home_line": -0.75, "odds_home": 0.90, "odds_away": 0.96},
-        {"match_id": "m2", "captured_at": "2026-11-04T20:10:00Z", "ah_home_line": -1.25, "odds_home": 0.9, "odds_away": 0.9},
-        {"match_id": "m1", "captured_at": "2026-11-04T11:50:00Z", "ah_home_line": 0.25, "odds_home": 0.9, "odds_away": 0.92},
-    ]), encoding="utf-8")
+    s.mkdir(exist_ok=True)
+    (s / "2026-11-04.csv").write_text("\ufeff" + SNAP_HDR + "\n".join(lines) + "\n", encoding="utf-8")
+
+
+def test_closing_snapshot_and_clv(env):
+    K = "2026-11-04T20:00:00Z"
+    _snap(env, [
+        f"m2,2026-11-04T19:00:00Z,close,pinnacle,-0.5,1.9,1.9,decimal,oddspapi,verified,1,2026-11-04T19:00:00Z,{K}",
+        f"m2,2026-11-04T19:55:00Z,close,pinnacle,-1.0,1.95,1.91,decimal,oddspapi,verified,1,2026-11-04T19:55:00Z,{K}",
+        f"m2,2026-11-04T19:55:00Z,close,pinnacle,-0.75,1.90,1.96,decimal,oddspapi,verified,0,2026-11-04T19:55:00Z,{K}",
+        f"m2,2026-11-04T19:56:00Z,close,sbobet,-0.75,1.80,2.00,decimal,oddspapi,verified,1,2026-11-04T19:56:00Z,{K}",
+        f"m2,2026-11-04T20:10:00Z,close,pinnacle,-1.25,1.9,1.9,decimal,oddspapi,verified,1,2026-11-04T20:10:00Z,{K}",
+        f"m2,2026-11-04T19:58:00Z,report,pinnacle,-0.75,1.5,2.5,decimal,oddspapi,verified,1,2026-11-04T19:58:00Z,{K}",
+        "m1,2026-11-04T11:50:00Z,close,pinnacle,0.25,1.9,1.92,decimal,odds_api,single,1,2026-11-04T11:50:00Z,2026-11-04T12:00:00Z",
+    ])
     rows = by(run(env))
-    m2 = rows["m2"]
-    assert m2["close_home_line"] == "-0.75" and m2["close_line"] == "-0.75"
-    p = (1 / 1.90) / (1 / 1.90 + 1 / 1.96)
+    m2 = rows["m2"]  # pinnacle 优先于 sbobet；开球后的、report 阶段的忽略
+    assert m2["close_bookmaker"] == "pinnacle" and m2["close_home_line"] == "-1" and m2["close_line"] == "-1"
+    assert m2["line_move"] == "-0.25" and m2["close_captured_at"] == "2026-11-05T03:55:00+08:00"
+    p = (1 / 1.90) / (1 / 1.90 + 1 / 1.96)  # 同公司同时刻 -0.75 相邻线
     assert float(m2["clv"]) == pytest.approx(2.06 * p - 1, abs=1e-4)
-    m1 = rows["m1"]  # 客队视角 -0.25 vs 下注 -0.75：盘口变了
+    assert m2["close_odds"] == "0.9" and m2["odds_close"] == "0.9"
+    m1 = rows["m1"]  # 客队 -0.75 下注；收盘主队 +0.25 = 客队 -0.25，无 -0.75 这条线
     assert m1["close_line"] == "-0.25" and m1["line_move"] == "0.5"
-    assert m1["clv"] == "" and m1["close_note"] == "line_moved_needs_model"
+    assert m1["clv"] == "" and m1["close_note"].startswith("line_moved_needs_model")
+
+
+def test_no_snapshot_dir(env):
+    assert by(run(env))["m2"]["close_note"] == "odds_snapshots 目录不存在"
 
 
 def test_clv_formula():
@@ -99,10 +116,12 @@ def test_clv_formula():
     assert pt.to_decimal(1.78, "decimal") == 1.78
 
 
-def test_brier():
+def test_brier_settled_score():
     assert pt.brier(0.6, "win") == pytest.approx(0.16)
+    assert pt.brier(0.6, "half_win") == pytest.approx(0.0225)
+    assert pt.brier(0.6, "push") == pytest.approx(0.01)
+    assert pt.brier(0.6, "half_loss") == pytest.approx(0.1225)
     assert pt.brier(0.6, "loss") == pytest.approx(0.36)
-    assert pt.brier(0.6, "push") is None
 
 
 def test_score_requires_two_sources(env):
