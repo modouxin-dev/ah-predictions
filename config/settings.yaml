@@ -1,4 +1,4 @@
-timezone: "Asia/Shanghai"        # TODO: 待确认用户时区（报告内时间统一用 UTC）
+timezone: "America/Los_Angeles"  # 用户时区（报告内时间统一用 UTC）
 report_window_hours: 36          # 覆盖未来多少小时开球的比赛
 max_picks_per_day: 5
 min_confidence_to_publish: low   # high | medium | low
@@ -9,3 +9,6 @@ confidence_thresholds:           # analyze.score 加权分阈值
 odds_format: hk
 require_real_line: true          # 没有真实盘口的比赛绝不推荐
 stake_units: 1
+telegram:
+  chat_id: "-1004312560482"     # 绿茵足球 超级群；Token 走环境变量/Secrets
+  bot: "LYZKYPbot"

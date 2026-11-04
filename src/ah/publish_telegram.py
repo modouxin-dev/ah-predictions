@@ -4,6 +4,16 @@ from __future__ import annotations
 import argparse
 import json
 import os
+
+
+def _default_chat():
+    try:
+        import yaml
+        from pathlib import Path
+        cfg = yaml.safe_load((Path(__file__).resolve().parents[2] / "config" / "settings.yaml").read_text())
+        return str((cfg.get("telegram") or {}).get("chat_id") or "") or None
+    except Exception:
+        return None
 import sys
 
 import requests
@@ -36,7 +46,7 @@ def main() -> None:
     a = ap.parse_args()
     rep = json.loads(report_paths(a.date)[0].read_text(encoding="utf-8"))
     text = summary(rep, os.environ.get("SITE_URL"))
-    token, chat = os.environ.get("TELEGRAM_BOT_TOKEN"), os.environ.get("TELEGRAM_CHAT_ID")
+    token, chat = os.environ.get("TELEGRAM_BOT_TOKEN"), os.environ.get("TELEGRAM_CHAT_ID") or _default_chat()
     if a.dry_run or not (token and chat):
         print(text)
         if not a.dry_run:
