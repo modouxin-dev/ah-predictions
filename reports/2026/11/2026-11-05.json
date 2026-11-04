@@ -2,7 +2,7 @@
  "date": "2026-11-05",
  "generated_at": "2026-11-04T12:38:53Z",
  "edition": "early",
- "edition_note": "11-05 提前版（2026-11-04 约 20:50 北京时间生成），覆盖至 2026-11-06 00:00 北京时间开球的比赛；明早日报更新本文件，不另建",
+ "edition_note": "11-05 提前版（2026-11-04 约 20:40 北京时间生成），覆盖至 2026-11-06 00:00 北京时间开球的比赛；明早日报更新本文件，不另建",
  "odds_format": "HK (港盘水位，十进制赔率 = 1 + 水位)",
  "odds_source_note": "盘口：titan007 即时/初盘（今晚亚冠联2与欧冠）、The Odds API 8 家共识（欧冠）、API-Football Pinnacle 等 6 家（明日亚冠联2）、OddsPapi Pinnacle 初盘→即时（町田、巴吞联）；积分：football-data.org 欧冠积分榜。watchlist 中 ah_home_line 负数=主队让球。",
  "not_covered": "沙特联 阿布哈 vs 青年、哈卢德 vs 海湾 两场（API-Football 状态 PST 延期）；波尔图 vs 那不勒斯 已在 11-04 报告中，另有 03:10 赛前确认；欧联/英冠/巴甲等不在优先联赛范围。",
@@ -172,7 +172,7 @@
    "ah_home_line_open": -0.25,
    "confidence": "low",
    "withheld_category": "临近开赛",
-   "withheld_reason": "阿卡达格由-0.25升至-0.75，但开球时间 21:45 北京时间，发布时距开赛不足 1 小时，来不及赛前确认",
+   "withheld_reason": "阿卡达格由-0.25升至-0.75，但开球时间 21:45 北京时间，报告发布时（约 20:40 北京时间）距开赛约 1 小时，来不及完成研究与赛前确认",
    "sources": [
     "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)"
    ]
