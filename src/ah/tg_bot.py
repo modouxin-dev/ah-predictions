@@ -111,29 +111,19 @@ def menu_text() -> str:
             + footer())
 
 
-def today_text(rep: dict | None, pol: dict | None = None) -> str:
+def today_text(rep: dict | None, pol: dict | None = None, stats: dict | None = None) -> str:
     pol = pol or policy.load()
     head = "<b>【先知】⚽ 今日推荐</b>"
     if not rep:
         return f"{head}\n\n今日无高信心推荐（宁缺毋滥）\n\n{footer()}"
     picks = policy.published(rep, pol)
-    lines = [head, f"📅 报告日期 {e(rep['date'])} ｜ 时间均为北京时间"]
+    lines = [head, pt.date_line(rep, len(picks))]
     if not picks:
         lines += ["", "今日无高信心推荐（宁缺毋滥）"]
-    for i, p in enumerate(picks, 1):
-        conf = pt.CONF.get(p.get("confidence"), str(p.get("confidence")))
-        odds = f" @ {p['odds']}" if p.get("odds") is not None else ""
+    for p in picks:
         st = records.status(p)
-        mb = pt.match_block(p)
-        lines += ["", (f"<b>#{i}</b> " if len(picks) > 1 else "") + mb[0], mb[1],
-                  f"🎯 <b>{e(pt._team(p))} {pt.ln(p['line'])}{odds}</b>",
-                  "📊 <b>盘口</b>", *pt.odds_lines(p),
-                  f"🔥 信心：{pt.CONF_ICON.get(conf, '')} <b>{e(conf)}</b> ｜ 状态：{_status_icon(st)} {st}"]
-        if p.get("reasons"):
-            lines += ["📌 <b>核心理由</b>", *[f"{n}. {e(r)}" for n, r in enumerate(p["reasons"][:3], 1)]]
-        if p.get("risks"):
-            lines += ["⚠️ <b>风险</b>", *[f"• {e(r)}" for r in p["risks"][:2]]]
-    return "\n".join(lines) + "\n\n" + footer()
+        lines += [pt.DIV, pt.compact_block(p, stats, extra=[f"⏱ 状态：{_status_icon(st)} {st}"])]
+    return "\n".join(lines) + "\n" + pt.DIV + "\n" + pt.tail(stats)
 
 
 def _ago(ts: str | None) -> str:
@@ -181,26 +171,21 @@ def _rate(d: dict) -> str:
 
 def stats_text(s: dict | None) -> str:
     lines = ["<b>【先知】📈 历史命中率 / 回测</b>"]
-    if not s:
-        return "\n".join(lines + ["", "暂无已结算推荐"]) + "\n\n" + footer()
-    o = s.get("overall") or {}
-    lines += ["", f"📊 <b>总体</b>：{_rate(o)}",
-              f"• 赢 {o.get('win', 0)} ｜ 赢半 {o.get('half_win', 0)} ｜ 走 {o.get('push', 0)} ｜ "
-              f"输半 {o.get('half_loss', 0)} ｜ 输 {o.get('loss', 0)} ｜ 取消 {o.get('void', 0)}"]
-    bc = s.get("by_confidence") or {}
-    if bc:
-        lines += ["", "🔥 <b>分信心等级</b>"]
-        for k in ["高", "中", "低", *[k for k in bc if k not in ("高", "中", "低")]]:
-            if k in bc:
-                lines.append(f"• {pt.CONF_ICON.get(k, '⛔')} {e(k)}：{_rate(bc[k])}")
-    bl = s.get("by_league") or {}
-    if bl:
-        top = sorted(bl.items(), key=lambda kv: (-kv[1].get("decided", 0), -kv[1].get("picks", 0)))[:5]
-        lines += ["", "🏆 <b>分联赛（前 5）</b>", *[f"• {e(k)}：{_rate(v)}" for k, v in top]]
-    lines += ["", f"<i>命中率 = (赢 + 0.5×赢半) / (场次 − 走水 − 取消)；每注 1 单位</i>"]
-    if s.get("updated_at"):
+    o = (s or {}).get("overall") or {}
+    if o.get("decided"):
+        lines.append(f"📊 总体 {_rate(o)}")
+        bc = s.get("by_confidence") or {}
+        conf_rows = [[f"{k}信心", v.get("picks", 0), v.get("win", 0) + v.get("half_win", 0), v.get("push", 0),
+                      v.get("loss", 0) + v.get("half_loss", 0), f"{v.get('hit_rate', 0):.0%}", f"{v.get('units', 0):+.1f}"]
+                     for k, v in bc.items() if v.get("picks")]
+        if conf_rows:
+            lines += ["🔥 <b>分信心</b>", pt.pre_table(["", "场次", "赢", "走", "输", "命中", "盈亏"], conf_rows)]
+    lines += [pt.DIV, pt.stats_table(s, top=5),
+              "<i>命中率 = (赢 + 0.5×赢半) / (场次 − 走水 − 取消)；每注 1 单位</i>"]
+    if s and s.get("updated_at"):
         lines.append(f"🕐 统计更新于 {pt.bj(s['updated_at'])} 北京时间")
     return "\n".join(lines) + "\n\n" + footer()
+
 
 
 def records_text(reps: list[dict], pol: dict | None = None, limit: int = 5) -> str:
@@ -291,7 +276,7 @@ def render(action: str, reports: Path = REPORTS, data: Path = DATA) -> tuple[str
     """按钮/命令 -> (HTML 文本, reply_markup)。纯本地读取，无网络。"""
     pol = policy.load()
     if action == "today":
-        out = today_text(latest_report(reports), pol), back_keyboard([[{"text": "🌐 完整看板", "url": SITE_URL}]])
+        out = today_text(latest_report(reports), pol, _json(data / "stats.json")), back_keyboard([[{"text": "🌐 完整看板", "url": SITE_URL}]])
     elif action == "sources":
         out = sources_text(_json(data / "source_status.json")), back_keyboard()
     elif action == "stats":

@@ -192,35 +192,58 @@ def result_panel(p: dict) -> str:
             f"<dt>回测时间</dt><dd>{bjt(res.get('settled_at'))}</dd></dl></div>")
 
 
-def pick_card(p: dict, pol: dict) -> str:
+def compare_table(p: dict) -> str:
+    from . import publish_telegram as pt
+    rows = "".join(f"<tr><td>{e(r[0])}</td><td class='num'>{e(r[1])}</td><td class='num'>{e(r[2])}</td></tr>"
+                   for r in pt.comparison_rows(p))
+    dv = pt.deviation(p)
+    return ("<div class='panel cmp'><h3>机构对比（推荐方视角，港盘水位）</h3><div class='tablewrap'><table class='cmp-t'>"
+            f"<thead><tr><th>机构</th><th>盘口</th><th>水位</th></tr></thead><tbody>{rows}</tbody></table></div>"
+            + (f"<p class='dev'>📊 {dv}</p>" if dv else "") + "</div>")
+
+
+def hit_chips(p: dict, stats: dict | None) -> str:
+    from . import publish_telegram as pt
+    conf = CONF.get(p.get("confidence", ""), p.get("confidence", ""))
+    s = stats or {}
+    lg = (s.get("by_league") or {}).get(p.get("league"))
+    cf = (s.get("by_confidence") or {}).get(conf)
+    return (f"<div class='chips'><span class='chip'>🏆 本联赛 {e(pt.record_of(lg))}</span>"
+            f"<span class='chip'>🔥 {e(conf)}信心 {e(pt.record_of(cf))}</span></div>")
+
+
+def pick_card(p: dict, pol: dict, stats: dict | None = None) -> str:
+    from . import publish_telegram as pt
     st = records.status(p)
     team = p.get("pick_team") or p.get(p.get("pick_side", ""), "")
     conf = CONF.get(p.get("confidence", ""), p.get("confidence", ""))
-    odds = f" @ {water(p.get('odds'))}" if p.get("odds") is not None else ""
-    detail = ("<div class='pick-body'><div>"
-              "<h3>理由</h3><ol>" + "".join(f"<li>{e(x)}</li>" for x in p.get("reasons", [])) + "</ol>"
-              "<h3>风险</h3><ul>" + "".join(f"<li>{e(x)}</li>" for x in p.get("risks", [])) + "</ul>"
-              "<h3>来源</h3><ul class='src'>" + "".join(f"<li><a href='{e(s)}' rel='noopener'>{e(s)}</a></li>" for s in p.get("sources", [])) + "</ul>"
-              f"</div><div style='display:grid;gap:10px;align-content:start'>{odds_panel(p)}{prematch_panel(p, pol)}{result_panel(p)}</div></div>")
-    return (f"<article class='card pick'><div class='pick-head'><span class='teams'>{e(p['home'])} vs {e(p['away'])}</span>"
+    odds = f" @{water(p.get('odds'))}" if p.get("odds") is not None else ""
+    src = "".join(f"<a class='srcl' href='{e(u)}' rel='noopener'>{e(pt.link_label(u))}</a>"
+                  for u in p.get("sources", []) if str(u).startswith("http"))
+    detail = ("<div class='pick-body'><div>" + compare_table(p) + hit_chips(p, stats) +
+              "<h3>✅ 为什么推</h3><ol>" + "".join(f"<li>{e(x)}</li>" for x in p.get("reasons", [])) + "</ol>"
+              "<h3>⚠️ 风险</h3><ul>" + "".join(f"<li>{e(x)}</li>" for x in p.get("risks", [])) + "</ul>"
+              f"<h3>🔗 来源</h3><div class='srcs'>{src}</div>"
+              f"</div><div style='display:grid;gap:10px;align-content:start'>{prematch_panel(p, pol)}{result_panel(p)}</div></div>")
+    return (f"<article class='card pick'><div class='meta'>🏆 {e(p.get('league', ''))} · 🕐 {bjt(p.get('kickoff_utc'))}"
             f"<span class='badge st-{st}'>{st}</span></div>"
-            f"<div class='meta'>{e(p.get('league', ''))} · 开赛 {bjt(p.get('kickoff_utc'))}</div>"
-            f"<div class='pick-line'><span class='tag'>{e(str(team))} {fl(p.get('line'))}{odds}</span>"
-            f"<span class='conf conf-{e(conf)}'>信心：{e(conf)}</span></div>"
+            f"<div class='pick-head'><span class='teams'>{e(p['home'])} vs {e(p['away'])}</span></div>"
+            f"<div class='verdict'><span class='v-ico'>🎯</span><span class='v-main'>推荐 {e(str(team))} {fl(p.get('line'))}{odds}</span>"
+            f"<span class='conf conf-{e(conf)}'>{pt.CONF_ICON.get(conf, '')} {e(conf)}信心</span></div>"
             + lock(detail) + "</article>")
 
 
-def report_html(r: dict, pol: dict | None = None) -> str:
+def report_html(r: dict, pol: dict | None = None, stats: dict | None = None) -> str:
     pol = pol or policy.load()
     out = [f"<p class='muted'>报告日期 {e(r['date'])} · 生成于 {bjt(r.get('generated_at'))} · {e(r.get('odds_format', ''))}</p>"]
     live = policy.published(r, pol)
     shown = [p for p in records.published_picks(r, pol)]
     if not live:
         out.append("<div class='empty'>今日无高信心推荐（宁缺毋滥）。</div>")
-    out.extend(pick_card(p, pol) for p in shown if p in live)
+    out.extend(pick_card(p, pol, stats) for p in shown if p in live)
     gone = [p for p in shown if p not in live]
     if gone:
-        out.append("<h2>已撤销</h2>" + "".join(pick_card(p, pol) for p in gone))
+        out.append("<h2>已撤销</h2>" + "".join(pick_card(p, pol, stats) for p in gone))
     w = r.get("watched") or []
     rows = [f"<tr><td>{e(x.get('league', ''))}</td><td>{e(x.get('home', ''))} vs {e(x.get('away', ''))}</td>"
             f"<td class='wrap-text'>{e(x.get('reason_skipped', ''))}</td></tr>" for x in w]
@@ -425,8 +448,8 @@ def build(site: Path = SITE, reports: Path = REPORTS, data: Path = DATA, now: da
     lbl = ("今日推荐" if latest and latest["date"] == today else f"最新推荐（{latest['date'][5:]}）") if latest else "今日推荐"
     bar = summary_bar(n_today, lbl, s, today)
     for r in reps:
-        write(f"reports/{r['date']}.html", f"亚盘日报 {r['date']}", report_html(r, pol), "", "../")
-    write("index.html", "今日推荐", bar + (report_html(latest, pol) if latest else "<div class='empty'>暂无报告</div>"), "index.html")
+        write(f"reports/{r['date']}.html", f"亚盘日报 {r['date']}", report_html(r, pol, s), "", "../")
+    write("index.html", "今日推荐", bar + (report_html(latest, pol, s) if latest else "<div class='empty'>暂无报告</div>"), "index.html")
     rows = record_rows(reps, pol)
     write("records.html", "推荐记录", records_html(list(reversed(rows)), pol), "records.html")
     write("stats.html", "战绩", bar + stats_html(s, today), "stats.html")

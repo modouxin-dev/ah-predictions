@@ -120,7 +120,7 @@ def odds_lines(p: dict) -> list[str]:
     return [e(x) for x in out]
 
 
-def pick_block(p: dict, i: int | None = None) -> str:
+def pick_block_v1(p: dict, i: int | None = None) -> str:
     conf = CONF.get(p.get("confidence"), str(p.get("confidence")))
     odds = f" @ {p['odds']}" if p.get("odds") is not None else ""
     head = f"<b>#{i}</b> " if i else ""
@@ -165,13 +165,152 @@ def split(blocks: list[str], limit: int = LIMIT) -> list[str]:
     return msgs
 
 
+# ---------- 亚盘紧凑版式（截图风格） ----------
+DIV = "┈┈┈┈┈┈┈┈┈┈┈┈┈┈"
+WEEK = "一二三四五六日"
+
+
+def wcol(s: str) -> int:
+    import unicodedata
+    return sum(2 if unicodedata.east_asian_width(c) in "WF" else 1 for c in str(s))
+
+
+def pad(s, w: int, right: bool = False) -> str:
+    s = str(s)
+    fill = " " * max(0, w - wcol(s))
+    return fill + s if right else s + fill
+
+
+def pre_table(head: list[str], rows: list[list], right_from: int = 1) -> str:
+    cols = [head, *rows]
+    ws = [max(wcol(r[i]) for r in cols) for i in range(len(head))]
+    fmt = lambda r: " ".join(pad(c, ws[i], i >= right_from) for i, c in enumerate(r)).rstrip()  # noqa: E731
+    return "<pre>" + e("\n".join(fmt(r) for r in cols)) + "</pre>"
+
+
+def short(t: str, n: int = 38) -> str:
+    """Telegram 用短句：取第一个分句，过长截断。"""
+    t = str(t).strip()
+    for sep in ("；", "。", ";"):
+        if sep in t and len(t.split(sep)[0]) >= 8:
+            t = t.split(sep)[0]
+            break
+    return t if len(t) <= n else t[: n - 1] + "…"
+
+
+def w2(x) -> str:
+    return "—" if x is None else f"{float(x):.2f}"
+
+
+def comparison_rows(p: dict) -> list[list[str]]:
+    """机构对比（推荐方视角）：只返回有真实数据的行。[机构, 盘口, 水位]"""
+    rows = [["本推荐", ln(p["line"]), w2(p.get("odds"))]]
+    c = p.get("market_consensus") or {}
+    if c.get("pick_line") is not None:
+        rows.append([f"共识中位({c.get('bookmakers', '?')}家)", ln(c["pick_line"]), w2(c.get("pick_water"))])
+    pin = c.get("pinnacle") or {}
+    if pin.get("pick_line") is not None:
+        rows.append(["Pinnacle", ln(pin["pick_line"]), w2(pin.get("pick_water"))])
+    b = p.get("bet365_movement") or {}
+    if b.get("pick_line") is not None:
+        rows.append(["Bet365 初→即", f"{ln(b.get('open_pick_line'))}→{ln(b['pick_line'])}",
+                     f"{w2(b.get('open_pick_water'))}→{w2(b.get('pick_water'))}"])
+    if p.get("line_open") is not None and any("titan007" in str(s) for s in p.get("sources") or []):
+        rows.append(["球探 初→即", f"{ln(p['line_open'])}→{ln(p['line'])}", w2(p.get("odds"))])
+    return rows
+
+
+def deviation(p: dict) -> str | None:
+    c = p.get("market_consensus") or {}
+    if c.get("pick_line") is None:
+        return None
+    d = float(c["pick_line"]) - float(p["line"])  # 推荐方让球为负：更负=更深
+    if d == 0:
+        return "与共识一致"
+    return f"比共识{'深' if d > 0 else '浅'} {abs(d):g}" + ("（&gt;0.5 应撤下）" if abs(d) > 0.5 else "（&gt;0.25 降一档）" if abs(d) > 0.25 else "")
+
+
+def record_of(d: dict | None) -> str:
+    if not d or not d.get("decided"):
+        return "暂无历史"
+    return f"{d['picks']}场 {d['hit_rate']:.0%} {d.get('units', 0):+.2f}u"
+
+
+def verdict(p: dict) -> str:
+    conf = CONF.get(p.get("confidence"), str(p.get("confidence")))
+    odds = f" @{p['odds']}" if p.get("odds") is not None else ""
+    return f"🎯 <b>推荐 {e(_team(p))} {ln(p['line'])}{odds} · {CONF_ICON.get(conf, '')}{e(conf)}</b>"
+
+
+def venue(p: dict) -> str | None:
+    v = p.get("venue") or (p.get("fixture") or {}).get("venue")
+    if isinstance(v, dict):
+        v = "，".join(x for x in (v.get("name"), v.get("city")) if x)
+    return v or None
+
+
+def compact_block(p: dict, stats: dict | None = None, extra: list[str] | None = None) -> str:
+    conf = CONF.get(p.get("confidence"), str(p.get("confidence")))
+    lines = [f"🏆 {e(p.get('league', ''))} ｜ 🕐 {bj(p.get('kickoff_utc'))}",
+             f"<b>{e(p['home'])} vs {e(p['away'])}</b>", verdict(p), *(extra or []),
+             pre_table(["机构", "盘口", "水位"], comparison_rows(p))]
+    dv = deviation(p)
+    if dv:
+        lines.append(f"📊 {dv}")
+    if venue(p):
+        lines.append(f"🏟 {e(venue(p))}")
+    probs = p.get("model_probs")
+    if probs:
+        lines.append("🧮 模型概率 " + " ".join(f"{e(k)} {float(v):.0%}" for k, v in probs.items()))
+    if p.get("reasons"):
+        lines += ["✅ <b>为什么推</b>", *[f"• {e(short(r))}" for r in p["reasons"][:3]]]
+    if p.get("risks"):
+        lines.append("⚠️ " + e("；".join(short(r, 30) for r in p["risks"][:2])))
+    s = stats or {}
+    lg = (s.get("by_league") or {}).get(p.get("league"))
+    cf = (s.get("by_confidence") or {}).get(conf)
+    lines.append(f"📈 本联赛 {record_of(lg)} ｜ {e(conf)}信心 {record_of(cf)}")
+    if p.get("sources"):
+        lines.append("🔗 " + links(p["sources"][:4]))
+    return "\n".join(lines)
+
+
+def stats_table(stats: dict | None, top: int = 3) -> str:
+    s = stats or {}
+    o = s.get("overall") or {}
+    if not o.get("decided"):
+        return "📈 <b>历史战绩</b>：暂无已结算推荐"
+
+    def row(name, d):
+        return [name[:8], d.get("picks", 0), f"{d.get('win', 0)}+{d.get('half_win', 0)}" if d.get("half_win") else d.get("win", 0),
+                d.get("push", 0), d.get("loss", 0) + d.get("half_loss", 0), f"{d.get('hit_rate', 0):.0%}", f"{d.get('units', 0):+.1f}"]
+    rows = [row("总体", o)]
+    hi = (s.get("by_confidence") or {}).get("高")
+    if hi and hi.get("picks"):
+        rows.append(row("高信心", hi))
+    bl = sorted((s.get("by_league") or {}).items(), key=lambda kv: -kv[1].get("picks", 0))[:top]
+    rows += [row(k.split("（")[0], v) for k, v in bl]
+    return "📈 <b>历史战绩</b>\n" + pre_table(["", "场次", "赢", "走", "输", "命中", "盈亏"], rows)
+
+
+def tail(stats: dict | None, site_url: str = SITE_URL) -> str:
+    return (stats_table(stats) + f'\n🌐 <a href="{html.escape(site_url, quote=True)}">完整看板 · 先知</a>\n\n'
+            + "\n".join(footer()))
+
+
+def date_line(rep: dict, n_pub: int) -> str:
+    d = datetime.strptime(rep["date"], "%Y-%m-%d")
+    n_all = len(rep.get("picks") or []) + len(rep.get("watched") or []) + len(rep.get("watchlist") or [])
+    return f"📅 {d:%m-%d} 周{WEEK[d.weekday()]} · 筛选 {n_all} 场 · 推荐 {n_pub} 场"
+
+
 def daily(rep: dict, stats: dict | None = None, site_url: str = SITE_URL) -> list[str]:
     picks = policy.published(rep)
-    blocks = [f"<b>【先知】⚽ 亚盘日报 {e(rep['date'])}</b>\n{history(stats)}"]
+    blocks = [f"<b>【先知】⚽ 亚盘日报 {e(rep['date'])}</b>\n{date_line(rep, len(picks))}"]
     if not picks:
         blocks.append("今日无高信心推荐（宁缺毋滥）")
-    blocks += [pick_block(p, i if len(picks) > 1 else None) for i, p in enumerate(picks, 1)]
-    blocks.append(f'🌐 <a href="{html.escape(site_url, quote=True)}">完整看板</a>\n\n' + "\n".join(footer()))
+    blocks += [DIV + "\n" + compact_block(p, stats) for p in picks]
+    blocks.append(DIV + "\n" + tail(stats, site_url))
     return split(blocks)
 
 
@@ -189,29 +328,27 @@ def prematch_of(p: dict) -> dict:
             "current_line": fc.get("current_line"), "sources": fc.get("sources", [])}
 
 
-def prematch(p: dict, pm: dict | None = None) -> list[str]:
+def prematch(p: dict, pm: dict | None = None, stats: dict | None = None) -> list[str]:
     pm = pm or prematch_of(p)
     dec = DECISION.get(pm.get("decision"), e(pm.get("decision") or "—"))
-    line, odds = pm.get("new_line"), pm.get("new_odds")
-    if line is None:
-        line, odds = p["line"], p.get("odds")
-    conf = CONF.get(pm.get("confidence") or p.get("confidence"), "—")
-    rec = f"{e(_team(p))} {ln(line)}" + (f" @ {odds}" if odds is not None else "")
-    lines = ["<b>【先知】🔎 赛前确认</b>", *match_block(p), "",
-             f"决定：<b>{dec}</b>"]
+    q = dict(p)
+    if pm.get("new_line") is not None:
+        q["line"], q["odds"] = pm["new_line"], pm.get("new_odds")
+    if pm.get("confidence"):
+        q["confidence"] = pm["confidence"]
+    when = f" · {bj(pm['checked_at'])} 北京时间" if pm.get("checked_at") else ""
+    head = f"<b>【先知】🔎 赛前确认</b>\n决定：<b>{dec}</b>{when}"
+    info = [f"📊 临场：{e(pm['current_line'])}"] if pm.get("current_line") else []
+    info.append(f"📌 {e(pm.get('reason') or '—')}")
     if "撤销" in dec:
-        lines.append(f"🎯 原推荐：<s>{e(_team(p))} {ln(p['line'])}" + (f" @ {p['odds']}" if p.get('odds') is not None else "") + "</s>")
+        body = (f"🏆 {e(p.get('league', ''))} ｜ 🕐 {bj(p.get('kickoff_utc'))}\n<b>{e(p['home'])} vs {e(p['away'])}</b>\n"
+                f"🎯 原推荐 <s>{e(_team(p))} {ln(p['line'])}" + (f" @{p['odds']}" if p.get('odds') is not None else "")
+                + "</s>\n🔥 已撤销，不计入命中率\n" + "\n".join(info))
     else:
-        lines.append(f"🎯 <b>{rec}</b>")
-    if pm.get("current_line"):
-        lines.append(f"📊 临场盘口：{e(pm['current_line'])}")
-    lines += [f"🔥 信心：{CONF_ICON.get(conf, '')} <b>{e(conf)}</b>" if "撤销" not in dec else "🔥 信心：— （已撤销，不计入命中率）",
-              "", f"📌 {e(pm.get('reason') or '—')}"]
-    if pm.get("checked_at"):
-        lines.append(f"🕐 检查时间 {bj(pm['checked_at'])} 北京时间")
+        body = compact_block({**q, "reasons": [], "risks": []}, stats, extra=None) + "\n" + "\n".join(info)
     if pm.get("sources"):
-        lines.append("🔗 " + links(pm["sources"]))
-    return split(["\n".join(lines), "\n".join(footer())])
+        body += "\n🔗 " + links(pm["sources"])
+    return split([head, DIV + "\n" + body, DIV + "\n" + "\n".join(footer())])
 
 
 def backtest(p: dict, res: dict | None = None, stats: dict | None = None) -> list[str]:
@@ -219,17 +356,20 @@ def backtest(p: dict, res: dict | None = None, stats: dict | None = None) -> lis
     s = res.get("settlement", "")
     cn = SETTLE_CN.get(s, res.get("settlement_cn") or s)
     units = res.get("units")
-    u = f"{float(units):+.2f} 单位" if units is not None else "—"
+    u = f"{float(units):+.2f}u" if units is not None else "—"
     line = res.get("line", p["line"]); odds = res.get("odds", p.get("odds"))  # noqa: E702
-    lines = ["<b>【先知】🏁 赛后回测</b>", *match_block(p), "",
-             f"⚽ 全场比分：<b>{e(res.get('score') or '—')}</b>",
-             f"🎯 推荐：{e(_team(p))} {ln(line)}" + (f" @ {odds}" if odds is not None else ""),
-             f"{SETTLE_ICON.get(s, '')} 结算：<b>{e(cn)}</b>（{u}）", "",
-             f"📌 复盘：{e(res.get('review') or '—')}"]
+    body = [f"🏆 {e(p.get('league', ''))} ｜ 🕐 {bj(p.get('kickoff_utc'))}",
+            f"<b>{e(p['home'])} {e(res.get('score') or '—')} {e(p['away'])}</b>",
+            f"🎯 推荐 {e(_team(p))} {ln(line)}" + (f" @{odds}" if odds is not None else ""),
+            f"{SETTLE_ICON.get(s, '')} 结算 <b>{e(cn)}</b> · {u}",
+            f"📌 {e(res.get('review') or '—')}"]
     if res.get("sources"):
-        lines.append("🔗 " + links(res["sources"]))
-    lines += ["", history(stats)]
-    return split(["\n".join(lines), "\n".join(footer())])
+        body.append("🔗 " + links(res["sources"]))
+    return split(["<b>【先知】🏁 赛后回测</b>", DIV + "\n" + "\n".join(body), DIV + "\n" + tail(stats)])
+
+
+def pick_block(p: dict, i: int | None = None, stats: dict | None = None) -> str:
+    return compact_block(p, stats)
 
 
 def plain(msg: str) -> str:

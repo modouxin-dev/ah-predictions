@@ -130,3 +130,18 @@ nav.main{order:3;flex:1 1 100%;margin:0 -12px;padding:0 4px}
  table.cardify tr.emptyrow td::before{display:none}
 }
 @media (min-width:640px){#records td:nth-child(3),#records td:nth-child(4){white-space:normal;min-width:150px;max-width:260px}}
+
+/* v2 亚盘卡片：结论条 + 机构对比 */
+.verdict{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0 6px;padding:10px 12px;border-radius:10px;background:linear-gradient(90deg,#0b6e4f,#13895f);color:#fff}
+.verdict .v-main{font-weight:800;font-size:18px;letter-spacing:.2px}
+.verdict .conf{margin-left:auto;background:#fff;color:#0b6e4f;font-weight:700}
+.pick .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.pick .meta .badge{margin-left:auto}
+table.cmp-t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+table.cmp-t th,table.cmp-t td{padding:4px 8px;border-bottom:1px solid var(--line);text-align:left}
+table.cmp-t td.num,table.cmp-t th:not(:first-child){text-align:right;white-space:nowrap}
+table.cmp-t tbody tr:first-child{background:#e6f6ee;font-weight:700}
+.dev{margin:6px 0 0;font-size:13px;color:var(--mute)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.chip{font-size:12px;padding:3px 9px;border-radius:999px;background:#eef1f5;border:1px solid var(--line)}
+.srcs{display:flex;flex-wrap:wrap;gap:6px}.srcl{font-size:13px;padding:2px 8px;border-radius:6px;background:#eef4fb}
+@media (max-width:600px){.verdict .v-main{font-size:16px}.verdict .conf{margin-left:0}}
