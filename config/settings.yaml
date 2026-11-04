@@ -1,3 +1,4 @@
+bot_name: 先知                    # 机器人名称（报告/推送/站点统一署名）
 timezone: "America/Los_Angeles"  # 用户时区（报告内时间统一用 UTC）
 report_window_hours: 36          # 覆盖未来多少小时开球的比赛
 max_picks_per_day: 5

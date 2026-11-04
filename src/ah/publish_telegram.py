@@ -24,7 +24,7 @@ CONF = {"high": "高", "medium": "中", "low": "低"}
 
 
 def summary(rep: dict, site_url: str | None = None) -> str:
-    lines = [f"⚽ 亚盘日报 {rep['date']}", ""]
+    lines = [f"【先知】⚽ 亚盘日报 {rep['date']}", ""]
     if not rep["picks"]:
         lines.append("今日无推荐。")
     for i, p in enumerate(rep["picks"], 1):

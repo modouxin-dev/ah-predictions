@@ -56,10 +56,10 @@ def build(site: Path = SITE) -> list[str]:
     reps = [json.loads(f.read_text(encoding="utf-8")) for f in files]
     for r in reps:
         (site / "reports" / f"{r['date']}.html").write_text(
-            page(f"亚盘日报 {r['date']}", report_html(r)).replace("href='index.html'", "href='../index.html'")
+            page(f"先知 · 亚盘预测 {r['date']}", report_html(r)).replace("href='index.html'", "href='../index.html'")
             .replace("href='history.html'", "href='../history.html'").replace("href='stats.html'", "href='../stats.html'"), encoding="utf-8")
     latest = reps[-1] if reps else None
-    (site / "index.html").write_text(page(f"亚盘日报 {latest['date']}" if latest else "亚盘日报", report_html(latest) if latest else "<p>暂无报告</p>"), encoding="utf-8")
+    (site / "index.html").write_text(page("先知 · 亚盘预测", report_html(latest) if latest else "<p>暂无报告</p>"), encoding="utf-8")
     hist = "<ul>" + "".join(f"<li><a href='reports/{r['date']}.html'>{r['date']}</a> · 推荐 {len(r['picks'])} 场</li>" for r in reversed(reps)) + "</ul>"
     (site / "history.html").write_text(page("历史报告", hist), encoding="utf-8")
     sp = DATA / "stats.json"

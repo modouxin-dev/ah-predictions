@@ -1,5 +1,5 @@
 {% set conf = {"high": "高", "medium": "中", "low": "低"} -%}
-# 亚盘预测日报 · {{ r.date }}
+# 【先知】亚盘日报 {{ r.date }}
 
 > 生成时间：{{ r.generated_at }}（UTC）　|　水位格式：{{ r.odds_format | default("HK") }}
 > {{ r.odds_source_note | default("") }}
@@ -50,3 +50,5 @@
 ## 覆盖说明
 {{ r.not_covered }}
 {% endif %}
+
+—— 先知
