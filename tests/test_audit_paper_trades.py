@@ -16,7 +16,8 @@ REP = {
          "pick_side": "home", "line": -0.75, "line_open": -0.25, "odds": 1.06, "confidence": "medium"},
     ],
     "watched": [{"league": "L", "home": "E", "away": "F", "reason_skipped": "r"},
-                {"league": "L", "home": "G", "away": "H", "reason_skipped": "dup"}],
+                {"league": "L", "home": "G", "away": "H", "reason_skipped": "dup"},
+                {"league": "L", "home": "多场", "away": "-", "reason_skipped": "覆盖说明"}],
 }
 REP2 = {"date": "2026-11-05", "odds_format": "HK", "picks": [], "watched": [],
         "watchlist": [{"match_id": "m3", "league": "L", "home": "G 全名", "away": "H 全名",
@@ -126,3 +127,16 @@ def test_two_source_score_agreement(monkeypatch):
     assert pt.two_source_score(r, Api(), None)[0] is None
     monkeypatch.setattr("ah.settle._fd_score", lambda fd, row: None)
     assert pt.two_source_score(r, Api(), None)[0] is None
+
+
+def test_engineer_columns_and_bj_time(env):
+    rows = by(run(env))
+    for c in ["date", "match_id", "league", "home", "away", "pick", "line", "odds_taken", "odds_close",
+              "clv", "stake", "result", "pnl", "settled_at"]:
+        assert c in pt.FIELDS
+    m2, m1, m3 = rows["m2"], rows["m1"], rows["m3"]
+    assert m2["kickoff_bj"] == "2026-11-05T04:00:00+08:00"
+    assert m2["updated_at"].endswith("+08:00")
+    assert m2["pick"] == "C" and m2["odds_taken"] == "1.06" and m2["stake"] == "1" and m2["settled_at"] == ""
+    assert m1["stake"] == "0" and m1["pnl"] == "0" and m1["settled_at"].endswith("+08:00")
+    assert m3["stake"] == "" and m3["pick"] == ""

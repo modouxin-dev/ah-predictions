@@ -37,7 +37,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from ..settle import profit, settle
@@ -48,15 +48,18 @@ SNAPSHOTS = ROOT / "data" / "odds_snapshots"
 OUT = ROOT / "data" / "paper_trades.csv"
 START_DATE = "2026-11-04"
 
-FIELDS = ["date", "match_id", "league", "home", "away", "kickoff_utc", "status", "confidence",
+FIELDS = ["date", "match_id", "league", "home", "away", "kickoff_utc", "kickoff_bj", "status", "confidence",
           "pick_side", "pick_team", "line", "home_line", "line_open_home", "odds", "odds_format",
           "close_line", "close_home_line", "close_odds", "close_odds_opp", "close_captured_at", "close_note",
           "line_move", "implied_p_bet", "clv",
           "result", "score_sources", "score_note", "ah_outcome", "units",
-          "model_p", "brier", "note", "updated_at"]
+          "model_p", "brier", "note", "updated_at",
+          # 产品工程师要求的别名列（与上面同源，便于网站直接读取）
+          "pick", "odds_taken", "odds_close", "stake", "pnl", "settled_at"]
+BJ = timezone(timedelta(hours=8))
 BACKFILL = ["close_line", "close_home_line", "close_odds", "close_odds_opp", "close_captured_at",
             "close_note", "line_move", "clv", "result", "score_sources", "score_note", "ah_outcome",
-            "units", "model_p", "brier"]
+            "units", "model_p", "brier", "settled_at"]
 
 
 def to_decimal(odds, fmt: str) -> float | None:
@@ -107,6 +110,7 @@ def rows_from_report(rep: dict) -> list[dict]:
                     "line_open_home": _num(sign * float(p["line_open"])) if p.get("line_open") is not None else "",
                     "odds": _num(p.get("odds")), "odds_format": fmt,
                     "implied_p_bet": _fmt(1 / to_decimal(p["odds"], fmt)) if p.get("odds") else "",
+                    "settled_at": to_bj(res["settled_at"]) if status != "active" and res.get("settled_at") else "",
                     "note": ("撤销：" + p.get("cancel_reason", "")) if status == "cancelled" else ""})
     for w in rep.get("watchlist") or []:
         out.append({"date": date, "match_id": w["match_id"], "league": w.get("league", ""), "home": w.get("home", ""),
@@ -115,12 +119,31 @@ def rows_from_report(rep: dict) -> list[dict]:
                     "line_open_home": _num(w.get("ah_home_line_open")), "odds_format": fmt,
                     "note": f"no_model_direction；{w.get('withheld_category') or ''}：{w.get('withheld_reason') or ''}"})
     for w in rep.get("watched") or []:
+        if (w.get("away") or "-").strip() in ("", "-") or w.get("home") == "多场":
+            continue  # 覆盖说明类条目（非单场比赛），不记模拟单
         mid = w.get("match_id") or f"watch-{w.get('home', '')}-{w.get('away', '')}"
         out.append({"date": date, "match_id": mid, "league": w.get("league", ""), "home": w.get("home", ""),
                     "away": w.get("away", ""), "kickoff_utc": w.get("kickoff_utc", ""), "status": "watch",
                     "odds_format": fmt,
                     "note": "no_model_direction；报告未给 match_id/开球/盘口；" + (w.get("reason_skipped") or "")})
     return out
+
+
+def to_bj(ts) -> str:
+    """任意 ISO 时间/aware datetime -> 北京时间 ISO 8601（+08:00，秒精度）。"""
+    dt = ts if isinstance(ts, datetime) else _parse(ts)
+    return dt.astimezone(BJ).replace(microsecond=0).isoformat()
+
+
+def add_aliases(r: dict) -> None:
+    """产品工程师别名列：pick=pick_team, odds_taken=odds, odds_close=close_odds, pnl=units；
+    stake：有模拟方向且未撤销/作废为 1，撤销/作废为 0，无方向留空。"""
+    r["pick"] = r.get("pick_team") or ({"home": r.get("home"), "away": r.get("away")}.get(r.get("pick_side")) or "")
+    r["odds_taken"], r["odds_close"], r["pnl"] = r.get("odds", ""), r.get("close_odds", ""), r.get("units", "")
+    if r.get("status") in ("cancelled", "void"):
+        r["stake"] = "0"
+    else:
+        r["stake"] = "1" if r.get("pick_side") in ("home", "away") else ""
 
 
 def load_snapshots(root: Path = SNAPSHOTS) -> dict[str, list[dict]] | None:
@@ -158,7 +181,7 @@ def apply_closing(r: dict, snaps: dict | None) -> None:
     s = max(pre, key=lambda s: _parse(s["captured_at"]))
     fmt = s.get("odds_format", "hk")
     hl = float(s["ah_home_line"])
-    r["close_home_line"], r["close_captured_at"] = _num(hl), s["captured_at"]
+    r["close_home_line"], r["close_captured_at"] = _num(hl), to_bj(s["captured_at"])
     side = r.get("pick_side")
     if side not in ("home", "away"):
         r["close_note"] = "无模拟方向，仅记录主队视角收盘线"
@@ -261,7 +284,11 @@ def build(reports_root: Path = REPORTS, out: Path = OUT, snapshots_root: Path = 
         elif not row["result"] and not row["score_note"]:
             row["score_note"] = "赛果未出/待回填"
         apply_settlement(row)
-        row["updated_at"] = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        if row["ah_outcome"] and not row["settled_at"]:
+            row["settled_at"] = to_bj(now)
+        row["updated_at"] = to_bj(now)
+        row["kickoff_bj"] = to_bj(row["kickoff_utc"]) if row["kickoff_utc"] else ""
+        add_aliases(row)
         result.append(row)
     result.sort(key=lambda x: (x["date"], x["kickoff_utc"], x["match_id"]))
     out.parent.mkdir(parents=True, exist_ok=True)
