@@ -9,7 +9,7 @@ roles:
   h2h:         [api_football, websearch_previews]
   form:        [api_football_local_history, websearch_previews]  # 免费档拿不到当季 standings/teams statistics
   standings:   [titan007_live_fixtures, websearch_previews]       # bfdata 带排名
-  asian_handicap_line: [titan007_odds, api_football_odds]          # api_football 多公司盘口用于交叉核对
+  asian_handicap_line: [titan007_odds, api_football_odds, the_odds_api]  # 多公司盘口交叉核对：api_football 优先，其次 the_odds_api，titan007 备用
 api_football:
   base_url: "https://v3.football.api-sports.io"
   auth: "header x-apisports-key，值取环境变量 API_FOOTBALL_KEY（CI: Secret API_FOOTBALL_KEY）；绝不写入仓库"
@@ -31,6 +31,33 @@ api_football:
       - 'h2h 的 last 参数 → {"plan": "Free plans do not have access to the Last parameter."}'
       - "h2h 只返回免费档可访问赛季(2022-2024)+当前赛季的交锋（Porto-Napoli 只返回本场）"
   odds_convention: "Asian Handicap 的 value 'Home -0.5' / 'Away -0.5' 中的数字都是主队让球数；'Away -0.5' = 客队 +0.5（由 Betfair 'Home +1.5 @1.06 / Away +1.5 @8.00' 推断）"
+the_odds_api:
+  base_url: "https://api.the-odds-api.com/v4"
+  auth: "query 参数 apiKey，值取 ODDS_API_KEY（环境变量优先，回退 /home/box/.config/ah-secrets.env，可用 AH_SECRETS_FILE 覆盖）；绝不写入仓库"
+  plan: Free            # 500 credits/月；odds 调用花费 = markets 数 × regions 数；/sports、/events 免费
+  quota_per_month: 500
+  reserve: 20           # 剩余 < 20 时客户端拒绝付费调用
+  regions: eu           # eu 单区即含 Pinnacle 等 8 家；加 uk 花费翻倍
+  markets: spreads      # 亚盘 = spreads（含 ±0.25/0.75 四分之一盘）；alternate_spreads 需逐场 /events/{id}/odds
+  role: "多公司亚盘/大小/1X2 交叉核对（优先级：api_football_odds 之后、titan007 之前）"
+  usage_file: data/cache/odds_api_usage.json
+  point_convention: "outcome.point 为该队让球数（主队 -0.5 = 主让半球）；代码 home_line=主队 point，ah_home_line=-point（titan007 约定正=主让）"
+  sport_keys:
+    J1: soccer_japan_j_league
+    K1: soccer_korea_kleague1
+    A-League: soccer_australia_aleague
+    CSL: soccer_china_superleague
+    Saudi: soccer_saudi_arabia_pro_league   # 注意：soccer_spl 是苏格兰超级联赛（/sports 实测 2026-11-04）
+    UCL: soccer_uefa_champs_league
+    UEL: soccer_uefa_europa_league
+    EPL: soccer_epl
+    La Liga: soccer_spain_la_liga
+    Serie A: soccer_italy_serie_a
+    Bundesliga: soccer_germany_bundesliga
+    Ligue 1: soccer_france_ligue_one
+    Championship: soccer_efl_champ
+  not_covered: [ACL Elite, ACL Two, Qatar Stars League]
+  tested_2026-11-04: "UCL spreads eu：9 场，8 家公司（Pinnacle/Marathon/1xBet/GTbets/Coolbet/Matchbook/BetOnline/BetAnything），每家每场只给 1 条主盘"
 # 2026-11-04 从 box(curl/WebFetch) 实测
 working:
   titan007_live_fixtures:

@@ -1,0 +1,6 @@
+[{"id":"ev1","sport_key":"soccer_uefa_champs_league","commence_time":"2026-11-04T20:00:00Z","home_team":"FC Porto","away_team":"Napoli",
+ "bookmakers":[
+  {"key":"pinnacle","title":"Pinnacle","markets":[{"key":"spreads","outcomes":[{"name":"FC Porto","price":1.95,"point":-0.25},{"name":"Napoli","price":1.93,"point":0.25}]}]},
+  {"key":"betfair","title":"Betfair","markets":[{"key":"spreads","outcomes":[{"name":"FC Porto","price":2.02,"point":-0.25},{"name":"Napoli","price":1.86,"point":0.25}]}]},
+  {"key":"x","title":"X","markets":[{"key":"spreads","outcomes":[{"name":"FC Porto","price":1.7,"point":-0.5},{"name":"Napoli","price":2.2,"point":0.5}]}]},
+  {"key":"y","title":"Y","markets":[{"key":"h2h","outcomes":[]}]}]}]

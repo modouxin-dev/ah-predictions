@@ -51,5 +51,26 @@ def fetch() -> dict[str, dict]:
     return parse(r.text)
 
 
+def cross_check_odds_api(sport: str, client=None) -> dict[str, dict]:
+    """The Odds API 多公司亚盘交叉核对（优先级：API-Football 主 → The Odds API → titan007 备用）。
+    返回 {"oddsapi-<event_id>": {home, away, commence, consensus, books}}；失败/无 key/预算不足返回 {}。"""
+    from . import odds_api
+    try:
+        c = client or odds_api.OddsAPI()
+        if not c.enabled:
+            return {}
+        events = c.odds(sport, markets="spreads")
+    except Exception as e:  # noqa: BLE001  优雅降级
+        print(f"[odds_api] skip: {e}", file=sys.stderr)
+        return {}
+    out = {}
+    for ev in events:
+        books = odds_api.normalize_spreads(ev)
+        out[f"oddsapi-{ev.get('id')}"] = {"home": ev.get("home_team"), "away": ev.get("away_team"),
+                                          "commence": ev.get("commence_time"),
+                                          "consensus": odds_api.consensus(books), "books": books}
+    return out
+
+
 if __name__ == "__main__":
     json.dump(fetch(), sys.stdout, ensure_ascii=False, indent=1)

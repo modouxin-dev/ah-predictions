@@ -71,3 +71,15 @@ Key 只从环境变量 `API_FOOTBALL_KEY` 读取，不写进仓库。联赛 id �
 | 预留（客户端低于此值拒绝非结算请求） | 10 |
 
 缓存 TTL：赛程 6 小时、交锋 7 天、伤停 3 小时、亚盘 30 分钟、首发公布后永久、完场比分永久；命中缓存不消耗额度。`python -m ah.api_football usage` 查看当日用量。
+
+## The Odds API（多公司亚盘交叉核对）
+
+- 接口：`https://api.the-odds-api.com/v4`，客户端 `src/ah/odds_api.py`，交叉核对入口 `fetch_odds.cross_check_odds_api(sport_key)`（返回各公司主盘 + 中位数共识盘口、公司数）。
+- 优先级：API-Football 多公司亚盘为主 → The Odds API 交叉核对 → titan007 备用；失败/无 Key/额度不足时自动跳过，不影响主流程。
+- 免费档 500 credits/月，每次 odds 调用花费 = markets × regions（默认 `spreads` × `eu` = 1）；`/sports`、`/events` 免费。用量记录在 `data/cache/odds_api_usage.json`（不提交），剩余 < 20 时拒绝调用。
+- 覆盖：J1、K1、澳超、中超、沙特（`soccer_saudi_arabia_pro_league`，注意 `soccer_spl` 是苏超）、欧冠、欧联、五大联赛、英冠；**不含亚冠和卡塔尔联赛**。
+- 盘口：spreads 即亚盘，含 ±0.25/±0.75 四分之一盘；水位 = 十进制赔率 − 1（港盘）。
+
+## 密钥文件
+
+所有 Key 均不进仓库。读取顺序：环境变量 → `/home/box/.config/ah-secrets.env`（`KEY=VALUE`，chmod 600；可用 `AH_SECRETS_FILE` 改路径），由 `src/ah/secrets.py` 负责。支持 `API_FOOTBALL_KEY`、`ODDS_API_KEY`、`ODDSPAPI_KEY`、`FOOTBALL_DATA_KEY`、`FIVEDOLLAR_KEY`。CI 中请用 GitHub Secrets 注入同名环境变量。
