@@ -165,18 +165,13 @@ def set_result(r: dict, match_id: str, score: str | None, review: str | None = N
 # ---------- 与 predictions.csv 同步 ----------
 
 def _read_csv(path: Path) -> list[dict]:
-    if not path.exists():
-        return []
-    return list(csv.DictReader(path.open(encoding="utf-8")))
+    from .settle import read_ledger  # v2 表头，兼容旧 15 列
+    return read_ledger(path)
 
 
 def _write_csv(path: Path, rows: list[dict]) -> None:
-    if not rows:
-        return
-    with path.open("w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        w.writerows(rows)
+    from .settle import write_ledger  # 按 v2 表头写，不丢新列
+    write_ledger(path, rows)
 
 
 def sync_csv(r: dict, csv_path: Path = DATA / "predictions.csv") -> int:
@@ -189,14 +184,30 @@ def sync_csv(r: dict, csv_path: Path = DATA / "predictions.csv") -> int:
             continue
         line, odds, conf = effective(p)
         res = p.get("result") or {}
+        pm = prematch_of(p) or {}
         if is_cancelled(p):
-            row.update({"confidence": "cancelled", "ah_outcome": "void", "units": "0", "settled": "true"})
+            # 保留原信心（status 列标记撤销），并记录撤销时盘口 final_line/final_odds
+            orig = policy.EN.get(p.get("confidence", ""), "")
+            if orig and str(row.get("confidence", "")).lower() in ("", "cancelled"):
+                row["confidence"] = orig
+            row.update({"status": "cancelled", "ah_outcome": "void", "units": "0", "settled": "true"})
+            if not row.get("final_line") and not row.get("final_odds"):
+                from .migrate_csv import final_from_pick
+                fl, fo = final_from_pick(p)
+                row["final_line"] = "" if fl is None else f"{float(fl):g}"
+                row["final_odds"] = "" if fo is None else f"{float(fo):g}"
             if res.get("score"):
                 row["result"] = res["score"]
         else:
             row["line"] = f"{float(line):g}"
             if odds is not None:
                 row["odds_if_known"] = f"{float(odds):g}"
+                row["odds_estimated"] = "false"
+            if pm.get("decision") == "调整":
+                row["final_line"] = f"{float(line):g}"
+                row["final_odds"] = "" if odds is None else f"{float(odds):g}"
+            if row.get("status") == "cancelled":
+                row["status"] = "active"  # 撤销被改回保留/调整
             row["confidence"] = policy.EN.get(conf, row.get("confidence", ""))
             if res.get("settlement"):
                 row.update({"result": res.get("score") or "", "ah_outcome": res["settlement"],
@@ -227,7 +238,7 @@ def sync_from_csv(csv_path: Path = DATA / "predictions.csv", reports: Path = REP
             res = p.get("result") or {}
             if res.get("score") == row["result"] and res.get("settlement"):
                 continue
-            set_result(r, row["match_id"], row["result"])
+            set_result(r, row["match_id"], row["result"], odds_format=row.get("odds_format") or "hk")
             dirty = True
             changed.append(f"{date} {row['match_id']}")
         if dirty:
