@@ -2,8 +2,8 @@
 
 设计：每个因子给 -2..+2 分（正=支持所选一方），加权求和 -> score；
 score >= settings.min_score_to_publish 才输出；按 score 映射信心等级。
-基本面特征（伤停、状态、xG 等）目前需人工/研究代理填入 features，
-TODO: 接入自动化基本面源（见 config/sources.yaml）。
+基本面特征：injuries / h2h / form 可由 enrich.enrich()（API-Football）自动给出参考值，
+通过 apply_enrichment() 填入（不覆盖研究代理已手工给出的值）；xG、战意等仍需人工研究。
 铁律：没有真实盘口(line)的比赛一律不输出。
 """
 from __future__ import annotations
@@ -88,3 +88,14 @@ def select(cands: list[Candidate], cfg: dict | None = None) -> list[dict]:
                       "reasons": c.reasons, "risks": c.risks, "sources": c.sources})
     picks.sort(key=lambda p: -p["score"])
     return picks[: cfg["max_picks_per_day"]]
+
+
+def apply_enrichment(c: Candidate, e: dict) -> Candidate:
+    """把 enrich.enrich() 的 suggested_features 填进候选（已有的手工值优先），并记录数据源。"""
+    for k, v in (e.get("suggested_features") or {}).items():
+        c.features.setdefault(k, v)
+    if e.get("api_fixture_id"):
+        src = f"API-Football fixture {e['api_fixture_id']}"
+        if src not in c.sources:
+            c.sources.append(src)
+    return c

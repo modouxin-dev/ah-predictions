@@ -1,0 +1,24 @@
+# API-Football 队名（规范名） -> 其他来源（titan007 中文名、报告里的中英混写、常见简称）
+# match.py 先查本表，再做模糊匹配（去重音、去 FC/SC 等词后的 token 包含 + 相似度）。
+# 匹配失败时把两边队名加到这里即可。
+aliases:
+  "Buriram United": [武里南联, 武里南]
+  "Kashima": [鹿岛鹿角, 鹿岛, Kashima Antlers]
+  "Pohang Steelers": [浦项制铁, 浦项]
+  "Gamba Osaka": [大阪钢巴, 钢巴]
+  "FC Porto": [波尔图, Porto]
+  "Napoli": [那不勒斯, SSC Napoli]
+  "Fenerbahçe": [费内巴切, Fenerbahce]
+  "Liverpool": [利物浦]
+  "RB Leipzig": [莱比锡, 莱比锡红牛, Leipzig]
+  "Manchester City": [曼城, Man City]
+  "AEK Athens FC": [AEK雅典, AEK, AEK Athens]
+  "Real Madrid": [皇家马德里, 皇马]
+  "Borussia Dortmund": [多特蒙德, Dortmund]
+  "Real Betis": [皇家贝蒂斯, 贝蒂斯]
+  "PSV Eindhoven": [埃因霍温, PSV]
+  "Club Brugge KV": [布鲁日, Club Brugge]
+  "Slavia Praha": [布拉格斯拉维亚, 斯拉维亚, Slavia Prague]
+  "Arsenal": [阿森纳]
+  "Lens": [朗斯, RC Lens]
+  "Como": [科莫]

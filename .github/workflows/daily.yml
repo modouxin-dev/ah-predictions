@@ -12,6 +12,7 @@ jobs:
       PYTHONPATH: src
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}   # 可选；未设置时 fetch_fixtures 回退 titan007
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
