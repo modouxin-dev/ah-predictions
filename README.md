@@ -102,3 +102,11 @@ Key 只从环境变量 `API_FOOTBALL_KEY` 读取，不写进仓库。联赛 id �
 - `python -m ah consensus DATE` 会为五大联赛的推荐写入 `picks[].bet365_movement`（推荐方视角的初盘→即时盘和水位、是否朝推荐方升盘），报告显示“Bet365 盘口变化”。每个推荐约 2 次请求。
 - 免费档对外展示需署名 “Football data by 5DollarFootballAPI”，报告中已自动带上。
 - 以后可升级到 Community Access（300 次/小时，可加一个亚洲国家联赛包，如日职/韩K）。
+
+## OddsPapi（亚洲公司亚盘共识，补亚冠/卡塔尔）
+
+- 接口 `https://api.oddspapi.io/v4`，query 参数 `apiKey`，Key 只从环境变量 `ODDSPAPI_KEY` 读取（不写入任何文件）。客户端 `src/ah/oddspapi.py`。
+- 免费档 250 次/月（每月 1 日重置），每次计费调用算 1 次（报错也算）；`/historical-odds` 免费，`/account` 不计数。本地计数在 `data/cache/oddspapi_usage.json`，剩余 ≤ 30 时停止；`Client().sync_usage()` 用 `/account` 校准。
+- 覆盖（tournamentId）：亚冠精英 463、亚冠二 668、卡塔尔联 825、沙特联 955、日职 196、日职乙 402、韩K 410、中超 649、澳超 136、欧冠 7、英冠 18。
+- 亚盘：每家公司取主盘（两边赔率最接近的线），与其他来源同结构。默认只请求亚洲公司（Pinnacle、SBOBet、Singbet、Dafabet、3et、Saba、PS3838、198bet）。
+- `python -m ah consensus DATE`：The Odds API 不覆盖或没匹配上的推荐（如亚冠、卡塔尔）改用 OddsPapi，报告中“多家公司共识”标注来源 OddsPapi。每联赛每天 1 次 `/fixtures` + 每个推荐 1 次 `/odds`。

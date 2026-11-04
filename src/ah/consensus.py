@@ -26,6 +26,7 @@ SPORT_BY_LEAGUE = {
 }
 THRESHOLD = 0.75
 SOURCE_URL = "https://the-odds-api.com/"
+ODDSPAPI_URL = "https://oddspapi.io/"
 FIVEDOLLAR_URL = "https://5dollarfootballapi.com/"  # 免费档公开展示需署名：Football data by 5DollarFootballAPI
 
 
@@ -89,7 +90,7 @@ def _bet365(fd5, lid, p, aliases):
         return None
 
 
-def attach(report: dict, fetch=None, aliases=None, leagues=None, fd5=None) -> dict:
+def attach(report: dict, fetch=None, aliases=None, leagues=None, fd5=None, papi=None) -> dict:
     """原地更新 report['picks'][*]['market_consensus']。返回 {sport: 事件数 或 'error'} 便于日志。"""
     if fetch is None:
         from .fetch_odds import cross_check_odds_api as fetch
@@ -114,7 +115,36 @@ def attach(report: dict, fetch=None, aliases=None, leagues=None, fd5=None) -> di
             p["market_consensus"] = s
             if SOURCE_URL not in p["sources"]:
                 p["sources"].append(SOURCE_URL)
+    _attach_oddspapi(report, papi, aliases, leagues, log)
     return log
+
+
+def _attach_oddspapi(report, papi, aliases, leagues, log) -> None:
+    """补充源：The Odds API 没给出共识的推荐（亚冠/卡塔尔等）用 OddsPapi 亚洲公司共识；每联赛 1 次 /fixtures。"""
+    from . import oddspapi
+    if papi is None or not papi.enabled:
+        return
+    groups: dict[str, list] = {}
+    for p in report.get("picks", []):
+        lid = league_id(p.get("league", ""), leagues)
+        if not p.get("market_consensus") and lid in oddspapi.TOURNAMENTS:
+            groups.setdefault(lid, []).append(p)
+    for lid, ps in groups.items():
+        try:
+            evs = oddspapi.events_for(papi, lid, ps, aliases)
+        except Exception as e:  # noqa: BLE001  优雅降级（含 BudgetExceeded）
+            print(f"[oddspapi] skip {lid}: {e}", file=sys.stderr)
+            log[f"oddspapi:{lid}"] = "error"
+            continue
+        log[f"oddspapi:{lid}"] = len(evs)
+        for p in ps:
+            ev = find_event(evs, p["home"], p["away"], p["kickoff_utc"], aliases)
+            s = summarize(ev, p["pick_side"]) if ev else None
+            if s:
+                s["source"] = "OddsPapi"
+                p["market_consensus"] = s
+                if ODDSPAPI_URL not in p["sources"]:
+                    p["sources"].append(ODDSPAPI_URL)
 
 
 def main() -> None:
@@ -125,7 +155,8 @@ def main() -> None:
     path, _ = report_paths(a.date)
     r = json.loads(path.read_text(encoding="utf-8"))
     from .fivedollar import Client as FD5
-    log = attach(r, fd5=FD5())
+    from .oddspapi import Client as PAPI
+    log = attach(r, fd5=FD5(), papi=PAPI())
     path.write_text(json.dumps(r, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     n = sum(1 for p in r["picks"] if p.get("market_consensus"))
     print(f"consensus: calls={log} picks_with_consensus={n}/{len(r['picks'])}", file=sys.stderr)
