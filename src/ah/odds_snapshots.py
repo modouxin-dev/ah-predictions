@@ -1,5 +1,5 @@
 """盘口快照（数据官）：给每天筛选过的每场比赛记录 开盘(open) / 报告时(report) / 收盘(close) 三个时点的
-各公司亚盘主盘线和主客水位，写入 data/odds_snapshots/，供回测审计员计算 CLV。格式说明见 docs/odds_snapshots.md。
+各公司亚盘主盘线和主客水位，写入 data/snapshots/odds/（旧路径 data/odds_snapshots/ 只读兼容），供回测审计员计算 CLV。格式说明见 docs/odds_snapshots.md。
 
 筛选清单：reports/YYYY/MM/<date>.json 的 picks + watched + watchlist（按 match_id 去重；没有 match_id
 或 kickoff_utc 的条目无法对上 API-Football，跳过并在 summary 里列出）。
@@ -14,11 +14,14 @@
    保留 --apif-floor（默认 30）次给首发/结算。
 
 验证状态（同一场、同一时点）：
-- 行级 verification：同一公司在 ≥2 个来源都有主盘且盘口线一致 → verified；主盘线不同但对方梯子里同一条线的
-  两边赔率都在 ±0.06 内（同一市场，只是主盘选线不同）→ verified（status_detail 标 ladder_price_match）；
-  否则 conflict；只有一个来源 → single。
-- 场级 match_verification：每个来源取各公司主盘线的众数（并列取中位偏低）作为该源共识；≥2 个来源共识一致 → verified；
-  共识线不同但共同公司全部行级 verified → verified；否则 conflict；只有一个来源 → single；没有数据 → missing（写一行占位，绝不估算）。
+- 行级 verification：同一公司在 ≥2 个来源的主盘线相同、且该线两边赔率差都 ≤0.06 → verified（真正的两源一致）；
+  主盘线不同，但同一条线（任一方的主盘线）在两边梯子里都有、且两边赔率差都 ≤0.06 → verified_ladder（辅助证据，
+  status_detail 标 ladder_price_match）；否则 conflict；只有一个来源 → single。
+  同一主线但赔率差 >0.06 → conflict，status_detail 标 same_line_price_diff。
+- 场级 match_verification：每个来源取各公司主盘线的众数（并列取中位偏低）作为该源共识。共同公司（≥2 来源都有的公司）
+  有 conflict → conflict；否则共同公司有 verified_ladder → verified_ladder；否则共识一致或共同公司全 verified → verified；
+  共识不同且没有共同公司 → conflict；只有一个来源 → single；没有数据 → missing（写一行占位，绝不估算）。
+- 签发门槛：推荐那条线本身必须是普通 verified；verified_ladder 只能算辅助证据。
 
 用法（北京时间安排见 docs/odds_snapshots.md）：
   PYTHONPATH=src .venv/bin/python -m ah.odds_snapshots report open --date 2026-11-05
@@ -42,10 +45,11 @@ from pathlib import Path
 from . import DATA, REPORTS
 from .match import BJT, parse_dt
 
-SNAP_DIR = DATA / "odds_snapshots"
+SNAP_DIR = DATA / "snapshots" / "odds"
+LEGACY_SNAP_DIR = DATA / "odds_snapshots"     # 2026-11-04 之前的路径：新路径没有文件时从这里读（只读，写一律写新路径）
 ODDS_API_CACHE = DATA / "cache" / "odds_api_snap"
 PHASES = ("open", "report", "close")
-STATUSES = ("verified", "conflict", "single", "missing")
+STATUSES = ("verified", "verified_ladder", "conflict", "single", "missing")
 SOURCES = ("oddspapi", "odds_api", "api_football")
 LIVE_SOURCES = ("odds_api", "api_football")       # 只能取“当前”盘口的来源
 # 回测审计员约定的必备字段：match_id, captured_at, stage, bookmaker, ah_home_line, odds_home, odds_away, odds_format
@@ -92,6 +96,20 @@ def report_path(date: str) -> Path:
 def paths(date: str, snap_dir: Path | None = None) -> dict:
     d = Path(snap_dir or SNAP_DIR)
     return {"csv": d / f"{date}.csv", "summary": d / f"{date}.summary.json", "map": d / f"{date}.map.json"}
+
+
+def read_path(date: str, kind: str, snap_dir: Path | None = None, legacy_dir: Path | None = None) -> Path:
+    """读取用：新路径有文件就用新路径；否则旧路径（data/odds_snapshots/）有就用旧的；都没有返回新路径。
+    snap_dir 显式给出时（测试）只有同时给 legacy_dir 才回退。"""
+    new = paths(date, snap_dir)[kind]
+    if new.exists():
+        return new
+    legacy = legacy_dir if legacy_dir is not None else (LEGACY_SNAP_DIR if snap_dir is None else None)
+    if legacy is not None:
+        old = paths(date, legacy)[kind]
+        if old.exists():
+            return old
+    return new
 
 
 def screened(report: dict, leagues=None) -> tuple[list[dict], list[str]]:
@@ -190,10 +208,22 @@ PRICE_TOL = 0.06   # 跨来源同一盘口线的十进制赔率容差（抓取�
 
 
 def _same_price(ladder: dict, book: str, sa: str, line: float, sb: str) -> bool:
-    """来源 sa 的主盘线 line 是否在来源 sb 的同公司梯子里、且两边赔率都在容差内。"""
+    """同一公司、同一条线 line 在来源 sa 和 sb 里都有，且两边赔率都在容差内。"""
     a = ladder.get((book, sa), {}).get(line)
     b = ladder.get((book, sb), {}).get(line)
     return bool(a and b and abs(a[0] - b[0]) <= PRICE_TOL and abs(a[1] - b[1]) <= PRICE_TOL)
+
+
+def _book_status(ladder: dict, book: str, srcs: dict) -> str:
+    """srcs: {source: main_line}。verified = 同一主线且赔率一致；verified_ladder = 主线不同但同一条线上赔率一致。"""
+    if len(srcs) < 2:
+        return "single"
+    pairs = [(a, b) for a in srcs for b in srcs if a < b]
+    if all(srcs[a] == srcs[b] and _same_price(ladder, book, a, srcs[a], b) for a, b in pairs):
+        return "verified"
+    if all(_same_price(ladder, book, a, srcs[a], b) or _same_price(ladder, book, b, srcs[b], a) for a, b in pairs):
+        return "verified_ladder"
+    return "conflict"
 
 
 def assign_status(rows: list[dict]) -> dict:
@@ -212,18 +242,9 @@ def assign_status(rows: list[dict]) -> dict:
         for r in real:
             if _f(r.get("ah_home_line")) is not None and _f(r.get("odds_home")) and _f(r.get("odds_away")):
                 ladder[(r["bookmaker"], r["source"])][float(r["ah_home_line"])] = (float(r["odds_home"]), float(r["odds_away"]))
-        book_status, via_ladder = {}, set()
-        for b, srcs in by_book.items():
-            if len(srcs) < 2:
-                book_status[b] = "single"
-            elif len(set(srcs.values())) == 1:
-                book_status[b] = "verified"
-            elif all(_same_price(ladder, b, sa, srcs[sa], sb) or _same_price(ladder, b, sb, srcs[sb], sa)
-                     for sa in srcs for sb in srcs if sa < sb and srcs[sa] != srcs[sb]):
-                book_status[b] = "verified"   # 主盘选线不同，但对方在同一条线上的价格一致
-                via_ladder.add(b)
-            else:
-                book_status[b] = "conflict"
+        book_status = {b: _book_status(ladder, b, srcs) for b, srcs in by_book.items()}
+        via_ladder = {b for b, st in book_status.items() if st == "verified_ladder"}
+        price_diff = {b for b, st in book_status.items() if st == "conflict" and len(set(by_book[b].values())) == 1}
         by_src = defaultdict(list)
         for r in mains:
             by_src[r["source"]].append(float(r["ah_home_line"]))
@@ -234,14 +255,23 @@ def assign_status(rows: list[dict]) -> dict:
         elif len(src_line) == 1:
             ms = "single"
         elif Counter(src_line.values()).most_common(1)[0][1] >= 2:
-            ms = "verified"
-        else:   # 来源共识线不同：若共同公司都在同一盘口线上价格一致，视为同一市场 → verified
-            ms = "verified" if common and all(st == "verified" for st in common.values()) else "conflict"
+            sts = set(common.values())
+            ms = "verified" if sts <= {"verified"} else ("verified_ladder" if sts <= {"verified", "verified_ladder"}
+                                                         else "conflict")
+        else:   # 来源共识线不同（各源公司组合不同）：看共同公司——全 verified → verified；有 ladder 无 conflict → verified_ladder
+            sts = set(common.values())
+            ms = ("verified" if sts == {"verified"} else
+                  "verified_ladder" if sts and sts <= {"verified", "verified_ladder"} else "conflict")
         for r in rs:
             r["match_verification"] = ms
             r["verification"] = book_status.get(r["bookmaker"], "single") if r.get("source") else "missing"
-            if r.get("source") and r["bookmaker"] in via_ladder and "ladder_price_match" not in (r.get("status_detail") or ""):
-                r["status_detail"] = ((r.get("status_detail") or "") + " ladder_price_match").strip()
+            detail = " ".join(x for x in (r.get("status_detail") or "").split()
+                              if x not in ("ladder_price_match", "same_line_price_diff"))
+            if r.get("source") and r["bookmaker"] in via_ladder:
+                detail = (detail + " ladder_price_match").strip()
+            elif r.get("source") and r["bookmaker"] in price_diff:   # 同一主线但赔率差 >0.06（多为抓取时间不同）
+                detail = (detail + " same_line_price_diff").strip()
+            r["status_detail"] = detail
         out[key] = {"verification": ms, "books": len(by_book),
                     "sources": {s: {"line": src_line[s], "books": len(by_src[s])} for s in sorted(src_line)},
                     "book_status": dict(Counter(book_status.values()))}
@@ -291,8 +321,9 @@ class Snapshotter:
     def __init__(self, date: str, papi=None, oddsapi=None, apif=None, now=None, snap_dir: Path | None = None,
                  sources=SOURCES, apif_mode: str = "auto", apif_floor: int = 30, papi_groups=PAPI_BOOK_GROUPS,
                  ah_markets: dict | None = None, aliases=None, leagues=None, odds_api_cache: Path = ODDS_API_CACHE,
-                 log=None):
+                 log=None, legacy_dir: Path | None = None):
         self.date, self.papi, self.oddsapi, self.apif = date, papi, oddsapi, apif
+        self.snap_dir, self.legacy_dir = snap_dir, legacy_dir
         self.now = now or (lambda: datetime.now(timezone.utc))
         self.p = paths(date, snap_dir)
         self.sources, self.apif_mode, self.apif_floor = tuple(sources), apif_mode, apif_floor
@@ -303,7 +334,7 @@ class Snapshotter:
         self.ah_markets, self.aliases, self.leagues = ah_markets, aliases, leagues
         self.odds_api_cache = Path(odds_api_cache)
         self.log = log or (lambda m: print(m, file=sys.stderr))
-        self.map = _load_json(self.p["map"], {})
+        self.map = _load_json(read_path(date, "map", snap_dir, legacy_dir), {})
         self.calls = Counter()
         self._oa_events: dict[str, list] = {}
 
@@ -458,7 +489,7 @@ class Snapshotter:
             backfill: bool = False) -> dict:
         now = self.now()
         as_of = as_of or now
-        rows = load_rows(self.p["csv"])
+        rows = load_rows(read_path(self.date, "csv", self.snap_dir, self.legacy_dir))
         if "oddspapi" in self.sources and self.papi is not None and self.papi.enabled and matches:
             self._map_oddspapi(matches)
         replaced: dict[tuple, list] = {}     # (mid, phase, source) -> rows（成功抓取的才替换）
@@ -518,11 +549,11 @@ class Snapshotter:
 
 
 def write_summary(date: str, all_matches: list[dict], skipped: list[str], result: dict, phases, quota: dict,
-                  snap_dir: Path | None = None, now: datetime | None = None) -> dict:
+                  snap_dir: Path | None = None, now: datetime | None = None, legacy_dir: Path | None = None) -> dict:
     p = paths(date, snap_dir)
-    rows = load_rows(p["csv"])
+    rows = load_rows(read_path(date, "csv", snap_dir, legacy_dir))
     status = assign_status(rows)
-    prev = _load_json(p["summary"], {})
+    prev = _load_json(read_path(date, "summary", snap_dir, legacy_dir), {})
     ms, counts = [], {ph: Counter() for ph in PHASES}
     for m in sorted(all_matches, key=lambda x: (x["kickoff_utc"], x["match_id"])):
         e = {k: m[k] for k in ("match_id", "kickoff_utc", "league_id", "home", "away", "list")}
@@ -615,7 +646,7 @@ def main(argv=None) -> None:
             continue
         report = json.loads(rp.read_text(encoding="utf-8"))
         allm, skipped = screened(report)
-        existing = load_rows(paths(date)["csv"])
+        existing = load_rows(read_path(date, "csv"))
         todo = select(allm, a.phases, now, a.lead, a.backfill, set(a.match or []), existing)
         if not todo:
             print(f"[snap] {date}: {','.join(a.phases)} 无需处理的场次", file=sys.stderr)

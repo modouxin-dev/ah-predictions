@@ -29,7 +29,13 @@ CACHE_DIR = DATA / "cache" / "oddspapi"
 USAGE_FILE = DATA / "cache" / "oddspapi_usage.json"
 MONTHLY_LIMIT = 250
 RESERVE = 30
-COOLDOWN_S = 1.1
+COOLDOWN_S = 1.1        # 兼容旧引用；实际间隔见 MIN_INTERVAL_S / config/sources.yaml
+# 同一 key 同一端点两次请求的最小间隔（秒）。官方文档（oddspapi.io/en/docs/errors「Rate limits」）：
+# historical-odds/players 5s，fixtures/settlements 2s，account 等 1s，odds/fixture 0.5s；这里各加约 10% 余量。
+# 2026-11-04 实测：按 1.1s 发 historical-odds，约 34 次请求触发 ~30 次 429，成功请求间隔稳定在 ~7.6s。
+# 由 config/sources.yaml 的 odds_snapshots.sources.oddspapi.min_interval_seconds 配置（缺省用这里）。
+MIN_INTERVAL_S = {"default": 1.1, "historical-odds": 5.5, "players": 5.5, "fixtures": 2.2, "settlements": 2.2,
+                  "odds": 0.6, "fixture": 0.6}
 BACKOFF_BASE_S = 2.0   # 429/5xx 指数退避：2s、4s、8s（尊重 Retry-After），上限 BACKOFF_MAX_S
 BACKOFF_MAX_S = 60.0
 RETRIES = 3
@@ -48,6 +54,28 @@ class BudgetExceeded(OddsPapiError):
     pass
 
 
+def load_min_intervals(path: Path | None = None) -> dict:
+    """读 config/sources.yaml → odds_snapshots.sources.oddspapi.min_interval_seconds（或 odds_snapshots.oddspapi.…）（数字=所有端点，或 {endpoint: 秒, default: 秒}）。
+    文件/字段缺失或格式不对时用 MIN_INTERVAL_S。"""
+    out = dict(MIN_INTERVAL_S)
+    try:
+        import yaml
+        cfg = yaml.safe_load((path or CONFIG / "sources.yaml").read_text(encoding="utf-8")) or {}
+        sec = cfg.get("odds_snapshots") or {}
+        v = (((sec.get("sources") or {}).get("oddspapi") or {}).get("min_interval_seconds")
+             if ((sec.get("sources") or {}).get("oddspapi") or {}).get("min_interval_seconds") is not None
+             else (sec.get("oddspapi") or {}).get("min_interval_seconds"))
+    except Exception:  # noqa: BLE001  配置坏了不影响采集，退回默认
+        return out
+    if isinstance(v, (int, float)) and not isinstance(v, bool) and v >= 0:
+        return {k: float(v) for k in out} | {"default": float(v)}
+    if isinstance(v, dict):
+        for k, x in v.items():
+            if isinstance(x, (int, float)) and not isinstance(x, bool) and x >= 0:
+                out[str(k).strip("/")] = float(x)
+    return out
+
+
 def load_ah_markets(path: Path | None = None) -> dict:
     return json.loads((path or CONFIG / "oddspapi_ah_markets.json").read_text(encoding="utf-8"))
 
@@ -55,13 +83,20 @@ def load_ah_markets(path: Path | None = None) -> dict:
 class Client:
     def __init__(self, key: str | None = None, session=None, cache_dir: Path = CACHE_DIR,
                  usage_file: Path = USAGE_FILE, reserve: int = RESERVE, limit: int = MONTHLY_LIMIT,
-                 sleep=time.sleep, now=None, retries: int = RETRIES):
+                 sleep=time.sleep, now=None, retries: int = RETRIES, min_interval=None, clock=time.time):
         self._key = key if key is not None else get_secret("ODDSPAPI_KEY")
         self.s = session or requests.Session()
         self.cache_dir, self.usage_file = Path(cache_dir), Path(usage_file)
         self.reserve, self.limit, self.sleep = reserve, limit, sleep
         self.now = now or (lambda: datetime.now(timezone.utc))
         self._last = 0.0
+        self._last_by: dict[str, float] = {}
+        self.clock = clock
+        if min_interval is None:
+            min_interval = load_min_intervals()
+        elif isinstance(min_interval, (int, float)):       # 一个数 = 所有端点同一间隔
+            min_interval = {k: float(min_interval) for k in MIN_INTERVAL_S}
+        self.min_interval = {**MIN_INTERVAL_S, **min_interval}
         self.retries = retries
         self.backoffs: list = []   # [(path, status, sleep_s)]，便于日志/汇报
 
@@ -125,12 +160,14 @@ class Client:
     def _request(self, path: str, params: dict, retry_5xx: bool = False):
         """带冷却与指数退避：429（及免费端点的 5xx）最多重试 self.retries 次（2s、4s、8s…，尊重 Retry-After，上限 60s）。
         429 不计入额度（OddsPapi 未处理该请求）；计费端点的 5xx 会计数，所以不重试以保护月额度。不换 IP、不绕限。"""
+        ep = path.strip("/").split("/")[0]
+        gap = self.min_interval.get(ep, self.min_interval.get("default", COOLDOWN_S))
         for attempt in range(self.retries + 1):
-            wait = COOLDOWN_S - (time.time() - self._last)
+            wait = gap - (self.clock() - self._last_by.get(ep, 0.0))
             if wait > 0:
                 self.sleep(wait)
             r = self.s.get(f"{BASE_URL}/{path.lstrip('/')}", params={**params, "apiKey": self._key}, timeout=60)
-            self._last = time.time()
+            self._last = self._last_by[ep] = self.clock()
             retry = r.status_code == 429 or (retry_5xx and r.status_code >= 500)
             if not retry or attempt == self.retries:
                 return r
@@ -139,6 +176,12 @@ class Client:
             try:
                 delay = max(delay, float(ra)) if ra is not None else delay
             except ValueError:
+                pass
+            try:   # 官方 429 体：{"error": {"code": "RATE_LIMITED", "retryMs": 420}}
+                ms = ((r.json() or {}).get("error") or {}).get("retryMs")
+                if isinstance(ms, (int, float)):
+                    delay = max(delay, ms / 1000.0)
+            except Exception:  # noqa: BLE001
                 pass
             self.backoffs.append((path, r.status_code, min(delay, BACKOFF_MAX_S)))
             self.sleep(min(delay, BACKOFF_MAX_S))
