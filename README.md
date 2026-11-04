@@ -87,3 +87,10 @@ Key 只从环境变量 `API_FOOTBALL_KEY` 读取，不写进仓库。联赛 id �
 ### 多家公司共识写入日报
 
 `PYTHONPATH=src python -m ah consensus YYYY-MM-DD` 会按推荐所属联赛（每联赛当天最多 1 次 odds 调用，遵守 reserve）拉取 The Odds API 亚盘，按队名（规范化 + `config/team_aliases.yaml` + 模糊匹配阈值 0.75）和开球时间（±15 分钟）匹配，把共识写入 `picks[].market_consensus`（中位盘口、公司数、一致家数、Pinnacle 盘口，均为推荐方视角），再 `render` 即在报告中显示“多家公司共识”。daily.yml 已在 render 前自动执行（需 Secret `ODDS_API_KEY`，缺失则跳过）。
+
+## football-data.org（欧洲联赛基本面 + 第二比分源）
+
+- 接口 `https://api.football-data.org/v4`，请求头 `X-Auth-Token`，Key 为 `FOOTBALL_DATA_KEY`（同上密钥文件）。客户端 `src/ah/football_data.py`。
+- 免费档 10 次/分钟：按响应头 `X-Requests-Available-Minute` / `X-RequestCounter-Reset` 自动等待，遇 429 退避重试；结果缓存在 `data/cache/football_data/`。
+- 覆盖：英超 PL、英冠 ELC、欧冠 CL、法甲 FL1、德甲 BL1、意甲 SA、西甲 PD（不含欧联和所有亚洲联赛）。
+- 用途：`enrich(..., fd_code="CL")` 补当季积分榜、近 5 场状态、交锋（API-Football 免费档拿不到当季数据）；`settle` 回填比分时对欧洲比赛用它交叉核对，两源比分不一致则不结算、日志标记 mismatch 待人工确认；API-Football 匹配不到时用它回填。

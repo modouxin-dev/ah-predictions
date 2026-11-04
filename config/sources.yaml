@@ -3,12 +3,12 @@
 # titan007：亚盘初盘/即时盘/水位的主数据源（推荐用的盘口以此为准），同时是赛程/比分备用源
 roles:
   fixtures:    [api_football, titan007_live_fixtures]
-  final_scores: [api_football, titan007_live_fixtures]
+  final_scores: [api_football, football_data, titan007_live_fixtures]  # 欧洲比赛 football_data 交叉核对
   injuries:    [api_football, websearch_previews]
   lineups:     [api_football, websearch_previews]
   h2h:         [api_football, websearch_previews]
-  form:        [api_football_local_history, websearch_previews]  # 免费档拿不到当季 standings/teams statistics
-  standings:   [titan007_live_fixtures, websearch_previews]       # bfdata 带排名
+  form:        [api_football_local_history, football_data, websearch_previews]  # 免费档拿不到当季 standings/teams statistics
+  standings:   [football_data, titan007_live_fixtures, websearch_previews]       # bfdata 带排名
   asian_handicap_line: [titan007_odds, api_football_odds, the_odds_api]  # 多公司盘口交叉核对：api_football 优先，其次 the_odds_api，titan007 备用
 api_football:
   base_url: "https://v3.football.api-sports.io"
@@ -58,6 +58,16 @@ the_odds_api:
     Championship: soccer_efl_champ
   not_covered: [ACL Elite, ACL Two, Qatar Stars League]
   tested_2026-11-04: "UCL spreads eu：9 场，8 家公司（Pinnacle/Marathon/1xBet/GTbets/Coolbet/Matchbook/BetOnline/BetAnything），每家每场只给 1 条主盘"
+football_data:
+  base_url: "https://api.football-data.org/v4"
+  auth: "请求头 X-Auth-Token，值取 FOOTBALL_DATA_KEY（环境变量优先，回退 ah-secrets.env）；绝不写入仓库"
+  plan: Free            # 10 次/分钟；读 X-Requests-Available-Minute / X-RequestCounter-Reset 节流，429 退避重试
+  role: "补 API-Football 免费档欧洲联赛空缺：当季积分榜、球队近期状态、交锋、按日期赛程/比分；欧洲比赛结算第二比分源（不一致则暂不结算）"
+  free_competitions: [PL, ELC, CL, FL1, BL1, SA, PD, PPL, DED, BSA, CLI, EC, WC]   # 无亚洲联赛
+  coverage: {epl: PL, championship: ELC, ucl: CL, ligue1: FL1, bundesliga: BL1, seriea: SA, laliga: PD}
+  not_covered: [uel, acl_elite, acl_two, j1, j2, k1, aleague, csl, spl, qsl]
+  cache: data/cache/football_data/（matches 10m, standings 6h, team matches 3h, h2h 7d）
+  tested_2026-11-04: "GET /matches?competitions=CL&dateFrom=2026-11-04 → 9 场；Porto-Napoli id 575392 TIMED；/competitions/CL/standings 当季联赛阶段可用（Porto 第35、Napoli 第24）"
 # 2026-11-04 从 box(curl/WebFetch) 实测
 working:
   titan007_live_fixtures:

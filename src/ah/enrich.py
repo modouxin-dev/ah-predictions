@@ -45,7 +45,8 @@ def form_feature(mine: str, opp: str) -> float:
 
 
 def enrich(fx: dict, pick_side: str = "home", client: Client | None = None, injuries_covered: bool = True,
-           want_odds: bool = True, want_lineups: bool = False) -> dict:
+           want_odds: bool = True, want_lineups: bool = False, fd_code: str | None = None,
+           fd_client=None) -> dict:
     """fx 为 fetch_fixtures.normalize_api 的输出。每项失败都不影响其他项（记录到 errors）。"""
     c = client or Client()
     fid, hid, aid = fx["api_fixture_id"], fx["home_id"], fx["away_id"]
@@ -77,6 +78,23 @@ def enrich(fx: dict, pick_side: str = "home", client: Client | None = None, inju
     fa = form_from_fixtures(hist, aid, before=fx["kickoff_utc"].replace("Z", "+00:00"))
     out["form"] = {"home": fh, "away": fa, "note": "由本地累积的每日赛程计算，样本随运行天数增加"}
     out["suggested_features"]["form"] = form_feature(fh, fa) if pick_side == "home" else form_feature(fa, fh)
+    if fd_code:  # 欧洲联赛：football-data.org 补当季积分榜/状态/交锋
+        from . import football_data as fd
+        try:
+            fdc = fd_client or fd.Client()
+            if fdc.enabled:
+                f = fd.fundamentals(fdc, fd_code, fx["home"], fx["away"], fx["kickoff_utc"], pick_side)
+                out["football_data"] = f
+                fm = f.get("form") or {}
+                if len(fm.get("home", "")) >= 3 and len(fm.get("away", "")) >= 3 and (len(fh) < 3 or len(fa) < 3):
+                    out["form"] = {"home": fm["home"], "away": fm["away"], "note": "football-data.org 近 5 场"}
+                    out["suggested_features"]["form"] = (form_feature(fm["home"], fm["away"]) if pick_side == "home"
+                                                         else form_feature(fm["away"], fm["home"]))
+                if f.get("h2h") and "h2h" not in out:
+                    out["h2h"] = f["h2h"]
+                    out["suggested_features"]["h2h"] = h2h_feature(f["h2h"])
+        except Exception as e:  # noqa: BLE001
+            out["errors"]["football_data"] = str(e)
     if want_odds:
         raw = safe("odds", lambda: c.odds(fid))
         if raw is not None:

@@ -98,7 +98,29 @@ def settle_csv(path: Path) -> int:
     return n
 
 
-def autofill_results(path: Path, client=None, now=None, min_after_kickoff_min: int = 110) -> list[dict]:
+def _fd_code(league: str) -> str | None:
+    from .consensus import league_id
+    from .football_data import CODE_BY_LEAGUE
+    try:
+        return CODE_BY_LEAGUE.get(league_id(league or "") or "")
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _fd_score(fd_client, r) -> tuple[int, int] | None:
+    """football-data.org 第二比分源（仅欧洲联赛）；不可用时 None。"""
+    code = _fd_code(r.get("league", ""))
+    if not code or fd_client is None or not fd_client.enabled:
+        return None
+    from .football_data import score_for
+    try:
+        return score_for(fd_client, code, r["home"], r["away"], r["kickoff_utc"])
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def autofill_results(path: Path, client=None, now=None, min_after_kickoff_min: int = 110,
+                     fd_client=None) -> list[dict]:
     """用 API-Football 自动回填 predictions.csv 中已开赛 >=110 分钟且未填比分的 result。
     match_id 为 apif-<id> 时直接用；否则按日期取赛程，开球±15分钟 + 队名模糊匹配找到 fixture。
     亚盘按 90 分钟（含补时）比分结算：使用 score.fulltime，加时/点球不计。
@@ -131,6 +153,12 @@ def autofill_results(path: Path, client=None, now=None, min_after_kickoff_min: i
             else:
                 fx = find_fixture(c.fixtures_by_date(ko.strftime("%Y-%m-%d")), r["home"], r["away"], ko)
                 if not fx:
+                    fs = _fd_score(fd_client, r)
+                    if fs:
+                        r["result"] = f"{fs[0]}-{fs[1]}"
+                        changed = True
+                        log.append({"match_id": mid, "action": "filled", "detail": f"football-data.org {r['result']}"})
+                        continue
                     log.append({"match_id": mid, "action": "unmatched",
                                 "detail": "API-Football 中未找到对应比赛，请补 config/team_aliases.yaml 或手动填比分"})
                     continue
@@ -143,10 +171,17 @@ def autofill_results(path: Path, client=None, now=None, min_after_kickoff_min: i
             log.append({"match_id": r["match_id"], "action": "pending",
                         "detail": f"fixture {fid} 状态 {res and res['status']}"})
             continue
+        fs = _fd_score(fd_client, r)
+        if fs and fs != (res["home_goals"], res["away_goals"]):
+            log.append({"match_id": r["match_id"], "action": "mismatch",
+                        "detail": f"API-Football {res['home_goals']}-{res['away_goals']} ≠ football-data.org "
+                                  f"{fs[0]}-{fs[1]}，暂不结算，请人工核对"})
+            continue
         r["result"] = f"{res['home_goals']}-{res['away_goals']}"
         changed = True
         log.append({"match_id": r["match_id"], "action": "filled",
-                    "detail": f"fixture {fid} {res['home']} {r['result']} {res['away']} ({res['status']})"})
+                    "detail": f"fixture {fid} {res['home']} {r['result']} {res['away']} ({res['status']})"
+                              + ("，football-data.org 一致" if fs else "")})
     if changed:
         with path.open("w", encoding="utf-8", newline="") as f:
             w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
@@ -164,7 +199,8 @@ def main() -> None:
     ap.add_argument("--no-autofill", action="store_true", help="不调用 API-Football，只结算已手动填写比分的行")
     a = ap.parse_args()
     if not a.no_autofill and os.environ.get("API_FOOTBALL_KEY"):
-        for e in autofill_results(Path(a.csv)):
+        from .football_data import Client as FDClient
+        for e in autofill_results(Path(a.csv), fd_client=FDClient()):  # 欧洲比赛用 football-data.org 交叉核对
             print(f"[autofill] {e['match_id']}: {e['action']} {e['detail']}")
     elif not a.no_autofill:
         print("[autofill] 未设置 API_FOOTBALL_KEY，跳过自动回填比分")
