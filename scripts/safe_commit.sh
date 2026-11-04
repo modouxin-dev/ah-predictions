@@ -34,7 +34,16 @@
 #
 # 密钥：GITHUB_AH_TOKEN 取自环境变量，否则从 ${AH_SECRETS_FILE:-$HOME/.config/ah-secrets.env} 读取那一行；绝不打印。
 # 其他环境变量：AH_GIT_NAME / AH_GIT_EMAIL（作者），AH_BACKOFF_BASE（退避基数秒，默认 2）。
+# 测试辅助：scripts/safe_commit.sh --is-auth-error < 输出文本   # 退出码 0 = 判为鉴权失败，1 = 不是
 set -uo pipefail
+
+# 推送输出是否为鉴权失败（读 stdin）。只匹配明确的 HTTP 状态/git 报错文本，
+# 不用裸数字 401/403（commit 哈希、ref 名里常出现，会误判，见 test_push_race_retries_with_rebase）。
+AUTH_ERROR_RE='The requested URL returned error: 40[13]([^0-9]|$)|Authentication failed|could not read (Username|Password)|Permission to [^ ]+ denied|Repository not found|Invalid username or password|Write access to repository not granted|HTTP Basic: Access denied'
+is_auth_error() { grep -qiE "$AUTH_ERROR_RE"; }
+if [ "${1:-}" = "--is-auth-error" ]; then
+  is_auth_error; exit $?
+fi
 
 MSG=""; DRY=0; SKIP_TESTS=0; IN_PLACE=0; NO_PUSH=0
 TEST_CMD="${AH_TEST_CMD:-}"
@@ -206,7 +215,7 @@ while :; do
     git rev-parse HEAD
     exit 0
   fi
-  if printf '%s' "$out" | grep -qiE 'Authentication failed|could not read Username|Permission to .* denied|403|401|Repository not found'; then
+  if printf '%s\n' "$out" | is_auth_error; then
     die 6 "推送鉴权失败（检查 GITHUB_AH_TOKEN），本地提交保留"
   fi
   attempt=$((attempt + 1))

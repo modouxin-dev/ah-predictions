@@ -168,3 +168,51 @@ def test_rebase_conflict_aborts(repos):
     assert r.returncode == 4
     assert git(a, "rev-parse", "HEAD") == before_local
     assert not (a / ".git" / "rebase-merge").exists() and (a / "f.txt").read_text() == "ours\n"
+
+
+def is_auth(text):
+    return subprocess.run(["bash", str(SCRIPT), "--is-auth-error"], input=text, capture_output=True,
+                          text=True).returncode == 0
+
+
+@pytest.mark.parametrize("text", [
+    " ! [rejected]        HEAD -> main (fetch first)\nerror: failed to push some refs to '/tmp/r.git'\n"
+    "hint: Updates were rejected because the remote contains work 4013a41 403bcde",
+    "To /tmp/x/remote.git\n   1403e01..a401b77  HEAD -> main",
+    "[main 4031401] after race\n 1 file changed, 1 insertion(+)",
+    "error: 401403 objects; ref refs/heads/fix-403 rejected (non-fast-forward)",
+    "fatal: The requested URL returned error: 4030",
+])
+def test_hashes_and_numbers_are_not_auth_errors(text):
+    assert not is_auth(text)
+
+
+@pytest.mark.parametrize("text", [
+    "fatal: unable to access 'https://github.com/o/r.git/': The requested URL returned error: 403",
+    "fatal: unable to access 'https://github.com/o/r.git/': The requested URL returned error: 401",
+    "remote: Invalid username or password.\nfatal: Authentication failed for 'https://github.com/o/r.git/'",
+    "remote: Permission to modouxin-dev/ah-predictions.git denied to someone.",
+    "fatal: could not read Username for 'https://github.com': terminal prompts disabled",
+    "remote: Repository not found.\nfatal: repository 'https://github.com/o/r.git/' not found",
+    "remote: Write access to repository not granted.",
+])
+def test_real_auth_errors_detected(text):
+    assert is_auth(text)
+
+
+def test_push_race_not_misread_as_auth_when_hash_has_403(repos, monkeypatch):
+    """竞争被拒时输出里哪怕带 401/403 字样的哈希也必须走重试，而不是当成鉴权失败退出。"""
+    tmp, remote, a, b = repos
+    hook = a / ".git" / "hooks" / "pre-push"
+    hook.write_text(f"""#!/bin/sh
+[ -f "{tmp}/raced" ] && exit 0
+touch "{tmp}/raced"
+cd "{b}" && echo race > race.txt && git add race.txt && git commit -q -m race && git push -q origin main
+echo "remote: note 4013a41403bcde401 403 401" >&2
+exit 0
+""")
+    hook.chmod(0o755)
+    (a / "f.txt").write_text("6\n")
+    r = run(a, tmp, "-m", "after race 2", "--test-cmd", "true", "--retries", "3", "f.txt")
+    assert r.returncode == 0, r.stderr
+    assert "鉴权失败" not in r.stderr and "重试" in r.stderr
