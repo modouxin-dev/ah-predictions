@@ -12,3 +12,16 @@ stake_units: 1
 telegram:
   chat_id: "-1004312560482"     # 绿茵足球 超级群；Token 走环境变量/Secrets
   bot: "LYZKYPbot"
+push_rules:                      # 由 Grok Bot 定时任务执行（报告研究在 Bot 的电脑上完成）
+  daily_report:
+    time: "10:00"
+    timezone: "Asia/Shanghai"    # 北京时间每日推送当日/次日重点比赛
+    window_hours: 36
+  pre_match_final_check:
+    minutes_before_kickoff: 50   # 复核临场盘口/水位、官方首发、关键伤停；只保留仍成立的推荐
+    actions: [keep, adjust, cancel]
+  post_match_backtest:
+    minutes_after_kickoff: 135   # 赛果、亚盘结算、是否命中、简要复盘、累计命中率
+  targets:
+    telegram_chat_id: "-1004312560482"
+    web: "https://modouxin-dev.github.io/ah-predictions/"
