@@ -12,7 +12,8 @@ jobs:
       PYTHONPATH: src
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-      API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}   # 可选；未设置时 fetch_fixtures 回退 titan007
+      API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+      ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}           # 可选；未设置时跳过多家公司共识   # 可选；未设置时 fetch_fixtures 回退 titan007
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -27,7 +28,7 @@ jobs:
       - name: Render report (if JSON exists)
         run: |
           D=$(date -u +%F); F=reports/${D:0:4}/${D:5:2}/$D.json
-          if [ -f "$F" ]; then python -m ah render $D; else echo "no report json for $D"; fi
+          if [ -f "$F" ]; then python -m ah consensus $D || echo "consensus skipped"; python -m ah render $D; else echo "no report json for $D"; fi
       - name: Commit
         run: |
           git config user.name "ah-bot"; git config user.email "ah-bot@users.noreply.github.com"

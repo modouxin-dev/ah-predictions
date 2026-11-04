@@ -16,6 +16,9 @@
 - 开球：{{ p.kickoff_utc }}（UTC）
 - **推荐盘口：{{ p.pick_team | default(p[p.pick_side]) }} {{ "%+g" | format(p.line) }}**{% if p.odds is not none %} @ {{ p.odds }}{% endif %}{% if p.line_open is defined and p.line_open is not none %}（初盘 {{ "%+g" | format(p.line_open) }}）{% endif %}{{ "" }}
 - **信心等级：{{ conf[p.confidence] }}**
+{% if p.market_consensus %}{% set mc = p.market_consensus %}
+- 多家公司共识：{{ p.pick_team | default(p[p.pick_side]) }} {{ "%+g" | format(mc.pick_line) }}{% if mc.pick_water is not none %} @ {{ mc.pick_water }}{% endif %}（{{ mc.agree }}/{{ mc.bookmakers }} 家一致{% if mc.pick_line != p.line %}，与推荐盘口 {{ "%+g" | format(p.line) }} 不同{% endif %}{% if mc.pinnacle %}；Pinnacle {{ "%+g" | format(mc.pinnacle.pick_line) }} @ {{ mc.pinnacle.pick_water }}{% endif %}；来源 {{ mc.source }}）
+{% endif %}
 
 **推荐理由**
 {% for x in p.reasons %}

@@ -28,7 +28,20 @@
           "confidence": {"enum": ["high", "medium", "low"]},
           "reasons": {"type": "array", "items": {"type": "string"}, "minItems": 1},
           "risks": {"type": "array", "items": {"type": "string"}},
-          "sources": {"type": "array", "items": {"type": "string", "format": "uri"}, "minItems": 1}
+          "sources": {"type": "array", "items": {"type": "string", "format": "uri"}, "minItems": 1},
+          "market_consensus": {
+            "type": "object",
+            "description": "多家公司共识（The Odds API）；可选，旧报告无此字段",
+            "required": ["source", "bookmakers", "agree", "home_line", "pick_line"],
+            "properties": {
+              "source": {"type": "string"},
+              "bookmakers": {"type": "integer"}, "agree": {"type": "integer"},
+              "home_line": {"type": "number"}, "pick_line": {"type": "number"},
+              "pick_water": {"type": ["number", "null"]},
+              "lines": {"type": "array", "items": {"type": "number"}},
+              "pinnacle": {"type": ["object", "null"]}
+            }
+          }
         }
       }
     },

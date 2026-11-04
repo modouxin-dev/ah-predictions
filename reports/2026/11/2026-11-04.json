@@ -1,161 +1,180 @@
 {
-  "date": "2026-11-04",
-  "generated_at": "2026-11-04T10:50:00Z",
-  "odds_format": "HK (港盘水位，十进制赔率 = 1 + 水位)",
-  "odds_source_note": "盘口与水位取自 titan007(球探) 即时数据 live.titan007.com/vbsxml/goal3.xml（默认公司），抓取时间约 2026-11-04 10:40 UTC。初盘字段为该接口提供的初始盘口。",
-  "picks": [
-    {
-      "match_id": "titan007-3068888",
-      "league": "AFC Champions League Elite（亚冠精英·东区 第4轮）",
-      "home": "武里南联 Buriram United",
-      "away": "鹿岛鹿角 Kashima Antlers",
-      "kickoff_utc": "2026-11-04T12:15:00Z",
-      "pick_side": "away",
-      "pick_team": "鹿岛鹿角",
-      "line": -0.75,
-      "line_open": -0.5,
-      "odds": 0.78,
-      "confidence": "medium",
-      "reasons": [
-        "盘口走势：初盘鹿岛让半球(-0.5)，即时升至让半一(-0.75)，鹿岛方水位降至0.78，资金明显流向客队；大小球亦由2.75升至3",
-        "状态悬殊：鹿岛亚冠3战全胜、进11失1（7-1纽卡斯尔喷气机、1-0河内公安、3-0浦项），周末联赛4-1大胜大阪樱花，近8场赢6",
-        "武里南亚冠3战0胜2平1负（排第12-13），联赛排第5；上周联赛主场2-3负四色菊联后主帅马里奥·席尔瓦下课，新帅卡内达刚上任数日",
-        "上轮武里南1-1逼平大阪钢巴实属侥幸：控球32%、射门10比24、xG 0.69比3.85",
-        "伤病：鹿岛仅缺左后卫安西幸辉；武里南缺 Supachai Chaided、Nathan Pelae"
-      ],
-      "risks": [
-        "让-0.75：鹿岛仅赢1球只赢一半，平局/输球全输",
-        "泰国客场炎热与长途作战，鹿岛周末仍有J1赛程可能轮换",
-        "新帅效应可能令武里南短期提升防守强度"
-      ],
-      "sources": [
-        "https://live.titan007.com/vbsxml/goal3.xml?r=0071",
-        "https://www.the-afc.com/en/club/afc_champions_league_elite.html/news/preview-buriram-united-tha-v-kashima-antlers-jpn",
-        "https://www.jleague.jp/en/match/acle/2026/110402/",
-        "https://www.freetips.com/football/buriram-united-vs-kashima-antlers-predictions-20261103-0023/",
-        "https://www.thestatszone.com/buriram-united-vs-kashima-antlers-preview-prediction-2026-27-afc-champions-league-elite-league-stage-234369",
-        "https://www.sportingnews.com/th/football/news/live-watch-buriram-united-vs-kashima-antlers-afc-champions-league-elite-2026-27/46ca4217ef41f2e462870bac"
-      ],
-      "final_check": {
-        "checked_at": "2026-11-04T11:33:00Z",
-        "decision": "cancel",
-        "decision_cn": "取消推荐",
-        "current_line": "鹿岛 -0.25（武里南受让平半）",
-        "current_odds": {
-          "home": 0.9,
-          "away": 0.92
-        },
-        "line_open": -0.5,
-        "line_at_report": -0.75,
-        "eu_odds": {
-          "home": 2.8,
-          "draw": 3.5,
-          "away": 2.1
-        },
-        "ou_line": 2.75,
-        "lineups": "官方首发截至检查时未能从 J.League/AFC 页面获取；FotMob/SportyTrader 仅显示上一场首发，未作为依据。",
-        "injuries": "未查到新的临场伤停；已知鹿岛缺安西幸辉，武里南缺 Supachai Chaided、Nathan Pelae。",
-        "reason": "临场盘口由报告时的鹿岛 -0.75(0.78) 骤降两档至 -0.25(0.92)，低于初盘 -0.5，大小球由3降至2.75；原推荐的核心依据（资金流向鹿岛）已反转，且无法确认首发，按准确率优先原则取消。",
-        "sources": [
-          "https://live.titan007.com/vbsxml/goal3.xml?r=0071 (抓取约 11:31 UTC)",
-          "https://www.jleague.jp/en/match/acle/2026/110402/",
-          "https://www.fotmob.com/matches/kashima-antlers-vs-buriram-united/6lyt7z5"
-        ]
-      }
+ "date": "2026-11-04",
+ "generated_at": "2026-11-04T10:50:00Z",
+ "odds_format": "HK (港盘水位，十进制赔率 = 1 + 水位)",
+ "odds_source_note": "盘口与水位取自 titan007(球探) 即时数据 live.titan007.com/vbsxml/goal3.xml（默认公司），抓取时间约 2026-11-04 10:40 UTC。初盘字段为该接口提供的初始盘口。",
+ "picks": [
+  {
+   "match_id": "titan007-3068888",
+   "league": "AFC Champions League Elite（亚冠精英·东区 第4轮）",
+   "home": "武里南联 Buriram United",
+   "away": "鹿岛鹿角 Kashima Antlers",
+   "kickoff_utc": "2026-11-04T12:15:00Z",
+   "pick_side": "away",
+   "pick_team": "鹿岛鹿角",
+   "line": -0.75,
+   "line_open": -0.5,
+   "odds": 0.78,
+   "confidence": "medium",
+   "reasons": [
+    "盘口走势：初盘鹿岛让半球(-0.5)，即时升至让半一(-0.75)，鹿岛方水位降至0.78，资金明显流向客队；大小球亦由2.75升至3",
+    "状态悬殊：鹿岛亚冠3战全胜、进11失1（7-1纽卡斯尔喷气机、1-0河内公安、3-0浦项），周末联赛4-1大胜大阪樱花，近8场赢6",
+    "武里南亚冠3战0胜2平1负（排第12-13），联赛排第5；上周联赛主场2-3负四色菊联后主帅马里奥·席尔瓦下课，新帅卡内达刚上任数日",
+    "上轮武里南1-1逼平大阪钢巴实属侥幸：控球32%、射门10比24、xG 0.69比3.85",
+    "伤病：鹿岛仅缺左后卫安西幸辉；武里南缺 Supachai Chaided、Nathan Pelae"
+   ],
+   "risks": [
+    "让-0.75：鹿岛仅赢1球只赢一半，平局/输球全输",
+    "泰国客场炎热与长途作战，鹿岛周末仍有J1赛程可能轮换",
+    "新帅效应可能令武里南短期提升防守强度"
+   ],
+   "sources": [
+    "https://live.titan007.com/vbsxml/goal3.xml?r=0071",
+    "https://www.the-afc.com/en/club/afc_champions_league_elite.html/news/preview-buriram-united-tha-v-kashima-antlers-jpn",
+    "https://www.jleague.jp/en/match/acle/2026/110402/",
+    "https://www.freetips.com/football/buriram-united-vs-kashima-antlers-predictions-20261103-0023/",
+    "https://www.thestatszone.com/buriram-united-vs-kashima-antlers-preview-prediction-2026-27-afc-champions-league-elite-league-stage-234369",
+    "https://www.sportingnews.com/th/football/news/live-watch-buriram-united-vs-kashima-antlers-afc-champions-league-elite-2026-27/46ca4217ef41f2e462870bac"
+   ],
+   "final_check": {
+    "checked_at": "2026-11-04T11:33:00Z",
+    "decision": "cancel",
+    "decision_cn": "取消推荐",
+    "current_line": "鹿岛 -0.25（武里南受让平半）",
+    "current_odds": {
+     "home": 0.9,
+     "away": 0.92
     },
-    {
-      "match_id": "titan007-3073152",
-      "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
-      "home": "波尔图 Porto",
-      "away": "那不勒斯 Napoli",
-      "kickoff_utc": "2026-11-04T20:00:00Z",
-      "pick_side": "home",
-      "pick_team": "波尔图",
-      "line": -0.75,
-      "line_open": -0.25,
-      "odds": 1.06,
-      "confidence": "medium",
-      "reasons": [
-        "盘口走势：初盘波尔图让平半(-0.25)，即时大幅升至让半一(-0.75)，升盘两档，市场强烈看好主队；欧赔主胜1.82",
-        "那不勒斯伤病极其严重：Buongiorno、Neres、Favasuli、Alisson Santos、Spinazzola、Badiashile、Lobotka、Di Lorenzo、Olivera 均缺阵，据 Football Italia 仅13名可用外场球员，已无专职边后卫；德布劳内脚踝扭伤大概率替补",
-        "那不勒斯近7个欧冠客场0胜6负，周末联赛0-2负尤文且全场仅1脚射正",
-        "波尔图欧冠0分急需抢分，国内联赛状态出色（领跑葡超），主场作战"
-      ],
-      "risks": [
-        "已升盘两档，价值被部分吃掉，主队水位1.06偏高（有继续升盘或诱上可能）",
-        "波尔图欧冠三战全败、上轮主场0-1负PSV，欧战进攻效率存疑；缺 William Gomes、Vasco Sousa，Zaidu 带伤，Pietuszewski 赛前才定",
-        "-0.75 仅净胜1球时只赢一半"
-      ],
-      "sources": [
-        "https://live.titan007.com/vbsxml/goal3.xml?r=0071",
-        "https://www.sportsmole.co.uk/football/porto/champions-league/preview/porto-vs-napoli-prediction-team-news-lineups_608280.html",
-        "https://football-italia.net/champions-league-porto-v-napoli-line-ups-tv/",
-        "https://www.ojogo.pt/futebol/artigo/pietuszewski-convocado-e-em-avaliacao-ate-a-hora-do-jogo-o-onze-provavel-do-fc-porto-para-receber-o-napoles/18144346",
-        "https://arenarete.com/napoli/en/news/h-jlund-returns-to-lead-the-napoli-attack-in-porto-as-meret-starts-in"
-      ]
+    "line_open": -0.5,
+    "line_at_report": -0.75,
+    "eu_odds": {
+     "home": 2.8,
+     "draw": 3.5,
+     "away": 2.1
+    },
+    "ou_line": 2.75,
+    "lineups": "官方首发截至检查时未能从 J.League/AFC 页面获取；FotMob/SportyTrader 仅显示上一场首发，未作为依据。",
+    "injuries": "未查到新的临场伤停；已知鹿岛缺安西幸辉，武里南缺 Supachai Chaided、Nathan Pelae。",
+    "reason": "临场盘口由报告时的鹿岛 -0.75(0.78) 骤降两档至 -0.25(0.92)，低于初盘 -0.5，大小球由3降至2.75；原推荐的核心依据（资金流向鹿岛）已反转，且无法确认首发，按准确率优先原则取消。",
+    "sources": [
+     "https://live.titan007.com/vbsxml/goal3.xml?r=0071 (抓取约 11:31 UTC)",
+     "https://www.jleague.jp/en/match/acle/2026/110402/",
+     "https://www.fotmob.com/matches/kashima-antlers-vs-buriram-united/6lyt7z5"
+    ]
+   }
+  },
+  {
+   "match_id": "titan007-3073152",
+   "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
+   "home": "波尔图 Porto",
+   "away": "那不勒斯 Napoli",
+   "kickoff_utc": "2026-11-04T20:00:00Z",
+   "pick_side": "home",
+   "pick_team": "波尔图",
+   "line": -0.75,
+   "line_open": -0.25,
+   "odds": 1.06,
+   "confidence": "medium",
+   "reasons": [
+    "盘口走势：初盘波尔图让平半(-0.25)，即时大幅升至让半一(-0.75)，升盘两档，市场强烈看好主队；欧赔主胜1.82",
+    "那不勒斯伤病极其严重：Buongiorno、Neres、Favasuli、Alisson Santos、Spinazzola、Badiashile、Lobotka、Di Lorenzo、Olivera 均缺阵，据 Football Italia 仅13名可用外场球员，已无专职边后卫；德布劳内脚踝扭伤大概率替补",
+    "那不勒斯近7个欧冠客场0胜6负，周末联赛0-2负尤文且全场仅1脚射正",
+    "波尔图欧冠0分急需抢分，国内联赛状态出色（领跑葡超），主场作战"
+   ],
+   "risks": [
+    "已升盘两档，价值被部分吃掉，主队水位1.06偏高（有继续升盘或诱上可能）",
+    "波尔图欧冠三战全败、上轮主场0-1负PSV，欧战进攻效率存疑；缺 William Gomes、Vasco Sousa，Zaidu 带伤，Pietuszewski 赛前才定",
+    "-0.75 仅净胜1球时只赢一半"
+   ],
+   "sources": [
+    "https://live.titan007.com/vbsxml/goal3.xml?r=0071",
+    "https://www.sportsmole.co.uk/football/porto/champions-league/preview/porto-vs-napoli-prediction-team-news-lineups_608280.html",
+    "https://football-italia.net/champions-league-porto-v-napoli-line-ups-tv/",
+    "https://www.ojogo.pt/futebol/artigo/pietuszewski-convocado-e-em-avaliacao-ate-a-hora-do-jogo-o-onze-provavel-do-fc-porto-para-receber-o-napoles/18144346",
+    "https://arenarete.com/napoli/en/news/h-jlund-returns-to-lead-the-napoli-attack-in-porto-as-meret-starts-in",
+    "https://the-odds-api.com/"
+   ],
+   "market_consensus": {
+    "source": "The Odds API",
+    "bookmakers": 8,
+    "agree": 5,
+    "home_line": -0.5,
+    "pick_line": -0.5,
+    "pick_water": 0.85,
+    "lines": [
+     -1.0,
+     -0.5,
+     0.0
+    ],
+    "pinnacle": {
+     "home_line": -0.5,
+     "pick_line": -0.5,
+     "pick_water": 0.88
     }
-  ],
-  "watched": [
-    {
-      "league": "亚冠精英",
-      "home": "浦项制铁",
-      "away": "大阪钢巴",
-      "reason_skipped": "10:00 UTC 已开赛（报告生成时进行中），不做赛前推荐；初盘钢巴让半球即时退至平半(-0.25)"
-    },
-    {
-      "league": "欧冠",
-      "home": "费内巴切",
-      "away": "利物浦",
-      "reason_skipped": "利物浦由-0.75升至-1.25，费内巴切近5场仅1胜、临时主帅库伊特、后防伤病多；但利物浦缺格拉文贝赫并会轮换、从未在土耳其客场赢球，-1.25 深盘风险大，暂不推"
-    },
-    {
-      "league": "欧冠",
-      "home": "埃因霍温",
-      "away": "布鲁日",
-      "reason_skipped": "盘口由平手升至PSV让半(-0.5)，与布鲁日8连胜、客场4连胜的状态相反，基本面与盘口背离，放弃"
-    },
-    {
-      "league": "欧冠",
-      "home": "RB莱比锡",
-      "away": "曼城",
-      "reason_skipped": "曼城-1不变、水位1.06/0.83；曼城联赛两连败、近6场失12球，莱比锡多名伤员，方向不清"
-    },
-    {
-      "league": "欧冠",
-      "home": "布拉格斯拉维亚",
-      "away": "阿森纳",
-      "reason_skipped": "阿森纳-1.75未变但大小球由3.25降至2.75，萨卡缺阵，深盘不碰"
-    },
-    {
-      "league": "欧冠",
-      "home": "AEK雅典",
-      "away": "皇家马德里",
-      "reason_skipped": "皇马由-1.5升至-2，深盘且未获取到皇马完整伤停，不推"
-    },
-    {
-      "league": "欧冠",
-      "home": "维京",
-      "away": "萨巴赫",
-      "reason_skipped": "维京由-1升至-1.5，缺乏可靠基本面资料"
-    },
-    {
-      "league": "欧冠",
-      "home": "多特蒙德",
-      "away": "皇家贝蒂斯",
-      "reason_skipped": "多特-0.75初即盘未变，无明显信号，未做深入基本面"
-    },
-    {
-      "league": "欧冠",
-      "home": "朗斯",
-      "away": "科莫",
-      "reason_skipped": "科莫由-0.25升至-0.5，未做深入基本面，暂观望"
-    },
-    {
-      "league": "亚冠联2/英冠/巴甲",
-      "home": "多场",
-      "away": "-",
-      "reason_skipped": "titan007 有盘口（如FC首尔-1.25、赖扬-1.25、弗拉门戈-2.25），但本轮未收集足够基本面，不推荐"
-    }
-  ],
-  "not_covered": "titan007 当日（北京时间11-04）数据中未见 J1/J2/K联赛/澳超/中超/沙特联/卡塔尔联赛比赛（周中为亚冠/欧冠比赛日）；11-05 日程未核查。"
+   }
+  }
+ ],
+ "watched": [
+  {
+   "league": "亚冠精英",
+   "home": "浦项制铁",
+   "away": "大阪钢巴",
+   "reason_skipped": "10:00 UTC 已开赛（报告生成时进行中），不做赛前推荐；初盘钢巴让半球即时退至平半(-0.25)"
+  },
+  {
+   "league": "欧冠",
+   "home": "费内巴切",
+   "away": "利物浦",
+   "reason_skipped": "利物浦由-0.75升至-1.25，费内巴切近5场仅1胜、临时主帅库伊特、后防伤病多；但利物浦缺格拉文贝赫并会轮换、从未在土耳其客场赢球，-1.25 深盘风险大，暂不推"
+  },
+  {
+   "league": "欧冠",
+   "home": "埃因霍温",
+   "away": "布鲁日",
+   "reason_skipped": "盘口由平手升至PSV让半(-0.5)，与布鲁日8连胜、客场4连胜的状态相反，基本面与盘口背离，放弃"
+  },
+  {
+   "league": "欧冠",
+   "home": "RB莱比锡",
+   "away": "曼城",
+   "reason_skipped": "曼城-1不变、水位1.06/0.83；曼城联赛两连败、近6场失12球，莱比锡多名伤员，方向不清"
+  },
+  {
+   "league": "欧冠",
+   "home": "布拉格斯拉维亚",
+   "away": "阿森纳",
+   "reason_skipped": "阿森纳-1.75未变但大小球由3.25降至2.75，萨卡缺阵，深盘不碰"
+  },
+  {
+   "league": "欧冠",
+   "home": "AEK雅典",
+   "away": "皇家马德里",
+   "reason_skipped": "皇马由-1.5升至-2，深盘且未获取到皇马完整伤停，不推"
+  },
+  {
+   "league": "欧冠",
+   "home": "维京",
+   "away": "萨巴赫",
+   "reason_skipped": "维京由-1升至-1.5，缺乏可靠基本面资料"
+  },
+  {
+   "league": "欧冠",
+   "home": "多特蒙德",
+   "away": "皇家贝蒂斯",
+   "reason_skipped": "多特-0.75初即盘未变，无明显信号，未做深入基本面"
+  },
+  {
+   "league": "欧冠",
+   "home": "朗斯",
+   "away": "科莫",
+   "reason_skipped": "科莫由-0.25升至-0.5，未做深入基本面，暂观望"
+  },
+  {
+   "league": "亚冠联2/英冠/巴甲",
+   "home": "多场",
+   "away": "-",
+   "reason_skipped": "titan007 有盘口（如FC首尔-1.25、赖扬-1.25、弗拉门戈-2.25），但本轮未收集足够基本面，不推荐"
+  }
+ ],
+ "not_covered": "titan007 当日（北京时间11-04）数据中未见 J1/J2/K联赛/澳超/中超/沙特联/卡塔尔联赛比赛（周中为亚冠/欧冠比赛日）；11-05 日程未核查。"
 }

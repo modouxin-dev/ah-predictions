@@ -83,3 +83,7 @@ Key 只从环境变量 `API_FOOTBALL_KEY` 读取，不写进仓库。联赛 id �
 ## 密钥文件
 
 所有 Key 均不进仓库。读取顺序：环境变量 → `/home/box/.config/ah-secrets.env`（`KEY=VALUE`，chmod 600；可用 `AH_SECRETS_FILE` 改路径），由 `src/ah/secrets.py` 负责。支持 `API_FOOTBALL_KEY`、`ODDS_API_KEY`、`ODDSPAPI_KEY`、`FOOTBALL_DATA_KEY`、`FIVEDOLLAR_KEY`。CI 中请用 GitHub Secrets 注入同名环境变量。
+
+### 多家公司共识写入日报
+
+`PYTHONPATH=src python -m ah consensus YYYY-MM-DD` 会按推荐所属联赛（每联赛当天最多 1 次 odds 调用，遵守 reserve）拉取 The Odds API 亚盘，按队名（规范化 + `config/team_aliases.yaml` + 模糊匹配阈值 0.75）和开球时间（±15 分钟）匹配，把共识写入 `picks[].market_consensus`（中位盘口、公司数、一致家数、Pinnacle 盘口，均为推荐方视角），再 `render` 即在报告中显示“多家公司共识”。daily.yml 已在 render 前自动执行（需 Secret `ODDS_API_KEY`，缺失则跳过）。
