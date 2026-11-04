@@ -3,6 +3,7 @@
     python -m ah.migrate_csv            # 就地迁移 data/predictions.csv
     python -m ah.migrate_csv --check    # 只打印将要做的改动，不写文件（有改动时退出码 1）
 
+v3 新增列 track/model_id/model_version/market/overlap（旧行 official/ah/空），见 docs/experiment_protocol.md。
 v2 新增列（见 settle.LEDGER_FIELDS / docs/predictions_csv.md）：
   odds_format     hk | decimal（旧行回填 hk）
   odds_estimated  true | false（无 odds_if_known、按 0.9 水位估算 -> true）
@@ -20,12 +21,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import re
 import sys
 from pathlib import Path
 
 from . import DATA, REPORTS
 from .settle import check_odds, norm_odds_format, read_ledger, write_ledger
+
+log = logging.getLogger("ah.migrate_csv")
 
 _LINE_RE = re.compile(r"^\s*([^\s+\-\d（(]+)?\s*([+-]?\d+(?:\.\d+)?)")
 
@@ -114,6 +118,8 @@ def migrate_rows(rows: list[dict], reports: Path = REPORTS, legacy_format: bool 
     from .records import is_cancelled, prematch_of
     changes, cache = [], {}
     for r in rows:
+        if r.get("track") != "official":  # 实验盘行不按正式报告迁移
+            continue
         tag = f"{r.get('date')} {r.get('match_id')}"
         rep = _load(r.get("date", ""), reports, cache) if r.get("date") else None
         p = next((x for x in (rep or {}).get("picks", []) if x.get("match_id") == r.get("match_id")), None)
@@ -141,6 +147,11 @@ def migrate_rows(rows: list[dict], reports: Path = REPORTS, legacy_format: bool 
             if fl is not None or fo is not None:
                 r["final_line"], r["final_odds"] = _fmt(fl), _fmt(fo)
                 changes.append(f"{tag}: final_line={r['final_line']} final_odds={r['final_odds']}（报告 prematch/final_check）")
+    n_exp = sum(1 for r in rows if r.get("track") != "official")
+    if n_exp:
+        log.warning("predictions.csv 中有 %d 行 track!=official；实验盘应写 data/experiment_picks.csv"
+                    "（正式统计会忽略这些行）", n_exp)
+        changes.append(f"警告：{n_exp} 行 track!=official（未改动，正式统计已忽略）")
     for r in rows:
         if r.get("odds_if_known"):
             check_odds(r["odds_if_known"], r["odds_format"], context=f"{r.get('date')} {r.get('match_id')}")
@@ -163,9 +174,10 @@ def migrate_csv(path: Path = DATA / "predictions.csv", reports: Path = REPORTS, 
         write_ledger(tmp, rows)
         new = tmp.read_bytes()
     if new != raw and not changes:
-        changes.append("补齐 v2 新列默认值（odds_format/odds_estimated/status/final_line/final_odds）")
-    elif new != raw and "status" not in header:
-        changes.insert(0, "表头升级为 v2（新增 odds_format/odds_estimated/status/final_line/final_odds）")
+        changes.append("补齐新列默认值（v2 odds_format…final_odds；v3 track=official, market=ah 等）")
+    elif new != raw and ("status" not in header or "track" not in header):
+        changes.insert(0, "表头升级（v2: odds_format/odds_estimated/status/final_line/final_odds；"
+                          "v3: track/model_id/model_version/market/overlap）")
     if not dry_run and new != raw:
         path.write_bytes(new)
     return changes

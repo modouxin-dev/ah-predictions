@@ -22,3 +22,16 @@ python -m ah.migrate_csv           # 就地迁移，幂等
 stats.json 新增：每个分组桶的 `cancelled`（撤销场数，已计入 void，不计入命中率）与 `odds_estimated`（估算水位场数）；
 顶层 `odds_estimated` {picks, decided, units, match_ids, note}；`series[].odds_estimated`。
 `by_confidence` 按原信心归类（撤销行不再落入「取消/其他」，只有缺原信心的旧数据才会）。
+
+## v3：模型实验盘列（track / model_id / model_version / market / overlap）
+
+| 列 | 类型 | 含义 / 默认 |
+|---|---|---|
+| track | `official` \| `experiment` | 缺省 `official`。**正式统计（stats.compute）、records 同步只认 official** |
+| model_id | 字符串 | 实验模型 A/B/C…；正式推荐为空 |
+| model_version | 字符串 | 模型版本（如 `v0`、git 短哈希）；正式推荐为空 |
+| market | `ah` \| `1x2` \| `ou` | 缺省 `ah`。`pick_side`：ah home/away，ou over/under，1x2 home/draw/away；`line`：ah 所选方让球、ou 总进球线、1x2 空；`ah_outcome` 存所有玩法的结算结果 |
+| overlap | 字符串 | 同场同玩法的其他模型及方向 `B:same;C:opposite`，与正式推荐重叠时加 `official:same|opposite`；派生列，可重算 |
+
+实验盘不写 predictions.csv，而是写 `data/experiment_picks.csv`（同一表头 + 评估列，见 docs/experiment_protocol.md）。
+1x2 行未填 odds_format 时默认 `decimal`。

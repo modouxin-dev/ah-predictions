@@ -40,13 +40,15 @@ def role_label(line: float) -> str:
 
 
 def compute(rows: list[dict]) -> dict:
-    from .settle import normalize_row, row_confidence
+    from .settle import is_official, normalize_row, row_confidence
     overall = _bucket()
     est = {"picks": 0, "decided": 0, "units": 0.0, "match_ids": []}
     groups = {k: defaultdict(_bucket) for k in ("by_league", "by_confidence", "by_line", "by_depth", "by_role")}
     series = []
     for r in rows:
         r = normalize_row(dict(r))  # 兼容旧 15 列格式；不修改调用方数据
+        if not is_official(r):  # 实验盘（track=experiment）不计入正式战绩
+            continue
         if str(r.get("settled", "")).lower() != "true" or not r.get("ah_outcome"):
             continue
         out = r["ah_outcome"]
@@ -90,6 +92,12 @@ def compute(rows: list[dict]) -> dict:
         **{g: {k: _finish(v) for k, v in sorted(d.items())} for g, d in groups.items()},
         "series": series,
     }
+
+
+def compute_experiment(rows: list[dict], official_rows: list[dict] | None = None) -> dict:
+    """模型实验盘统计（模型 × 玩法），写 data/experiment_stats.json；与正式 compute() 完全分开。"""
+    from .audit.experiment_track import compute_experiment as _ce
+    return _ce(rows, official_rows)
 
 
 def window(series: list[dict], end: str, days: int) -> dict:

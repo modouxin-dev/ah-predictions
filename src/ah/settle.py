@@ -21,7 +21,12 @@ OUTCOMES = ("win", "half_win", "push", "half_loss", "loss")
 LEGACY_FIELDS = ["date", "match_id", "league", "home", "away", "kickoff_utc", "pick_side", "pick",
                  "line", "odds_if_known", "confidence", "result", "ah_outcome", "units", "settled"]
 NEW_FIELDS = ["odds_format", "odds_estimated", "status", "final_line", "final_odds"]
-LEDGER_FIELDS = LEGACY_FIELDS + NEW_FIELDS
+# v3：模型实验盘。旧行默认 track=official / market=ah，model_id/model_version/overlap 为空
+TRACK_FIELDS = ["track", "model_id", "model_version", "market", "overlap"]
+LEDGER_FIELDS = LEGACY_FIELDS + NEW_FIELDS + TRACK_FIELDS
+TRACKS = ("official", "experiment")
+MARKETS = ("ah", "1x2", "ou")
+SIDES = {"ah": ("home", "away"), "ou": ("over", "under"), "1x2": ("home", "draw", "away")}
 STATUSES = ("active", "void", "cancelled")
 ODDS_FORMATS = ("hk", "decimal")
 ESTIMATED_HK_ODDS = 0.9
@@ -61,6 +66,21 @@ def _truthy(v) -> bool:
     return str(v or "").strip().lower() in ("true", "1", "yes", "y")
 
 
+def norm_market(v) -> str:
+    """ah / 1x2 / ou；空 -> ah（旧数据）。兼容 'AH'、'1X2'、'OU'、'totals'、'h2h' 等写法。"""
+    t = str(v or "").strip().lower()
+    t = {"": "ah", "asian_handicap": "ah", "spreads": "ah", "h2h": "1x2", "1x2": "1x2", "x12": "1x2",
+         "totals": "ou", "o/u": "ou", "over_under": "ou"}.get(t, t)
+    if t not in MARKETS:
+        raise ValueError(f"未知 market {v!r}，应为 ah / 1x2 / ou")
+    return t
+
+
+def is_official(row: dict) -> bool:
+    """正式推荐（计入正式命中率）。缺 track 列的旧行视为 official。"""
+    return str(row.get("track") or "official").strip().lower() == "official"
+
+
 def row_status(row: dict) -> str:
     """status 列；旧数据（无 status 列）中 confidence=cancelled 视为 cancelled，其余 active。"""
     st = str(row.get("status") or "").strip().lower()
@@ -81,6 +101,16 @@ def normalize_row(row: dict) -> dict:
     for k in LEGACY_FIELDS:
         if row.get(k) is None:
             row[k] = ""
+    row["track"] = str(row.get("track") or "").strip().lower() or "official"
+    try:
+        row["market"] = norm_market(row.get("market"))
+    except ValueError:  # 未知玩法原样保留（小写），由实验盘校验拒绝；不在读取时崩溃
+        row["market"] = str(row.get("market")).strip().lower()
+    for k in ("model_id", "model_version", "overlap"):
+        if row.get(k) is None:
+            row[k] = ""
+    if not str(row.get("odds_format") or "").strip() and row["market"] == "1x2":
+        row["odds_format"] = "decimal"  # 1X2 通常是欧赔
     row["odds_format"] = norm_odds_format(row.get("odds_format"))
     if str(row.get("odds_estimated") or "").strip() == "":
         row["odds_estimated"] = "false" if row.get("odds_if_known") not in (None, "") else "true"
@@ -156,6 +186,37 @@ def settle(pick_goals: int, opp_goals: int, line: float) -> str:
     }[score]
 
 
+def settle_ou(total_goals: int, line: float, side: str) -> str:
+    """大小球：side=over/under；整数线可走盘，半球线只有输赢，四分之一线拆两半（赢半/输半）。
+    over 等价于 total + (-line) 的让球结算；under 等价于 -total + line。"""
+    if side == "over":
+        return settle(total_goals, 0, -float(line))
+    if side == "under":
+        return settle(0, total_goals, float(line))
+    raise ValueError(f"大小球 side 必须是 over/under，收到 {side!r}")
+
+
+def settle_1x2(home_goals: int, away_goals: int, side: str) -> str:
+    """胜平负：side=home/draw/away；只有 win / loss。"""
+    if side not in SIDES["1x2"]:
+        raise ValueError(f"1x2 side 必须是 home/draw/away，收到 {side!r}")
+    res = "home" if home_goals > away_goals else "away" if home_goals < away_goals else "draw"
+    return "win" if res == side else "loss"
+
+
+def settle_market(market: str, home_goals: int, away_goals: int, side: str, line=None) -> str:
+    """按玩法结算（比分为 90 分钟主-客）。ah 的 line 为所选一方视角；ou 的 line 为总进球线；1x2 无 line。"""
+    m = norm_market(market)
+    if m == "ah":
+        if side not in SIDES["ah"]:
+            raise ValueError(f"亚盘 side 必须是 home/away，收到 {side!r}")
+        pg, og = (home_goals, away_goals) if side == "home" else (away_goals, home_goals)
+        return settle(pg, og, float(line))
+    if m == "ou":
+        return settle_ou(home_goals + away_goals, float(line), side)
+    return settle_1x2(home_goals, away_goals, side)
+
+
 def profit(outcome: str, odds: float | None, stake: float = 1.0, odds_format: str = "hk") -> float:
     """单位盈亏。odds 为港盘水位(hk, 如 0.92) 或十进制(decimal, 如 1.92)。
     无赔率时按 0.9 水位估算（报告中会标注 odds_if_known 为空）。"""
@@ -191,14 +252,17 @@ def settle_row(row: dict) -> dict:
     if not row.get("result"):
         return row
     hg, ag = parse_score(row["result"])
-    side = row["pick_side"]
-    pg, og = (hg, ag) if side == "home" else (ag, hg)
-    out = settle(pg, og, float(row["line"]))
-    fmt = norm_odds_format(row.get("odds_format"))
+    market = norm_market(row.get("market"))
+    out = settle_market(market, hg, ag, row["pick_side"], row.get("line") if market != "1x2" else None)
+    fmt = norm_odds_format(row.get("odds_format")) if str(row.get("odds_format") or "").strip() or market != "1x2" \
+        else "decimal"
     odds = row.get("odds_if_known")
     if odds not in (None, ""):
         check_odds(odds, fmt, context=str(row.get("match_id", "")))
         row["units"] = str(profit(out, float(odds), odds_format=fmt))
+        row["odds_estimated"] = "false"
+    elif not is_official(row):
+        row["units"] = ""  # 实验盘不估算赔率（数据缺失不补值），统计时拒绝计入
         row["odds_estimated"] = "false"
     else:
         row["units"] = str(profit(out, None))

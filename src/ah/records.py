@@ -179,7 +179,8 @@ def sync_csv(r: dict, csv_path: Path = DATA / "predictions.csv") -> int:
     rows = _read_csv(csv_path)
     n = 0
     for p in r.get("picks", []):
-        row = next((x for x in rows if x.get("date") == r["date"] and x.get("match_id") == p.get("match_id")), None)
+        row = next((x for x in rows if x.get("date") == r["date"] and x.get("match_id") == p.get("match_id")
+                    and x.get("track", "official") == "official"), None)  # 实验盘行不与正式推荐同步
         if row is None:
             continue
         line, odds, conf = effective(p)
@@ -222,7 +223,8 @@ def sync_from_csv(csv_path: Path = DATA / "predictions.csv", reports: Path = REP
     changed = []
     by_date: dict[str, list[dict]] = {}
     for row in _read_csv(csv_path):
-        if str(row.get("settled", "")).lower() == "true" and row.get("result"):
+        if str(row.get("settled", "")).lower() == "true" and row.get("result") \
+                and row.get("track", "official") == "official":  # 实验盘不写回报告
             by_date.setdefault(row["date"], []).append(row)
     for date, rows in by_date.items():
         try:
