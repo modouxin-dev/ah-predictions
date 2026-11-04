@@ -5,7 +5,7 @@ from ah import publish_telegram, render_report
 R = json.loads(Path("reports/2026/11/2026-11-04.json").read_text())
 
 def test_telegram_prefix():
-    assert publish_telegram.summary(R).startswith("【先知】")
+    assert publish_telegram.plain(publish_telegram.summary(R)).startswith("【先知】")
 
 def test_md_brand():
     md = render_report.render_md(R)
