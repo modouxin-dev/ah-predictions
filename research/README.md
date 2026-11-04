@@ -64,3 +64,14 @@ ROI 全部不显著，且 EV 与 CLV/ROI 无单调关系。**回测不支持任�
 - 高：市场门槛 EV ≥ +3% —— 当前仅为路线图占位值，回测无支撑；须先积累 ≥100 笔纸面交易且 CLV > 0 方可启用。
 - 中：市场门槛 EV +1%~3%；低：0~1%。
 - 模型（DC/Elo/blend）只作方向参考，不参与置信度分级。数值见 `config/model.yaml: confidence_proposal`。
+
+## 基准纸面交易 v2 数据源（20261104T2121 起）
+
+- Pinnacle 亚盘价格改读数据官盘口快照 CSV（`stage=report, bookmaker=pinnacle`，主队视角 `ah_home_line`，负数=主让）。
+  读取器 `src/ah/model/snapshots.py`：新路径 `data/snapshots/odds/` 优先、旧路径 `data/odds_snapshots/` 兼容；
+  可 `--snap-rev <提交>` 用 `git show` 只读读取。同一盘口多来源时取 oddspapi > api_football > odds_api，同源取最晚 captured_at，
+  且 captured_at / price_ts 必须早于开赛。
+- 本次运行：`research/paper_trades_model_p.py --snap-repo /workspace/ah-data --snap-rev 94280a0 --report-date 2026-11-05`。
+- 新列 `margin` = 1/主赔 + 1/客赔 − 1；`margin_flag=high` 当 margin > 5%（Pinnacle 亚盘通常 2–4%，疑似陈旧价，待数据官核查），仍输出 model_p。
+- 快照无大小球：大小 2.5 只用 data/cache/odds 的赛前 Pinnacle 价，没有则总进球按 2.6 假设（`total_source` 列标明；只影响整数/四分之一盘的走盘/半赢半输拆分）。
+- 旧文件 `paper_trades_model_p_20261104T2101+0800.csv` 保留不动。
