@@ -9,9 +9,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 from . import DATA, REPORTS, SCHEMA, TEMPLATES
-
-CSV_FIELDS = ["date", "match_id", "league", "home", "away", "kickoff_utc", "pick_side", "pick",
-              "line", "odds_if_known", "confidence", "result", "ah_outcome", "units", "settled"]
+from .settle import LEDGER_FIELDS as CSV_FIELDS  # v2 表头（含 odds_format/status/final_* 等新列）
 
 
 def report_paths(date: str) -> tuple[Path, Path]:
@@ -36,27 +34,33 @@ def render_md(report: dict) -> str:
 
 
 def append_ledger(report: dict, path: Path = DATA / "predictions.csv") -> int:
-    exists = path.exists() and path.stat().st_size > 0
-    seen = set()
-    if exists:
-        seen = {(r["date"], r["match_id"]) for r in csv.DictReader(path.open(encoding="utf-8"))}
+    """把已发布推荐追加到 predictions.csv（按 v2 表头整表写回，旧 15 列文件会被补齐新列）。"""
+    from .settle import new_ledger_row, norm_odds_format, read_ledger, write_ledger
+    rows = read_ledger(path)
+    seen = {(r["date"], r["match_id"]) for r in rows}
+    try:
+        fmt = norm_odds_format(report.get("odds_format"))
+    except ValueError:
+        fmt = "hk"
     n = 0
-    with path.open("a", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=CSV_FIELDS)
-        if not exists:
-            w.writeheader()
-        from . import policy
-        for p in policy.published(report):
-            if (report["date"], p["match_id"]) in seen:
-                continue
-            w.writerow({
-                "date": report["date"], "match_id": p["match_id"], "league": p["league"],
-                "home": p["home"], "away": p["away"], "kickoff_utc": p["kickoff_utc"],
-                "pick_side": p["pick_side"], "pick": p.get("pick_team", p[p["pick_side"]]),
-                "line": p["line"], "odds_if_known": "" if p.get("odds") is None else p["odds"],
-                "confidence": p["confidence"], "result": "", "ah_outcome": "", "units": "", "settled": "false",
-            })
-            n += 1
+    from . import policy
+    for p in policy.published(report):
+        if (report["date"], p["match_id"]) in seen:
+            continue
+        rows.append(new_ledger_row(
+            date=report["date"], match_id=p["match_id"], league=p["league"],
+            home=p["home"], away=p["away"], kickoff_utc=p["kickoff_utc"],
+            pick_side=p["pick_side"], pick=p.get("pick_team", p[p["pick_side"]]),
+            line=p["line"], odds_if_known="" if p.get("odds") is None else p["odds"],
+            confidence=p["confidence"], result="", ah_outcome="", units="", settled="false",
+            odds_format=fmt, status="active"))
+        n += 1
+    if n or not path.exists():
+        if rows:
+            write_ledger(path, rows)
+        elif not path.exists():
+            with path.open("w", encoding="utf-8", newline="") as f:
+                csv.DictWriter(f, fieldnames=CSV_FIELDS).writeheader()
     return n
 
 

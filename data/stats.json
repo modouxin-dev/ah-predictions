@@ -1,7 +1,8 @@
 {
-  "updated_at": "2026-11-04T12:20:37Z",
+  "updated_at": "2026-11-04T12:57:59Z",
   "hit_rate_definition": "(win + 0.5*half_win)/(picks - push - void)",
   "roi_definition": "units/(picks - push - void)（每注1单位）",
+  "cancelled_definition": "cancelled = 赛前撤销场数（已计入 void，不计入命中率/ROI）",
   "overall": {
     "picks": 1,
     "win": 0,
@@ -13,8 +14,17 @@
     "hit_rate": 0.0,
     "units": 0.0,
     "roi": 0.0,
+    "cancelled": 1,
+    "odds_estimated": 0,
     "decided": 0,
     "hits": 0.0
+  },
+  "odds_estimated": {
+    "picks": 0,
+    "decided": 0,
+    "units": 0.0,
+    "match_ids": [],
+    "note": "无真实水位、按 0.9 港盘水位估算盈亏的已结算场次（0 场），战绩页需注明"
   },
   "by_league": {
     "AFC Champions League Elite（亚冠精英·东区 第4轮）": {
@@ -28,12 +38,14 @@
       "hit_rate": 0.0,
       "units": 0.0,
       "roi": 0.0,
+      "cancelled": 1,
+      "odds_estimated": 0,
       "decided": 0,
       "hits": 0.0
     }
   },
   "by_confidence": {
-    "取消/其他": {
+    "中": {
       "picks": 1,
       "win": 0,
       "half_win": 0,
@@ -44,6 +56,8 @@
       "hit_rate": 0.0,
       "units": 0.0,
       "roi": 0.0,
+      "cancelled": 1,
+      "odds_estimated": 0,
       "decided": 0,
       "hits": 0.0
     }
@@ -60,6 +74,8 @@
       "hit_rate": 0.0,
       "units": 0.0,
       "roi": 0.0,
+      "cancelled": 1,
+      "odds_estimated": 0,
       "decided": 0,
       "hits": 0.0
     }
@@ -76,6 +92,8 @@
       "hit_rate": 0.0,
       "units": 0.0,
       "roi": 0.0,
+      "cancelled": 1,
+      "odds_estimated": 0,
       "decided": 0,
       "hits": 0.0
     }
@@ -92,6 +110,8 @@
       "hit_rate": 0.0,
       "units": 0.0,
       "roi": 0.0,
+      "cancelled": 1,
+      "odds_estimated": 0,
       "decided": 0,
       "hits": 0.0
     }
