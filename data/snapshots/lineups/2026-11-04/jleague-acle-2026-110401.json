@@ -1,0 +1,191 @@
+{
+ "source": "jleague",
+ "site_match_id": "acle/2026/110401",
+ "match_id": 1629973,
+ "competition": "acle",
+ "competition_name": "AFC Champions League Elite",
+ "round": "League Stage Matchday 4 - East",
+ "status": "post-game",
+ "kickoff_utc": "2026-11-04T10:00:00Z",
+ "kickoff_bjt": "2026-11-04T18:00:00+08:00",
+ "home": {
+  "name": "Pohang Steelers",
+  "site_name": "FC Pohang Steelers",
+  "site_team_id": "30333",
+  "alias_matched": true
+ },
+ "away": {
+  "name": "Gamba Osaka",
+  "site_name": "Gamba Osaka",
+  "site_team_id": "128",
+  "alias_matched": true
+ },
+ "score": {
+  "home": 3,
+  "away": 3
+ },
+ "lineups": {
+  "home": {
+   "starting_xi": [
+    {
+     "name": "HWANG Injae",
+     "number": 21,
+     "pos": "GK",
+     "site_player_id": null
+    },
+    {
+     "name": "KIM Yesung",
+     "number": 3,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "JEON Min Kwang",
+     "number": 4,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "JIN Si Woo",
+     "number": 5,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "PARK Chanyong",
+     "number": 20,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "KIM Seungho",
+     "number": 8,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "AN Jae Jun",
+     "number": 9,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "KIM Dong Jin",
+     "number": 16,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "NISHIYA Kento",
+     "number": 31,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "JUNG Han Min",
+     "number": 37,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "JAKOB TRANZISKA",
+     "number": 10,
+     "pos": "FW",
+     "site_player_id": null
+    }
+   ],
+   "substitutes": null,
+   "absences": null
+  },
+  "away": {
+   "starting_xi": [
+    {
+     "name": "ICHIMORI Jun",
+     "number": 22,
+     "pos": "GK",
+     "site_player_id": "1500558"
+    },
+    {
+     "name": "FUKUOKA Shota",
+     "number": 2,
+     "pos": "DF",
+     "site_player_id": "1400091"
+    },
+    {
+     "name": "IKEGAYA Ginjiro",
+     "number": 19,
+     "pos": "DF",
+     "site_player_id": "1637147"
+    },
+    {
+     "name": "FUJIWARA Soya",
+     "number": 28,
+     "pos": "DF",
+     "site_player_id": "1618095"
+    },
+    {
+     "name": "NAKANO Shinya",
+     "number": 47,
+     "pos": "DF",
+     "site_player_id": "1622204"
+    },
+    {
+     "name": "MESHINO Ryotaro",
+     "number": 8,
+     "pos": "MF",
+     "site_player_id": "1601441"
+    },
+    {
+     "name": "KURATA Shu",
+     "number": 10,
+     "pos": "MF",
+     "site_player_id": "603210"
+    },
+    {
+     "name": "SUZUKI Tokuma",
+     "number": 16,
+     "pos": "MF",
+     "site_player_id": "1611123"
+    },
+    {
+     "name": "ELI ADAMS",
+     "number": 20,
+     "pos": "MF",
+     "site_player_id": "1657480"
+    },
+    {
+     "name": "JUANPE",
+     "number": 78,
+     "pos": "MF",
+     "site_player_id": "1658775"
+    },
+    {
+     "name": "OGASHIWA Tsuyoshi",
+     "number": 24,
+     "pos": "FW",
+     "site_player_id": "1630184"
+    }
+   ],
+   "substitutes": null,
+   "absences": null
+  }
+ },
+ "field_status": {
+  "starting_xi": {
+   "status": "已获取",
+   "reason": "官网比赛页服务端数据（首发公布后才有）"
+  },
+  "substitutes": {
+   "status": "暂无",
+   "reason": "J.League 官网的控え（替补）在 Lineup 标签页由前端 JS 加载，服务端 HTML 不含；不做 JS 渲染抓取"
+  },
+  "absences": {
+   "status": "暂无",
+   "reason": "J.League 官网不公布伤病名单；出場停止（停赛）在 Lineup 标签页由前端 JS 加载，服务端 HTML 不含"
+  }
+ },
+ "source_url": "https://www.jleague.jp/en/match/acle/2026/110401/",
+ "fetched_at": "2026-11-04T13:07:05Z",
+ "raw_cache": "/workspace/ah-data/data/cache/scrapers/jleague/d46dc83a5a68d9fc.body",
+ "structure_signature": "4b56e669b7aa"
+}

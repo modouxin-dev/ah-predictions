@@ -141,6 +141,65 @@ blocked:
   - {name: zq.titan007.com, reason: "连接被拒（分析/H2H页）"}
 untested: [7m.com.cn, aiscore.com, flashscore.com, sofascore.com]
 # ---------------------------------------------------------------------------
+# 官网爬虫（src/ah/scrapers/，数据官负责）。2026-11-04 北京时间 20:50 前后实测 robots.txt 与条款。
+# 通用：诚实 UA（项目名+联系邮箱）、同站请求间隔 >= min_interval_s、缓存 data/cache/scrapers/<site>/、
+# ETag/If-Modified-Since 条件请求、429/5xx 指数退避 3 次（尊重 Retry-After）、401/403/验证码直接判失败不绕过。
+# 输出 data/snapshots/lineups/<北京日期>/，schema/lineup.schema.json 校验；结构变化写 data/source_status.json（scraper_<site>）。
+# 禁止接入：Transfermarkt（条款禁机器人）、K 联赛官网、Sofascore、FotMob /api、球探（另行决定）。
+scrapers:
+  jleague:
+    enabled: true
+    base_url: "https://www.jleague.jp"
+    min_interval_s: 10          # 每分钟 <= 6 次
+    max_retries: 3
+    backoff_base_s: 2
+    method: "比赛页服务端渲染的 Next.js RSC 数据（页面内嵌 JSON，self.__next_f），英文页 /en/match/<comp>/<year>/<id>/"
+    covers: [j1, j2, j3, leaguecup, acle, acl2]   # acle/acl2 仅限有日本球队参加的比赛
+    fields: {kickoff: 有, teams: 有, starting_xi: "有（首发公布后）", substitutes: "暂无（前端 JS 加载）", absences: "暂无（停赛前端 JS 加载；伤病不公布）"}
+    robots: "允许比赛页；只禁 /match/*/201*（2010 年代旧比赛页）、/application/、/jheader/ 等；User-Agent: spider 全禁（我们的 UA 不含 spider）"
+    tos: "利用規約（/general/kiyaku/）未明文禁止自动化访问；禁止妨碍网站运营、侵犯著作权——低频读取、仅内部研究、不转载"
+    conditional_requests: "2026-11-04 实测比赛页不返回 ETag/Last-Modified（CloudFront 动态），条件请求代码保留，靠 TTL 与限速控制频率"
+    tested_2026-11-04: "acle/2026/110331 神户-叻丕(完场)、110401 浦项-大阪钢巴(完场)、110402 武里南-鹿岛(进行中) 均解析出双方 11 人首发；j1/2026/110706 清水-东京绿茵(赛前) 首发未公布"
+  afc:
+    enabled: true
+    base_url: "https://www.the-afc.com"
+    min_interval_s: 15
+    probe_url: "https://www.the-afc.com/en/club/afc_champions_league_elite.html"
+    probe_ttl_s: 21600
+    robots: "全部允许（只有 sitemap 声明）"
+    tos: "Terms of Service 未明文禁止自动化访问；第 7 条禁止未经书面同意复制/转售内容 -> 只抽取比分事实做内部核对，不转载、不对外发布"
+    lineups:
+      status: unavailable
+      reason: "比赛中心是单页应用，首发由前端 JS 从第三方数据平台加载；sitemap 无比赛页。不做 JS 渲染、不调内部接口 -> 记为失败"
+      fallback: "日本球队的 ACLE/ACL2 比赛用 jleague 覆盖；其余亚冠比赛首发仍以 API-Football 为准"
+    scores:
+      status: partial
+      method: "赛事落地页（ACLE/ACL2 各 1 页）服务端渲染的 SEO 区块：官方战报标题「MD4: A (KOR) 3-3 B (JPN)」+ 集锦视频链接 slug"
+      pages:
+        acle: "https://www.the-afc.com/en/club/afc_champions_league_elite.html"
+        acl2: "https://www.the-afc.com/en/club/afc_champions_league_two.html"
+      coverage: "只含最近有战报/集锦的比赛（2026-11-04 实测 ACLE 3 场、ACL2 4 场）；没出现的比赛记「暂无」"
+      requests: "每次核对 2 页 + robots.txt（24 小时缓存），间隔 ≥15 秒"
+      tested: "2026-11-04 实测，见 data/snapshots/scores/"
+  aleagues:
+    enabled: true               # 仅做探测；数据不可用
+    base_url: "https://aleagues.com.au"
+    min_interval_s: 15
+    probe_url: "https://aleagues.com.au/matches/a-league-men/"
+    probe_ttl_s: 21600
+    robots: "允许页面；禁止 /fixtures/loaders/、?tab=、?apiIdentifier=、?destination= 等数据加载/状态参数"
+    tos: "Terms of Use 未明文禁止自动化访问；第 11 条仅许可个人非商业使用，禁止转载/公开或商业使用内容"
+    status: unavailable
+    reason: "比赛列表与比赛中心由前端模板 + Opta 组件渲染（match.api.aleagues.football），数据加载端点被 robots 禁止；sitemap 无比赛页 -> 记为失败"
+  spl:
+    enabled: false
+    base_url: "https://www.spl.com.sa"
+    min_interval_s: 30
+    probe_url: "https://www.spl.com.sa/en"
+    robots: "允许（只禁 /account、/_libraries、/_test、/_mobileapp 等）"
+    tos: "Terms and Conditions 明文：未经书面许可，严禁使用 Robots、Spiders、Offline readers 等自动化系统"
+    disabled_reason: "沙特联官网条款明确禁止未经书面许可的机器人/爬虫访问，不抓"
+# ---------------------------------------------------------------------------
 # 赔率快照（src/ah/odds_snapshots.py，数据官负责），文档 docs/odds_snapshots.md。
 # 输出 data/odds_snapshots/<日报日期>.csv / .summary.json / .map.json；ah_home_line 为主队让球（负数=主让）。
 odds_snapshots:

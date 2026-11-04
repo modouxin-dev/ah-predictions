@@ -1,0 +1,191 @@
+{
+ "source": "jleague",
+ "site_match_id": "acle/2026/110402",
+ "match_id": 1629974,
+ "competition": "acle",
+ "competition_name": "AFC Champions League Elite",
+ "round": "League Stage Matchday 4 - East",
+ "status": "in-game",
+ "kickoff_utc": "2026-11-04T12:16:00Z",
+ "kickoff_bjt": "2026-11-04T20:16:00+08:00",
+ "home": {
+  "name": "Buriram United",
+  "site_name": "Buriram United",
+  "site_team_id": "30633",
+  "alias_matched": true
+ },
+ "away": {
+  "name": "Kashima",
+  "site_name": "Kashima Antlers",
+  "site_team_id": "120",
+  "alias_matched": true
+ },
+ "score": {
+  "home": 0,
+  "away": 0
+ },
+ "lineups": {
+  "home": {
+   "starting_xi": [
+    {
+     "name": "NEIL ETHERIDGE",
+     "number": 13,
+     "pos": "GK",
+     "site_player_id": null
+    },
+    {
+     "name": "SASALAK HAIPRAKHON",
+     "number": 2,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "BISSOLI",
+     "number": 7,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "KENNETH DOUGALL",
+     "number": 16,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "EDUARDO MANCHA",
+     "number": 40,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "REZA ASADI",
+     "number": 4,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "KINGSLEY SCHINDLER",
+     "number": 19,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "TONI MOYA",
+     "number": 20,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "GORAN CAUSIC",
+     "number": 23,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "DARLAN",
+     "number": 37,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "ALEXANDRU TUDORIE",
+     "number": 99,
+     "pos": "FW",
+     "site_player_id": null
+    }
+   ],
+   "substitutes": null,
+   "absences": null
+  },
+  "away": {
+   "starting_xi": [
+    {
+     "name": "HAYAKAWA Tomoki",
+     "number": 1,
+     "pos": "GK",
+     "site_player_id": "1632225"
+    },
+    {
+     "name": "CHIDA Kaito",
+     "number": 4,
+     "pos": "DF",
+     "site_player_id": "1604671"
+    },
+    {
+     "name": "TSUKUI Keisuke",
+     "number": 23,
+     "pos": "DF",
+     "site_player_id": "1640644"
+    },
+    {
+     "name": "OKAWA Yugo",
+     "number": 28,
+     "pos": "DF",
+     "site_player_id": "1646893"
+    },
+    {
+     "name": "MATSUMOTO Haruto",
+     "number": 32,
+     "pos": "DF",
+     "site_player_id": "1644451"
+    },
+    {
+     "name": "MISAO Kento",
+     "number": 6,
+     "pos": "MF",
+     "site_player_id": "1400757"
+    },
+    {
+     "name": "HIGUCHI Yuta",
+     "number": 14,
+     "pos": "MF",
+     "site_player_id": "1624342"
+    },
+    {
+     "name": "HAYASHI Haruki",
+     "number": 24,
+     "pos": "MF",
+     "site_player_id": "1639689"
+    },
+    {
+     "name": "MOTOSUNA Anthony Udemba",
+     "number": 35,
+     "pos": "MF",
+     "site_player_id": "1647819"
+    },
+    {
+     "name": "YOSHIDA Minato",
+     "number": 30,
+     "pos": "FW",
+     "site_player_id": "1646924"
+    },
+    {
+     "name": "TOKUDA Homare",
+     "number": 34,
+     "pos": "FW",
+     "site_player_id": "1644450"
+    }
+   ],
+   "substitutes": null,
+   "absences": null
+  }
+ },
+ "field_status": {
+  "starting_xi": {
+   "status": "已获取",
+   "reason": "官网比赛页服务端数据（首发公布后才有）"
+  },
+  "substitutes": {
+   "status": "暂无",
+   "reason": "J.League 官网的控え（替补）在 Lineup 标签页由前端 JS 加载，服务端 HTML 不含；不做 JS 渲染抓取"
+  },
+  "absences": {
+   "status": "暂无",
+   "reason": "J.League 官网不公布伤病名单；出場停止（停赛）在 Lineup 标签页由前端 JS 加载，服务端 HTML 不含"
+  }
+ },
+ "source_url": "https://www.jleague.jp/en/match/acle/2026/110402/",
+ "fetched_at": "2026-11-04T13:07:15Z",
+ "raw_cache": "/workspace/ah-data/data/cache/scrapers/jleague/0d4bcded2fd7aa3e.body",
+ "structure_signature": "4b56e669b7aa"
+}

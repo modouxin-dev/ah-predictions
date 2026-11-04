@@ -1,0 +1,25 @@
+{
+ "match_id": 1629974,
+ "site_match_id": "acle/2026/110402",
+ "home": "Buriram United",
+ "away": "Kashima",
+ "kickoff_bjt": "2026-11-04T20:16:00+08:00",
+ "checked_at": "2026-11-04T13:08:11Z",
+ "sources": {
+  "jleague": "https://www.jleague.jp/en/match/acle/2026/110402/",
+  "api_football": "API-Football /fixtures/lineups?fixture=1629974"
+ },
+ "teams": {
+  "home": {
+   "verdict": "暂无",
+   "reason": "API-Football 未提供首发"
+  },
+  "away": {
+   "verdict": "暂无",
+   "reason": "API-Football 未提供首发"
+  }
+ },
+ "verdict": "暂无",
+ "substitutes": "暂无",
+ "absences": "暂无"
+}

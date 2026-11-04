@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Official-site lineup / absence record (ah.scrapers)",
+  "type": "object",
+  "required": ["source", "site_match_id", "match_id", "competition", "status", "kickoff_utc", "kickoff_bjt",
+               "home", "away", "lineups", "field_status", "source_url", "fetched_at"],
+  "properties": {
+    "source": {"type": "string"},
+    "site_match_id": {"type": "string", "minLength": 1},
+    "match_id": {"type": ["integer", "null"], "description": "API-Football fixture id；对不上为 null"},
+    "competition": {"type": "string"},
+    "status": {"enum": ["pre-game", "in-game", "post-game", "cancelled", "unknown"]},
+    "kickoff_utc": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+    "kickoff_bjt": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\+08:00$"},
+    "home": {"$ref": "#/$defs/team"},
+    "away": {"$ref": "#/$defs/team"},
+    "lineups": {
+      "type": "object",
+      "required": ["home", "away"],
+      "properties": {"home": {"$ref": "#/$defs/side"}, "away": {"$ref": "#/$defs/side"}}
+    },
+    "field_status": {
+      "type": "object",
+      "required": ["starting_xi", "substitutes", "absences"],
+      "additionalProperties": {"type": "object", "required": ["status"],
+                               "properties": {"status": {"enum": ["已获取", "暂无"]}, "reason": {"type": "string"}}}
+    },
+    "source_url": {"type": "string", "pattern": "^https://"},
+    "fetched_at": {"type": "string", "pattern": "Z$"},
+    "raw_cache": {"type": ["string", "null"]}
+  },
+  "$defs": {
+    "team": {
+      "type": "object",
+      "required": ["name", "site_name"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1, "description": "team_aliases.yaml 归一后的名字（API-Football 规范名）；无别名时为站点名"},
+        "site_name": {"type": "string", "minLength": 1},
+        "site_team_id": {"type": ["string", "null"]},
+        "alias_matched": {"type": "boolean"}
+      }
+    },
+    "player": {
+      "type": "object",
+      "required": ["name", "number", "pos"],
+      "properties": {
+        "name": {"type": ["string", "null"]},
+        "number": {"type": ["integer", "null"]},
+        "pos": {"type": ["string", "null"]},
+        "site_player_id": {"type": ["string", "null"]},
+        "reason": {"type": ["string", "null"]}
+      }
+    },
+    "side": {
+      "type": "object",
+      "required": ["starting_xi", "substitutes", "absences"],
+      "properties": {
+        "starting_xi": {"oneOf": [{"type": "null"}, {"type": "array", "minItems": 11, "maxItems": 11, "items": {"$ref": "#/$defs/player"}}]},
+        "substitutes": {"oneOf": [{"type": "null"}, {"type": "array", "items": {"$ref": "#/$defs/player"}}]},
+        "absences": {"oneOf": [{"type": "null"}, {"type": "array", "items": {"$ref": "#/$defs/player"}}]}
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+ "match_id": 1629973,
+ "site_match_id": "acle/2026/110401",
+ "home": "Pohang Steelers",
+ "away": "Gamba Osaka",
+ "kickoff_bjt": "2026-11-04T18:00:00+08:00",
+ "checked_at": "2026-11-04T13:08:11Z",
+ "sources": {
+  "jleague": "https://www.jleague.jp/en/match/acle/2026/110401/",
+  "api_football": "API-Football /fixtures/lineups?fixture=1629973"
+ },
+ "teams": {
+  "home": {
+   "verdict": "已验证",
+   "site_count": 11,
+   "api_count": 11
+  },
+  "away": {
+   "verdict": "已验证",
+   "site_count": 11,
+   "api_count": 11
+  }
+ },
+ "verdict": "已验证",
+ "substitutes": "暂无",
+ "absences": "暂无"
+}

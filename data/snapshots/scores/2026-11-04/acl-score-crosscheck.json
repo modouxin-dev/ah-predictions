@@ -1,0 +1,687 @@
+{
+ "results": [
+  {
+   "match_id": 1629965,
+   "league_id": 17,
+   "competition": "acle",
+   "round": "League Phase - 4",
+   "kickoff_utc": "2026-11-03T07:45:00Z",
+   "kickoff_bjt": "2026-11-03T15:45:00+08:00",
+   "home": "Newcastle Jets",
+   "away": "SHANGHAI SIPG",
+   "api_football": {
+    "status": "FT",
+    "finished": true,
+    "home": "Newcastle Jets",
+    "away": "SHANGHAI SIPG",
+    "home_goals": 2,
+    "away_goals": 4,
+    "fulltime_90": {
+     "home": 2,
+     "away": 4
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1629965"
+   },
+   "official": [],
+   "verdict": "暂无",
+   "reason": "官方页面没有这场比分（the-afc.com 落地页只列最近有战报/集锦的比赛；非日本球队无 jleague 来源）"
+  },
+  {
+   "match_id": 1629966,
+   "league_id": 17,
+   "competition": "acle",
+   "round": "League Phase - 4",
+   "kickoff_utc": "2026-11-03T10:00:00Z",
+   "kickoff_bjt": "2026-11-03T18:00:00+08:00",
+   "home": "Jeonbuk Motors",
+   "away": "Johor Darul Takzim FC",
+   "api_football": {
+    "status": "FT",
+    "finished": true,
+    "home": "Jeonbuk Motors",
+    "away": "Johor Darul Takzim FC",
+    "home_goals": 2,
+    "away_goals": 0,
+    "fulltime_90": {
+     "home": 2,
+     "away": 0
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1629966"
+   },
+   "official": [],
+   "verdict": "暂无",
+   "reason": "官方页面没有这场比分（the-afc.com 落地页只列最近有战报/集锦的比赛；非日本球队无 jleague 来源）"
+  },
+  {
+   "match_id": 1629967,
+   "league_id": 17,
+   "competition": "acle",
+   "round": "League Phase - 4",
+   "kickoff_utc": "2026-11-03T10:00:00Z",
+   "kickoff_bjt": "2026-11-03T18:00:00+08:00",
+   "home": "Kashiwa Reysol",
+   "away": "Daejeon Citizen",
+   "api_football": {
+    "status": "FT",
+    "finished": true,
+    "home": "Kashiwa Reysol",
+    "away": "Daejeon Citizen",
+    "home_goals": 2,
+    "away_goals": 0,
+    "fulltime_90": {
+     "home": 2,
+     "away": 0
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1629967"
+   },
+   "official": [],
+   "verdict": "暂无",
+   "reason": "官方页面没有这场比分（the-afc.com 落地页只列最近有战报/集锦的比赛；非日本球队无 jleague 来源）"
+  },
+  {
+   "match_id": 1629968,
+   "league_id": 17,
+   "competition": "acle",
+   "round": "League Phase - 4",
+   "kickoff_utc": "2026-11-03T10:00:00Z",
+   "kickoff_bjt": "2026-11-03T18:00:00+08:00",
+   "home": "Vissel Kobe",
+   "away": "Ratchaburi",
+   "api_football": {
+    "status": "FT",
+    "finished": true,
+    "home": "Vissel Kobe",
+    "away": "Ratchaburi",
+    "home_goals": 3,
+    "away_goals": 2,
+    "fulltime_90": {
+     "home": 3,
+     "away": 2
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1629968"
+   },
+   "official": [
+    {
+     "source": "jleague",
+     "orientation": "same",
+     "home": "Vissel Kobe",
+     "away": "Ratchaburi FC",
+     "home_goals": 3,
+     "away_goals": 2,
+     "text": "Vissel Kobe 3-2 Ratchaburi FC",
+     "source_url": "https://www.jleague.jp/en/match/acle/2026/110331/"
+    }
+   ],
+   "verdict": "已验证",
+   "reason": "API-Football 与 jleague 比分一致 3-2"
+  },
+  {
+   "match_id": 1629969,
+   "league_id": 17,
+   "competition": "acle",
+   "round": "League Phase - 4",
+   "kickoff_utc": "2026-11-03T12:15:00Z",
+   "kickoff_bjt": "2026-11-03T20:15:00+08:00",
+   "home": "Công An Nhân Dân",
+   "away": "Kyoto Sanga",
+   "api_football": {
+    "status": "FT",
+    "finished": true,
+    "home": "Công An Nhân Dân",
+    "away": "Kyoto Sanga",
+    "home_goals": 0,
+    "away_goals": 0,
+    "fulltime_90": {
+     "home": 0,
+     "away": 0
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1629969"
+   },
+   "official": [],
+   "verdict": "暂无",
+   "reason": "官方页面没有这场比分（the-afc.com 落地页只列最近有战报/集锦的比赛；非日本球队无 jleague 来源）"
+  },
+  {
+   "match_id": 1629970,
+   "league_id": 17,
+   "competition": "acle",
+   "round": "League Phase - 4",
+   "kickoff_utc": "2026-11-03T12:15:00Z",
+   "kickoff_bjt": "2026-11-03T20:15:00+08:00",
+   "home": "Port FC",
+   "away": "Beijing Guoan",
+   "api_football": {
+    "status": "FT",
+    "finished": true,
+    "home": "Port FC",
+    "away": "Beijing Guoan",
+    "home_goals": 7,
+    "away_goals": 4,
+    "fulltime_90": {
+     "home": 7,
+     "away": 4
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1629970"
+   },
+   "official": [],
+   "verdict": "暂无",
+   "reason": "官方页面没有这场比分（the-afc.com 落地页只列最近有战报/集锦的比赛；非日本球队无 jleague 来源）"
+  },
+  {
+   "match_id": 1630390,
+   "league_id": 18,
+   "competition": "acl2",
+   "round": "Group Stage - 4",
+   "kickoff_utc": "2026-11-03T13:45:00Z",
+   "kickoff_bjt": "2026-11-03T21:45:00+08:00",
+   "home": "East Bengal II",
+   "away": "Al Seeb",
+   "api_football": {
+    "status": "FT",
+    "finished": true,
+    "home": "East Bengal II",
+    "away": "Al Seeb",
+    "home_goals": 0,
+    "away_goals": 2,
+    "fulltime_90": {
+     "home": 0,
+     "away": 2
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1630390"
+   },
+   "official": [
+    {
+     "source": "afc",
+     "orientation": "same",
+     "home": "East Bengal FC",
+     "away": "Al Seeb Club",
+     "home_goals": 0,
+     "away_goals": 2,
+     "text": "Group D: East Bengal FC (IND) 0-2 Al Seeb Club (OMA)",
+     "source_url": "https://www.the-afc.com/en/club/afc_champions_league_two.html"
+    },
+    {
+     "source": "afc",
+     "orientation": "same",
+     "home": "east bengal fc",
+     "away": "al seeb",
+     "home_goals": 0,
+     "away_goals": 2,
+     "text": "/video/acltwo-|-group-d-east-bengal-fc-ind-0-2-al-seeb-oma",
+     "source_url": "https://www.the-afc.com/en/club/afc_champions_league_two.html/video/acltwo-|-group-d-east-bengal-fc-ind-0-2-al-seeb-oma"
+    }
+   ],
+   "verdict": "已验证",
+   "reason": "API-Football 与 afc 比分一致 0-2"
+  },
+  {
+   "match_id": 1629971,
+   "league_id": 17,
+   "competition": "acle",
+   "round": "League Phase - 4",
+   "kickoff_utc": "2026-11-03T16:00:00Z",
+   "kickoff_bjt": "2026-11-04T00:00:00+08:00",
+   "home": "Esteghlal FC",
+   "away": "Al Shamal",
+   "api_football": {
+    "status": "FT",
+    "finished": true,
+    "home": "Esteghlal FC",
+    "away": "Al Shamal",
+    "home_goals": 1,
+    "away_goals": 0,
+    "fulltime_90": {
+     "home": 1,
+     "away": 0
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1629971"
+   },
+   "official": [
+    {
+     "source": "afc",
+     "orientation": "same",
+     "home": "esteghlal",
+     "away": "al shamal sc",
+     "home_goals": 1,
+     "away_goals": 0,
+     "text": "/video/aclelite-|-esteghlal-irn-1-0-al-shamal-sc-qat",
+     "source_url": "https://www.the-afc.com/en/club/afc_champions_league_elite.html/video/aclelite-|-esteghlal-irn-1-0-al-shamal-sc-qat"
+    }
+   ],
+   "verdict": "已验证",
+   "reason": "API-Football 与 afc 比分一致 1-0"
+  },
+  {
+   "match_id": 1630391,
+   "league_id": 18,
+   "competition": "acl2",
+   "round": "Group Stage - 4",
+   "kickoff_utc": "2026-11-03T16:00:00Z",
+   "kickoff_bjt": "2026-11-04T00:00:00+08:00",
+   "home": "Al Hussein",
+   "away": "Al Shorta",
+   "api_football": {
+    "status": "FT",
+    "finished": true,
+    "home": "Al Hussein",
+    "away": "Al Shorta",
+    "home_goals": 0,
+    "away_goals": 3,
+    "fulltime_90": {
+     "home": 0,
+     "away": 3
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1630391"
+   },
+   "official": [
+    {
+     "source": "afc",
+     "orientation": "same",
+     "home": "Al Hussein",
+     "away": "Al Shorta",
+     "home_goals": 0,
+     "away_goals": 3,
+     "text": "Group D: Al Hussein (JOR) 0-3 Al Shorta (IRQ)",
+     "source_url": "https://www.the-afc.com/en/club/afc_champions_league_two.html"
+    },
+    {
+     "source": "afc",
+     "orientation": "same",
+     "home": "al hussien",
+     "away": "al shorta",
+     "home_goals": 0,
+     "away_goals": 3,
+     "text": "/video/acltwo-|-group-d-al-hussien-jor-0-3-al-shorta-irq",
+     "source_url": "https://www.the-afc.com/en/club/afc_champions_league_two.html/video/acltwo-|-group-d-al-hussien-jor-0-3-al-shorta-irq"
+    }
+   ],
+   "verdict": "已验证",
+   "reason": "API-Football 与 afc 比分一致 0-3"
+  },
+  {
+   "match_id": 1629972,
+   "league_id": 17,
+   "competition": "acle",
+   "round": "League Phase - 4",
+   "kickoff_utc": "2026-11-03T18:15:00Z",
+   "kickoff_bjt": "2026-11-04T02:15:00+08:00",
+   "home": "Al-Hilal Saudi FC",
+   "away": "Shabab Al Ahli Dubai",
+   "api_football": {
+    "status": "FT",
+    "finished": true,
+    "home": "Al-Hilal Saudi FC",
+    "away": "Shabab Al Ahli Dubai",
+    "home_goals": 2,
+    "away_goals": 0,
+    "fulltime_90": {
+     "home": 2,
+     "away": 0
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1629972"
+   },
+   "official": [
+    {
+     "source": "afc",
+     "orientation": "same",
+     "home": "al hilal sfc",
+     "away": "shabab al ahli",
+     "home_goals": 2,
+     "away_goals": 0,
+     "text": "/video/aclelite-|-al-hilal-sfc-ksa-2-0-shabab-al-ahli-uae",
+     "source_url": "https://www.the-afc.com/en/club/afc_champions_league_elite.html/video/aclelite-|-al-hilal-sfc-ksa-2-0-shabab-al-ahli-uae"
+    }
+   ],
+   "verdict": "已验证",
+   "reason": "API-Football 与 afc 比分一致 2-0"
+  },
+  {
+   "match_id": 1637494,
+   "league_id": 18,
+   "competition": "acl2",
+   "round": "Group Stage - 4",
+   "kickoff_utc": "2026-11-04T07:45:00Z",
+   "kickoff_bjt": "2026-11-04T15:45:00+08:00",
+   "home": "Melbourne Victory",
+   "away": "Persib Bandung",
+   "api_football": {
+    "status": "FT",
+    "finished": true,
+    "home": "Melbourne Victory",
+    "away": "Persib Bandung",
+    "home_goals": 1,
+    "away_goals": 2,
+    "fulltime_90": {
+     "home": 1,
+     "away": 2
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1637494"
+   },
+   "official": [
+    {
+     "source": "afc",
+     "orientation": "same",
+     "home": "Melbourne Victory",
+     "away": "Persib Bandung",
+     "home_goals": 1,
+     "away_goals": 2,
+     "text": "Group E: Melbourne Victory (AUS) 1-2 Persib Bandung (IDN)",
+     "source_url": "https://www.the-afc.com/en/club/afc_champions_league_two.html"
+    }
+   ],
+   "verdict": "已验证",
+   "reason": "API-Football 与 afc 比分一致 1-2"
+  },
+  {
+   "match_id": 1629973,
+   "league_id": 17,
+   "competition": "acle",
+   "round": "League Phase - 4",
+   "kickoff_utc": "2026-11-04T10:00:00Z",
+   "kickoff_bjt": "2026-11-04T18:00:00+08:00",
+   "home": "Pohang Steelers",
+   "away": "Gamba Osaka",
+   "api_football": {
+    "status": "FT",
+    "finished": true,
+    "home": "Pohang Steelers",
+    "away": "Gamba Osaka",
+    "home_goals": 3,
+    "away_goals": 3,
+    "fulltime_90": {
+     "home": 3,
+     "away": 3
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1629973"
+   },
+   "official": [
+    {
+     "source": "jleague",
+     "orientation": "same",
+     "home": "Pohang Steelers",
+     "away": "Gamba Osaka",
+     "home_goals": 3,
+     "away_goals": 3,
+     "text": "FC Pohang Steelers 3-3 Gamba Osaka",
+     "source_url": "https://www.jleague.jp/en/match/acle/2026/110401/"
+    },
+    {
+     "source": "afc",
+     "orientation": "same",
+     "home": "FC Pohang Steelers",
+     "away": "Gamba Osaka",
+     "home_goals": 3,
+     "away_goals": 3,
+     "text": "MD4: FC Pohang Steelers (KOR) 3-3 Gamba Osaka (JPN)",
+     "source_url": "https://www.the-afc.com/en/club/afc_champions_league_elite.html"
+    }
+   ],
+   "verdict": "已验证",
+   "reason": "API-Football 与 afc、jleague 比分一致 3-3"
+  },
+  {
+   "match_id": 1630392,
+   "league_id": 18,
+   "competition": "acl2",
+   "round": "Group Stage - 4",
+   "kickoff_utc": "2026-11-04T10:00:00Z",
+   "kickoff_bjt": "2026-11-04T18:00:00+08:00",
+   "home": "FC Seoul",
+   "away": "Viettel",
+   "api_football": {
+    "status": "FT",
+    "finished": true,
+    "home": "FC Seoul",
+    "away": "Viettel",
+    "home_goals": 3,
+    "away_goals": 0,
+    "fulltime_90": {
+     "home": 3,
+     "away": 0
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1630392"
+   },
+   "official": [
+    {
+     "source": "afc",
+     "orientation": "same",
+     "home": "FC Seoul",
+     "away": "The Cong - Viettel FC",
+     "home_goals": 3,
+     "away_goals": 0,
+     "text": "Group E: FC Seoul (KOR) 3-0 The Cong - Viettel FC (VIE)",
+     "source_url": "https://www.the-afc.com/en/club/afc_champions_league_two.html"
+    }
+   ],
+   "verdict": "已验证",
+   "reason": "API-Football 与 afc 比分一致 3-0"
+  },
+  {
+   "match_id": 1629974,
+   "league_id": 17,
+   "competition": "acle",
+   "round": "League Phase - 4",
+   "kickoff_utc": "2026-11-04T12:15:00Z",
+   "kickoff_bjt": "2026-11-04T20:15:00+08:00",
+   "home": "Buriram United",
+   "away": "Kashima",
+   "api_football": {
+    "status": "HT",
+    "finished": false,
+    "home": "Buriram United",
+    "away": "Kashima",
+    "home_goals": 0,
+    "away_goals": 0,
+    "fulltime_90": {
+     "home": null,
+     "away": null
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1629974"
+   },
+   "official": [],
+   "verdict": "暂无",
+   "reason": "API-Football 未完场（状态 HT），不比较"
+  },
+  {
+   "match_id": 1630393,
+   "league_id": 18,
+   "competition": "acl2",
+   "round": "Group Stage - 4",
+   "kickoff_utc": "2026-11-04T13:45:00Z",
+   "kickoff_bjt": "2026-11-04T21:45:00+08:00",
+   "home": "Arkadag",
+   "away": "Gol Gohar",
+   "api_football": {
+    "status": "NS",
+    "finished": false,
+    "home": "Arkadag",
+    "away": "Gol Gohar",
+    "home_goals": null,
+    "away_goals": null,
+    "fulltime_90": {
+     "home": null,
+     "away": null
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1630393"
+   },
+   "official": [],
+   "verdict": "暂无",
+   "reason": "API-Football 未完场（状态 NS），不比较"
+  },
+  {
+   "match_id": 1630394,
+   "league_id": 18,
+   "competition": "acl2",
+   "round": "Group Stage - 4",
+   "kickoff_utc": "2026-11-04T16:00:00Z",
+   "kickoff_bjt": "2026-11-05T00:00:00+08:00",
+   "home": "Al Kuwait",
+   "away": "Nasaf",
+   "api_football": {
+    "status": "NS",
+    "finished": false,
+    "home": "Al Kuwait",
+    "away": "Nasaf",
+    "home_goals": null,
+    "away_goals": null,
+    "fulltime_90": {
+     "home": null,
+     "away": null
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1630394"
+   },
+   "official": [],
+   "verdict": "暂无",
+   "reason": "API-Football 未完场（状态 NS），不比较"
+  },
+  {
+   "match_id": 1630395,
+   "league_id": 18,
+   "competition": "acl2",
+   "round": "Group Stage - 4",
+   "kickoff_utc": "2026-11-04T16:00:00Z",
+   "kickoff_bjt": "2026-11-05T00:00:00+08:00",
+   "home": "Al-Rayyan SC",
+   "away": "Al-Nahda",
+   "api_football": {
+    "status": "NS",
+    "finished": false,
+    "home": "Al-Rayyan SC",
+    "away": "Al-Nahda",
+    "home_goals": null,
+    "away_goals": null,
+    "fulltime_90": {
+     "home": null,
+     "away": null
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1630395"
+   },
+   "official": [],
+   "verdict": "暂无",
+   "reason": "API-Football 未完场（状态 NS），不比较"
+  },
+  {
+   "match_id": 1630396,
+   "league_id": 18,
+   "competition": "acl2",
+   "round": "Group Stage - 4",
+   "kickoff_utc": "2026-11-04T16:00:00Z",
+   "kickoff_bjt": "2026-11-05T00:00:00+08:00",
+   "home": "Al Wahda FC",
+   "away": "Khalidiya",
+   "api_football": {
+    "status": "NS",
+    "finished": false,
+    "home": "Al Wahda FC",
+    "away": "Khalidiya",
+    "home_goals": null,
+    "away_goals": null,
+    "fulltime_90": {
+     "home": null,
+     "away": null
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1630396"
+   },
+   "official": [],
+   "verdict": "暂无",
+   "reason": "API-Football 未完场（状态 NS），不比较"
+  },
+  {
+   "match_id": 1630397,
+   "league_id": 18,
+   "competition": "acl2",
+   "round": "Group Stage - 4",
+   "kickoff_utc": "2026-11-04T18:15:00Z",
+   "kickoff_bjt": "2026-11-05T02:15:00+08:00",
+   "home": "Muharraq",
+   "away": "Al-Jazira",
+   "api_football": {
+    "status": "NS",
+    "finished": false,
+    "home": "Muharraq",
+    "away": "Al-Jazira",
+    "home_goals": null,
+    "away_goals": null,
+    "fulltime_90": {
+     "home": null,
+     "away": null
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1630397"
+   },
+   "official": [],
+   "verdict": "暂无",
+   "reason": "API-Football 未完场（状态 NS），不比较"
+  },
+  {
+   "match_id": 1630398,
+   "league_id": 18,
+   "competition": "acl2",
+   "round": "Group Stage - 4",
+   "kickoff_utc": "2026-11-04T18:15:00Z",
+   "kickoff_bjt": "2026-11-05T02:15:00+08:00",
+   "home": "Al Taawon",
+   "away": "Al Faisaly",
+   "api_football": {
+    "status": "NS",
+    "finished": false,
+    "home": "Al Taawon",
+    "away": "Al Faisaly",
+    "home_goals": null,
+    "away_goals": null,
+    "fulltime_90": {
+     "home": null,
+     "away": null
+    },
+    "had_extra_time": false,
+    "source": "API-Football /fixtures?id=1630398"
+   },
+   "official": [],
+   "verdict": "暂无",
+   "reason": "API-Football 未完场（状态 NS），不比较"
+  }
+ ],
+ "unmatched_claims": [],
+ "summary": {
+  "已验证": 8,
+  "冲突": 0,
+  "暂无": 12
+ },
+ "api_football_origin": {
+  "2026-11-03": "cache",
+  "2026-11-04": "cache"
+ },
+ "afc_pages": {
+  "acle": {
+   "url": "https://www.the-afc.com/en/club/afc_champions_league_elite.html",
+   "ok": true,
+   "claims": 3,
+   "from_cache": true
+  },
+  "acl2": {
+   "url": "https://www.the-afc.com/en/club/afc_champions_league_two.html",
+   "ok": true,
+   "claims": 6,
+   "from_cache": true
+  }
+ },
+ "generated_at_bjt": "2026-11-04T21:07:24+08:00"
+}
