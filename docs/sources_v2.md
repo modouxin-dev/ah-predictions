@@ -67,7 +67,10 @@
 
 被封来源的替代：oddsportal/球探的“多家亚洲公司初盘+即时盘”，现在可以用 InferSports（crown/macau/hkjc/sbobet，含初盘）加 oddspapi historical 拼出来。
 
-## 3. 交叉核验硬规则草案（config/sources.yaml `cross_verification_draft`，`enabled: false`，未改出单逻辑）
+## 3. 交叉核验硬规则草案
+
+> 2026-11-05 口径已更新为只打标不拦截，详见 docs/cross_verification.md。门槛未放宽。
+（config/sources.yaml `cross_verification_draft`，`enabled: false`，未改出单逻辑）
 
 1. **口径**
    - 比较对象：同一场、同一阶段、`is_main=1` 的行。主线仍由 `main_line()` / `pick_main` 决定（完整梯度去水后主队概率最接近 0.5，Pinnacle 优先）；没有 Pinnacle 时按现有逻辑选。

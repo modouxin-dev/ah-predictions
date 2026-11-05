@@ -555,6 +555,91 @@ def test_deep_line_blocks_verdict():
         _xv_row("m", "report", "sbobet", "infersports", -2.0, verified="verified"),
         _xv_row("m", "report", "singbet", "oddspapi", -2.0),
     ]
-    xv = snap.cross_verification_for_rows(rows, "m")
+    from datetime import datetime, timezone
+    xv = snap.cross_verification_for_rows(rows, "m", now=datetime(2026, 11, 5, 9, 6, tzinfo=timezone.utc))
     assert xv["phases"]["report"]["deep_line"] is True
-    assert xv["verdict"] == "withhold"
+    assert xv["advisory_only"] is True
+    assert xv["verdict"] == "ok"  # 只打标不自动拦截
+
+
+def test_xv_excludes_suspended_api_and_pending_empty():
+    rows = [_xv_row("m", "report", "pinnacle", "api_football", -0.5, verified="verified")]
+    xv = snap.cross_verification_for_rows(rows, "m")
+    assert xv["phases"]["report"]["status"] == "pending"
+    assert xv["phases"]["close"]["status"] == "pending"
+    assert xv["phases"]["open"]["status"] == "pending"
+    assert xv["verdict"] == "pending"
+
+
+def test_xv_old_report_does_not_veto_fresh_close():
+    # 旧 report 单源+过时；新 close 双源三家 verified → 看 close，不看旧 report
+    old = [
+        _xv_row("m", "report", "pinnacle", "oddspapi", -0.5, verified="single",
+                ts="2026-11-05T01:00:00Z", cap="2026-11-05T01:05:00Z"),
+    ]
+    close = [
+        _xv_row("m", "close", "pinnacle", "oddspapi", -0.5, verified="single",
+                ts="2026-11-05T09:59:00Z", cap="2026-11-05T10:00:00Z"),
+        _xv_row("m", "close", "sbobet", "oddspapi", -0.5, verified="verified",
+                ts="2026-11-05T09:59:00Z", cap="2026-11-05T10:00:00Z"),
+        _xv_row("m", "close", "sbobet", "infersports", -0.5, verified="verified",
+                ts="2026-11-05T09:59:00Z", cap="2026-11-05T10:00:00Z"),
+        _xv_row("m", "close", "singbet", "oddspapi", -0.5,
+                ts="2026-11-05T09:59:00Z", cap="2026-11-05T10:00:00Z"),
+    ]
+    from datetime import datetime, timezone
+    now = datetime(2026, 11, 5, 10, 2, tzinfo=timezone.utc)
+    xv = snap.cross_verification_for_rows(old + close, "m", now=now)
+    assert xv["active_stage"] == "close"
+    assert xv["verdict"] == "ok"
+    assert xv["phases"]["report"]["passed"] is False  # 历史 report 仍如实打标
+
+
+def test_xv_deep_line_is_advisory_not_auto_withhold():
+    rows = [
+        _xv_row("m", "report", "pinnacle", "oddspapi", -2.0, verified="single"),
+        _xv_row("m", "report", "sbobet", "oddspapi", -2.0, verified="verified"),
+        _xv_row("m", "report", "sbobet", "infersports", -2.0, verified="verified"),
+        _xv_row("m", "report", "singbet", "oddspapi", -2.0),
+    ]
+    from datetime import datetime, timezone
+    xv = snap.cross_verification_for_rows(rows, "m", now=datetime(2026, 11, 5, 9, 6, tzinfo=timezone.utc))
+    assert xv["phases"]["report"]["deep_line"] is True
+    assert "deep_line" in xv["phases"]["report"]["reasons"]
+    assert xv["verdict"] == "ok"  # 只打标；深盘拦截在先知签发侧
+
+
+def test_xv_stale_uses_pin_and_verified_not_oldest_book():
+    rows = [
+        _xv_row("m", "close", "pinnacle", "oddspapi", -0.5, verified="single",
+                ts="2026-11-05T09:59:30Z", cap="2026-11-05T10:00:00Z"),
+        _xv_row("m", "close", "sbobet", "oddspapi", -0.5, verified="verified",
+                ts="2026-11-05T09:59:30Z", cap="2026-11-05T10:00:00Z"),
+        _xv_row("m", "close", "sbobet", "infersports", -0.5, verified="verified",
+                ts="2026-11-05T09:59:30Z", cap="2026-11-05T10:00:00Z"),
+        # 皇冠很旧，但非 Pin 非 verified，不得一票否决
+        _xv_row("m", "close", "crown", "infersports", -0.5, verified="single",
+                ts="2026-11-05T06:00:00Z", cap="2026-11-05T10:00:00Z"),
+        _xv_row("m", "close", "singbet", "oddspapi", -0.5, verified="single",
+                ts="2026-11-05T06:00:00Z", cap="2026-11-05T10:00:00Z"),
+    ]
+    from datetime import datetime, timezone
+    xv = snap.cross_verification_for_rows(rows, "m", now=datetime(2026, 11, 5, 10, 1, tzinfo=timezone.utc))
+    assert xv["verdict"] == "ok"
+    assert xv["phases"]["close"]["stale_age_s"] <= 90
+
+
+def test_xv_disjoint_book_sets_flag_no_shared_book():
+    rows = [
+        _xv_row("m", "report", "pinnacle", "odds_api", -1.0, verified="single"),
+        _xv_row("m", "report", "marathonbet", "odds_api", -1.0),
+        _xv_row("m", "report", "coolbet", "odds_api", -1.0),
+        _xv_row("m", "report", "sbobet", "infersports", -1.0),
+        _xv_row("m", "report", "crown", "infersports", -1.0),
+        _xv_row("m", "report", "macau", "infersports", -1.0),
+    ]
+    from datetime import datetime, timezone
+    xv = snap.cross_verification_for_rows(rows, "m", now=datetime(2026, 11, 5, 9, 6, tzinfo=timezone.utc))
+    assert xv["phases"]["report"]["shared_book"] is False
+    assert "no_shared_book" in xv["phases"]["report"]["reasons"]
+    assert xv["verdict"] == "review"

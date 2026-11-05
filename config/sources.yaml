@@ -312,9 +312,13 @@ risk_levels:
   sofascore: prohibited
   fotmob_api: prohibited
 
-# 交叉核验规则：用户 2026-11-05 确认启用（双源/3家/时效）。签发拦截由先知侧读 summary.verdict；本岗只打标，不改主线。
+# 交叉核验打标：用户 2026-11-05 确认口径。只打标不自动拦截；双源/3家/verified 不放宽。
+# 赛前/收盘看 close，早报看当时 report；空阶段 pending；open 不卡；排除 suspended API-Football。
+# 时效用 now 或该阶段最新 captured_at，只看主线 Pin 与 verified 公司。stale 阈值不放宽到 2h/6h。
 cross_verification_draft:
   enabled: true
+  advisory_only: true
+  exclude_sources: [api_football]   # suspended 期间；解封后由先知确认再移除
   same_market: "比较对象 = 同一场同一阶段的主盘线（main_line()，Pinnacle 优先）；ah_home_line 完全相等才算同一市场"
   independence: "独立来源按 source 字段计；公司按 bookmaker 计。同一公司从两个来源看到（如 sbobet 来自 oddspapi+infersports）只算 1 家公司，
                  但该公司 verification=verified 计 1 次‘来源一致’"

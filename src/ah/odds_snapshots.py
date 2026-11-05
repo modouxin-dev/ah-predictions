@@ -157,24 +157,53 @@ def load_cross_verification(path=None) -> dict:
         return {"enabled": False}
 
 
-def evaluate_cross_verification(rows: list[dict], mid: str, stage: str, cfg: dict) -> dict:
-    """在主线上数 source / bookmaker / verified / Pinnacle-or-亚洲，并按时效打标。不改动原 verification。"""
+def evaluate_cross_verification(rows: list[dict], mid: str, stage: str, cfg: dict,
+                                now: datetime | None = None) -> dict:
+    """在主线上数 source / bookmaker / verified / Pinnacle-or-亚洲，并按时效打标。不改动原 verification。
+
+    口径（用户 2026-11-05 确认）：
+    - 打标默认排除 suspended 的 api_football；双源/3家/verified 门槛不放宽。
+    - 时效用 now（缺省=该阶段最新 captured_at），只看主线 Pinnacle 与 verified 公司，
+      不要全场最旧一家一票否决。空阶段 pending，不算失败。
+    """
+    excluded = set(cfg.get("exclude_sources") or ["api_football"])
     mains = [r for r in rows if r.get("match_id") == mid and r.get("stage") == stage
-             and r.get("source") and str(r.get("is_main")) == "1"]
+             and r.get("source") and r.get("source") not in excluded and str(r.get("is_main")) == "1"]
+    if not mains:
+        return {
+            "status": "pending", "passed": None, "reasons": [], "sources": [],
+            "bookmakers_on_main": [], "verified_books": [], "pinnacle_or_asian": False,
+            "stale_age_s": None, "freshness": "pending", "deep_line": None,
+            "shared_book": False,
+        }
     sources = sorted({r["source"] for r in mains})
     books = sorted({r["bookmaker"] for r in mains})
     verified = sorted({r["bookmaker"] for r in mains if r.get("verification") == "verified"})
     asian = sorted({"sbobet", "singbet", "crown", "sabasports"} & set(books))
     pin_ok = "pinnacle" in books
-    anchor = next((parse_dt(r["captured_at"]) for r in mains if r.get("captured_at")), None)
-    stale_age_s = None
+    # 双源但公司集合不相交：标 no_shared_book，不写「价格冲突」
+    by_book = defaultdict(set)
     for r in mains:
+        by_book[r["bookmaker"]].add(r["source"])
+    shared_book = any(len(v) >= 2 for v in by_book.values())
+    # 时效：只看主线 Pinnacle + verified 公司；没有这两类时再看全部主线
+    watch = [r for r in mains if r["bookmaker"] == "pinnacle" or r.get("verification") == "verified"]
+    if not watch:
+        watch = mains
+    anchor = now
+    if anchor is None:
+        caps = [parse_dt(r["captured_at"]) for r in mains if r.get("captured_at")]
+        anchor = max(caps) if caps else None
+    stale_age_s = None
+    stale_detail = []
+    for r in watch:
         pts = r.get("price_ts")
         if not pts or not anchor:
             continue
         try:
             age = (anchor - parse_dt(pts)).total_seconds()
             stale_age_s = age if stale_age_s is None else max(stale_age_s, age)
+            stale_detail.append({"book": r["bookmaker"], "source": r["source"], "age_s": round(age)})
         except Exception:
             continue
     mins = cfg.get("min_sources") or {}
@@ -193,8 +222,10 @@ def evaluate_cross_verification(rows: list[dict], mid: str, stage: str, cfg: dic
         reasons.append(f"verified:{len(verified)}<{need_verified}")
     if stage != "open" and not (pin_ok or len(asian) >= 2):
         reasons.append("no_pinnacle_and_asian<2")
+    if len(sources) >= 2 and not shared_book:
+        reasons.append("no_shared_book")
     freshness = "ok"
-    if stale_age_s is not None:
+    if stage != "open" and stale_age_s is not None:
         wd = stale.get("withdraw")
         dg = stale.get("downgrade")
         if wd is not None and stale_age_s > wd:
@@ -205,6 +236,7 @@ def evaluate_cross_verification(rows: list[dict], mid: str, stage: str, cfg: dic
             reasons.append(f"stale>{dg}s")
     passed = (not reasons) if stage != "open" else (len(sources) >= need_src and len(books) >= need_books)
     return {
+        "status": "ok" if passed else "fail",
         "passed": passed,
         "reasons": reasons,
         "sources": sources,
@@ -212,17 +244,24 @@ def evaluate_cross_verification(rows: list[dict], mid: str, stage: str, cfg: dic
         "verified_books": verified,
         "pinnacle_or_asian": pin_ok or len(asian) >= 2,
         "stale_age_s": round(stale_age_s) if stale_age_s is not None else None,
+        "stale_detail": stale_detail,
         "freshness": freshness,
         "deep_line": None,
+        "shared_book": shared_book,
     }
 
 
-def cross_verification_for_rows(rows: list[dict], mid: str, cfg: dict | None = None) -> dict:
+def cross_verification_for_rows(rows: list[dict], mid: str, cfg: dict | None = None,
+                                now: datetime | None = None, purpose: str = "auto") -> dict:
+    """只打标，不自动拦截。purpose=auto：有 close 数据则赛前/收盘看 close，否则看当时 report。
+    open 永不进 verdict；空阶段 pending，不进 withhold。旧 report 不得否决新 close。"""
     cfg = cfg if cfg is not None else load_cross_verification()
-    out = {"enabled": bool(cfg.get("enabled")), "phases": {}}
+    excluded = set(cfg.get("exclude_sources") or ["api_football"])
+    live = [r for r in rows if r.get("source") not in excluded]
+    out = {"enabled": bool(cfg.get("enabled")), "advisory_only": True, "phases": {}}
     for ph in ("open", "report", "close"):
-        v = evaluate_cross_verification(rows, mid, ph, cfg)
-        mains = [r for r in rows if r.get("match_id") == mid and r.get("stage") == ph
+        v = evaluate_cross_verification(live, mid, ph, cfg, now=now)
+        mains = [r for r in live if r.get("match_id") == mid and r.get("stage") == ph
                  and r.get("source") and str(r.get("is_main")) == "1"]
         line = None
         if mains:
@@ -231,13 +270,23 @@ def cross_verification_for_rows(rows: list[dict], mid: str, cfg: dict | None = N
         deep = bool(line is not None and abs(line) >= 1.75)
         v["main_line"] = line
         v["deep_line"] = deep
+        # 深盘只打标；是否拦截由先知签发侧决定，本函数不自动 withhold
         if deep and ph in ((cfg.get("deep_line") or {}).get("check_stages") or ["report", "close"]):
-            v["reasons"].append("deep_line")
-            v["passed"] = False
+            v["reasons"] = list(v["reasons"]) + ["deep_line"]
         out["phases"][ph] = v
-    # 出单建议（供先知拦截）：report/close 任一未过则 withhold；只打标
-    checks = [p for p in ("report", "close") if out["phases"][p]["sources"]]
-    out["verdict"] = "ok" if all(out["phases"][p]["passed"] for p in checks) and checks else "withhold"
+    has_close = bool(out["phases"]["close"]["sources"])
+    if purpose == "close" or (purpose == "auto" and has_close):
+        active = "close"
+    else:
+        active = "report"  # 早报/尚未有 close：看当时 report
+    out["active_stage"] = active
+    av = out["phases"][active]
+    if av["status"] == "pending":
+        out["verdict"] = "pending"
+        out["advisory"] = "pending"
+    else:
+        out["verdict"] = "ok" if av["passed"] else "review"  # review=打标未过；不自动拦截
+        out["advisory"] = out["verdict"]
     return out
 
 
