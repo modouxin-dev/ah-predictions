@@ -53,8 +53,9 @@ class Clock:
 
 
 def client(tmp_path, routes, remaining="90", clock=None):
+    # check_yaml=False：单测不读仓库 sources.yaml（其中 enabled:false 会全局熔断）
     return af.Client(key="test-key", cache_dir=tmp_path, session=FakeSession(routes, remaining),
-                     min_interval=0, now=clock or Clock())
+                     min_interval=0, now=clock or Clock(), check_yaml=False)
 
 
 FX = load("fixtures_2026-11-04.json")
@@ -279,3 +280,36 @@ def test_autofill_and_settle(tmp_path):
     # 波尔图开赛后但 API 仍未完场 → pending，不写比分
     log = autofill_results(p, client=c, now=datetime(2026, 11, 4, 22, 0, tzinfo=timezone.utc))
     assert [e["action"] for e in log] == ["pending"]
+
+
+def test_kill_switch_env(tmp_path, monkeypatch):
+    monkeypatch.setenv("AH_API_FOOTBALL_DISABLED", "1")
+    c = client(tmp_path, {"fixtures": FX})
+    assert c.enabled is False
+    with pytest.raises(af.ApiFootballError, match="已停用"):
+        c.fixtures_by_date("2026-11-04")
+    assert c.session.calls == []
+
+
+def test_kill_switch_flag_file(tmp_path, monkeypatch):
+    monkeypatch.delenv("AH_API_FOOTBALL_DISABLED", raising=False)
+    monkeypatch.setattr(af, "DISABLED_FLAG", tmp_path / "api_football_disabled.json")
+    af.mark_disabled("account suspended test")
+    c = client(tmp_path, {"fixtures": FX})
+    assert c.enabled is False
+    with pytest.raises(af.ApiFootballError, match="已停用"):
+        c.fixtures_by_date("2026-11-04")
+    assert c.session.calls == []
+
+
+def test_suspended_response_trips_breaker(tmp_path, monkeypatch):
+    monkeypatch.delenv("AH_API_FOOTBALL_DISABLED", raising=False)
+    monkeypatch.setattr(af, "DISABLED_FLAG", tmp_path / "api_football_disabled.json")
+    routes = {"status": {"errors": {"access": "Your account is suspended, check on https://dashboard.api-football.com."}, "response": {}}}
+    c = client(tmp_path, routes)
+    with pytest.raises(af.ApiFootballError, match="suspend"):
+        c.get("status", force=True)
+    assert af.DISABLED_FLAG.exists()
+    with pytest.raises(af.ApiFootballError, match="已停用"):
+        c.get("status", force=True)
+    assert len(c.session.calls) == 1  # 第二次被本地熔断，不再发请求

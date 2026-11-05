@@ -5,6 +5,8 @@
   记录当日(UTC)已用次数；剩余 <= RESERVE(10) 时拒绝发起非必要请求（抛 BudgetExceeded）。
 - 磁盘缓存：data/cache/<endpoint>/<hash>.json，按端点 TTL 过期（cache 目录除 leagues.json 外 gitignore）。
 - 免费档限制（2026-11-04 实测，详见 README）：见 PLAN_NOTES。
+- 停用开关（2026-11-05）：环境变量 AH_API_FOOTBALL_DISABLED=1，或 data/cache/api_football_disabled.json，
+  或 config/sources.yaml api_football.enabled: false。账号 suspended 时自动写 flag，禁止静默重试。
 """
 from __future__ import annotations
 
@@ -22,6 +24,8 @@ from . import DATA
 BASE_URL = "https://v3.football.api-sports.io"
 CACHE_DIR = DATA / "cache"
 USAGE_FILE = CACHE_DIR / "api_usage.json"
+DISABLED_FLAG = CACHE_DIR / "api_football_disabled.json"
+KILL_ENV = "AH_API_FOOTBALL_DISABLED"
 DAILY_LIMIT = 100
 RESERVE = 10
 MIN_INTERVAL_S = 6.5  # 免费档约 10 次/分钟
@@ -42,6 +46,51 @@ TTL = {
 FINISHED = {"FT", "AET", "PEN"}
 
 
+def _truthy(v) -> bool:
+    return str(v).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def kill_switch_reason(config_path=None, check_yaml: bool = True) -> str | None:
+    """返回停用原因；None = 可请求。优先级：环境变量 > 本地 flag 文件 > sources.yaml enabled。"""
+    import os
+    if _truthy(os.environ.get(KILL_ENV, "")):
+        return f"{KILL_ENV}=1"
+    if DISABLED_FLAG.exists():
+        try:
+            d = json.loads(DISABLED_FLAG.read_text(encoding="utf-8"))
+            if d.get("disabled", True):
+                return f"flag:{DISABLED_FLAG.name}:{d.get('reason') or 'disabled'}"
+        except (OSError, ValueError):
+            return f"flag:{DISABLED_FLAG.name}"
+    if check_yaml:
+        try:
+            import yaml
+            from . import CONFIG
+            cfg = yaml.safe_load((config_path or (CONFIG / "sources.yaml")).read_text(encoding="utf-8")) or {}
+            if cfg.get("api_football", {}).get("enabled") is False:
+                return "sources.yaml api_football.enabled=false"
+        except Exception:
+            pass
+    return None
+
+
+def mark_disabled(reason: str) -> None:
+    """写入本地熔断文件，后续请求不再打远端（避免静默重试刷配额）。"""
+    DISABLED_FLAG.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "disabled": True,
+        "reason": reason,
+        "since": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "set_by": "api_football.Client",
+    }
+    DISABLED_FLAG.write_text(json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8")
+
+
+def _is_suspended_error(errs) -> bool:
+    blob = json.dumps(errs, ensure_ascii=False).lower() if errs else ""
+    return "suspend" in blob
+
+
 class ApiFootballError(RuntimeError):
     pass
 
@@ -52,7 +101,8 @@ class BudgetExceeded(ApiFootballError):
 
 class Client:
     def __init__(self, key: str | None = None, cache_dir: Path = CACHE_DIR, session=None,
-                 reserve: int = RESERVE, min_interval: float = MIN_INTERVAL_S, now=time.time):
+                 reserve: int = RESERVE, min_interval: float = MIN_INTERVAL_S, now=time.time,
+                 check_yaml: bool = True):
         self._key = key if key is not None else os.environ.get("API_FOOTBALL_KEY", "")
         self.cache_dir = Path(cache_dir)
         self.usage_file = self.cache_dir / "api_usage.json"
@@ -61,13 +111,19 @@ class Client:
         self.min_interval = min_interval
         self.now = now
         self._last_call = 0.0
+        self.check_yaml = check_yaml
 
     def __repr__(self) -> str:  # 不泄露 key
         return f"<api_football.Client cache={self.cache_dir}>"
 
     @property
     def enabled(self) -> bool:
-        return bool(self._key)
+        return bool(self._key) and kill_switch_reason() is None
+
+    def disabled_reason(self) -> str | None:
+        if not self._key:
+            return "API_FOOTBALL_KEY 未设置"
+        return kill_switch_reason(check_yaml=self.check_yaml)
 
     # ---------- 预算 ----------
     def _today(self) -> str:
@@ -125,8 +181,9 @@ class Client:
             hit = self._cache_get(path, ttl)
             if hit is not None:
                 return hit
-        if not self.enabled:
-            raise ApiFootballError("API_FOOTBALL_KEY 未设置")
+        reason = self.disabled_reason()
+        if reason:
+            raise ApiFootballError(f"API-Football 已停用：{reason}")
         rem = self.remaining()
         floor = 0 if essential else self.reserve
         if endpoint != "status" and rem <= floor:
@@ -156,8 +213,11 @@ class Client:
         data = r.json()
         errs = data.get("errors")
         if errs:  # API 以 200 + errors 返回计划限制等错误
-            source_status.record("api_football", False, f"{endpoint} errors: {json.dumps(errs, ensure_ascii=False)}", q)
-            raise ApiFootballError(f"{endpoint} errors: {json.dumps(errs, ensure_ascii=False)}")
+            msg = f"{endpoint} errors: {json.dumps(errs, ensure_ascii=False)}"
+            source_status.record("api_football", False, msg, q)
+            if _is_suspended_error(errs):
+                mark_disabled(msg)
+            raise ApiFootballError(msg)
         source_status.record("api_football", True, quota=q)
         if ttl == 0:
             if tk == "fixtures/lineups" and data.get("response"):

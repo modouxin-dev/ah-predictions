@@ -1,5 +1,6 @@
 # 数据源分工（2026-11-04 更新）
 # primary：API-Football v3 —— 赛程、伤停、首发、交锋、最终比分（结算）、多公司亚盘(参考)
+# 2026-11-05：API-Football 账号 suspended → api_football.enabled=false；见 api_football.fallbacks_while_down
 # titan007：亚盘初盘/即时盘/水位的主数据源（推荐用的盘口以此为准），同时是赛程/比分备用源
 roles:
   fixtures:    [api_football, titan007_live_fixtures]
@@ -11,10 +12,21 @@ roles:
   standings:   [football_data, titan007_live_fixtures, websearch_previews]       # bfdata 带排名
   asian_handicap_line: [titan007_odds, api_football_odds, the_odds_api, oddspapi, fivedollar]  # 多公司盘口交叉核对：api_football 优先，其次 the_odds_api，titan007 备用
 api_football:
+  enabled: false        # 2026-11-05 账号 suspended；恢复后改 true 并删 data/cache/api_football_disabled.json、取消 AH_API_FOOTBALL_DISABLED
+  kill_env: AH_API_FOOTBALL_DISABLED
+  disabled_flag: data/cache/api_football_disabled.json
+  suspended_at: "2026-11-05T09:00:00Z"
+  suspended_note: "dashboard: Your account is suspended；禁止静默重试；无备用 key（仅 API_FOOTBALL_KEY）"
   base_url: "https://v3.football.api-sports.io"
   auth: "header x-apisports-key，值取环境变量 API_FOOTBALL_KEY（CI: Secret API_FOOTBALL_KEY）；绝不写入仓库"
   plan: Free            # 100 次/天（UTC 0 点重置），约 10 次/分钟；/status 不计数
   reserve: 10           # 剩余 <= 10 时客户端拒绝非结算请求
+  fallbacks_while_down:
+    fixtures: "titan007_live_fixtures（fetch_fixtures --source auto 已回退）"
+    asian_handicap: "oddspapi（主）+ the_odds_api；InferSports 仍 opt-in 待先知审"
+    lineups: "J.League 官网（日本队/映射场次）；其余标 unverified/暂无，禁止单源签发"
+    scores: "football-data（欧洲）+ the-afc.com 内部交叉核对（亚冠）+ J.League"
+    injuries: "暂无可靠替代（亚冠/日职本就空）；欧冠伤停暂停"
   league_ids: config/leagues.yaml（apif 字段），原始结果缓存 data/cache/leagues.json
   cache_ttl: {fixtures: 6h, h2h: 7d, standings: 12h, injuries: 3h, lineups: "空不缓存/有则永久", result: "完场后永久", odds: 30m}
   free_plan_tested_2026-11-04:
