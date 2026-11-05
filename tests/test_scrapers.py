@@ -249,3 +249,70 @@ def test_signature_ignores_optional_keys_but_flags_missing_ones():
     assert jleague.signature(h2, lu) == base
     h3 = {k: v for k, v in h.items() if k != "section"}
     assert jleague.signature(h3, lu) != base
+
+
+# ---------- 姓名规则：姓氏编辑距离 ≤ 2 -> name_variant（先知 2026-11-04） ----------
+from ah.scrapers.crosscheck import _compare_team, edit_distance, name_variant, surname  # noqa: E402
+
+
+def _xi(names, start=1):
+    return [{"number": start + i, "name": n, "pos": None} for i, n in enumerate(names)]
+
+
+FILL_SITE = [f"PLAYER{c} Taro" for c in "ABCDEFGHIJ"]
+FILL_API = [f"T. Player{c}" for c in "ABCDEFGHIJ"]
+
+
+def test_surname_extraction_and_distance():
+    assert surname("HAYASHI Haruki") == "hayashi" and surname("H. Hayashu") == "hayashu"
+    assert surname("MOTOSUNA Anthony Udemba") == "motosuna" and surname("G. Čaušić") == "causic"
+    assert surname("Eduardo Mancha") == "mancha" and surname("O'BRIEN Sean") == "obrien"
+    assert edit_distance("hayashi", "hayashu") == 1 and edit_distance("abc", "") == 3
+    assert name_variant("HAYASHI Haruki", "H. Hayashu") == {"site_surname": "hayashi", "api_surname": "hayashu",
+                                                            "distance": 1}
+    assert name_variant("HAYASHI Haruki", "H. Hayaxhu")["distance"] == 2          # 恰好 2：仍容忍
+    assert name_variant("HAYASHI Haruki", "H. Hayaxyu") is None                   # 3：不容忍
+    assert name_variant("HAYASHI Haruki", "H.") is None
+
+
+def test_name_variant_verified_hayashi_example():
+    site = _xi(FILL_SITE) + [{"number": 24, "name": "HAYASHI Haruki", "pos": None}]
+    api = _xi(FILL_API) + [{"number": 24, "name": "H. Hayashu", "pos": None}]
+    r = _compare_team(site, api)
+    assert r["verdict"] == "已验证" and "name_mismatch" not in r
+    assert r["name_variant"] == [{"number": 24, "site": "HAYASHI Haruki", "api_football": "H. Hayashu",
+                                  "site_surname": "hayashi", "api_surname": "hayashu", "distance": 1}]
+
+
+def test_name_variant_counter_examples():
+    site = _xi(FILL_SITE) + [{"number": 24, "name": "HAYASHI Haruki", "pos": None}]
+    # 编辑距离 3 -> 冲突
+    r = _compare_team(site, _xi(FILL_API) + [{"number": 24, "name": "H. Hayaxyu", "pos": None}])
+    assert r["verdict"] == "冲突" and r["name_mismatch"][0]["number"] == 24 and "name_variant" not in r
+    # 号码不同（姓名相近也不救）-> 冲突
+    r = _compare_team(site, _xi(FILL_API) + [{"number": 25, "name": "H. Hayashu", "pos": None}])
+    assert r["verdict"] == "冲突" and r["only_site"] == [{"number": 24, "name": "HAYASHI Haruki"}]
+    assert r["only_api_football"] == [{"number": 25, "name": "H. Hayashu"}] and "name_variant" not in r
+    # 完全不同的人 -> 冲突
+    r = _compare_team(site, _xi(FILL_API) + [{"number": 24, "name": "K. Suzuki", "pos": None}])
+    assert r["verdict"] == "冲突"
+    # 名对上但姓氏差很远（只靠旧的模糊相似度不再放行）-> 冲突
+    r = _compare_team(site, _xi(FILL_API) + [{"number": 24, "name": "Haruki Tanakamura", "pos": None}])
+    assert r["verdict"] == "已验证"           # 有共同词 haruki -> 原规则：一致（同号同名）
+    r = _compare_team(site, _xi(FILL_API) + [{"number": 24, "name": "Hiroshi Hayamoto", "pos": None}])
+    assert r["verdict"] == "冲突"             # hayashi vs hayamoto 距离 3
+
+
+def test_crosscheck_lineup_reports_name_variant():
+    fx = json.loads((D / "apif_fixtures_2026-11-04.json").read_text())
+    api = json.loads((D / "apif_lineups_1629973.json").read_text())
+    rec = jleague.map_fixture(jleague.parse_match(POST, URL_POST), fx)
+    site_name = rec["lineups"]["away"]["starting_xi"][0]["name"]
+    num = rec["lineups"]["away"]["starting_xi"][0]["number"]
+    sn = surname(site_name)
+    for p in api[1]["startXI"]:
+        if p["player"]["number"] == num:
+            p["player"]["name"] = f"X. {sn[:-1]}{'z' if sn[-1] != 'z' else 'y'}"
+    res = crosscheck_lineup(rec, api)
+    assert res["verdict"] == "已验证" and res["name_variant"][0]["side"] == "away"
+    assert "name_variant" in res["reason"]
