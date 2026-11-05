@@ -53,8 +53,10 @@ LEGACY_SNAP_DIR = DATA / "odds_snapshots"     # 2026-11-04 之前的路径：新
 ODDS_API_CACHE = DATA / "cache" / "odds_api_snap"
 PHASES = ("open", "report", "close")
 STATUSES = ("verified", "conflict", "single", "missing")
-SOURCES = ("oddspapi", "odds_api", "api_football")
-LIVE_SOURCES = ("odds_api", "api_football")       # 只能取“当前”盘口的来源
+SOURCES = ("oddspapi", "odds_api", "api_football", "infersports")  # 用户 2026-11-05 确认：InferSports 免 key 进默认（含收盘循环）
+OPTIONAL_SOURCES = ()                                    # 无额外 opt-in 源
+ALL_SOURCES = SOURCES + OPTIONAL_SOURCES
+LIVE_SOURCES = ("odds_api", "api_football", "infersports")  # 只能取“当前”盘口的来源（infersports 另有 /opening 初盘）
 # 只给单条线的来源 / 公司：只用来核价，is_main 仅当其线等于完整盘口主线时才为 1
 SINGLE_LINE_SOURCES = frozenset({"odds_api"})
 SINGLE_LINE_BOOKS = frozenset({"1xbet", "coolbet", "marathonbet", "betanything", "gtbets", "betonline", "matchbook"})
@@ -64,7 +66,7 @@ FIELDS = ["match_id", "captured_at", "stage", "bookmaker", "ah_home_line", "odds
           "price_ts", "report_date", "fixture_id", "kickoff_utc", "league_id", "league", "home", "away",
           "status_detail", "source_ref"]
 ODDS_FORMAT = "decimal"
-PAPI_BOOK_GROUPS = (("pinnacle", "sbobet", "singbet"), ("dafabet", "sabasports", "3et"))
+PAPI_BOOK_GROUPS = (("pinnacle", "sbobet", "singbet"), ("dafabet", "sabasports", "3et"), ("ps3838", "198bet"))  # 用户 2026-11-05 确认加 ps3838/198bet
 LADDER_WINDOW = 0.5          # 主盘之外再存 ±0.5 以内的相邻盘口（is_main=0），便于同盘口算 CLV
 OVERROUND_WARN = 0.06        # 抽水超过此值 → status_detail 标 high_overround（可在 sources.yaml 覆盖）
 PAIR_SKEW_S = 2.0            # hist_ladder 主客两边报价允许的最大时间差（秒）；优先同一 createdAt
@@ -137,6 +139,106 @@ def main_line(date: str, match_id: str, stage: str = "report", bookmaker: str = 
             "verification": r.get("verification"), "match_verification": r.get("match_verification"),
             "overround": _f(r.get("overround")), "captured_at": r.get("captured_at"),
             "price_ts": r.get("price_ts"), "status_detail": r.get("status_detail") or ""}
+
+
+
+
+# ---------- 交叉核验打标（用户 2026-11-05 启用；只标 summary，不改主线） ----------
+
+def load_cross_verification(path=None) -> dict:
+    """读 config/sources.yaml 的 cross_verification_draft；缺省/异常返回 enabled=False。"""
+    try:
+        import yaml
+        from . import CONFIG
+        cfg = yaml.safe_load((path or (CONFIG / "sources.yaml")).read_text(encoding="utf-8")) or {}
+        sec = cfg.get("cross_verification_draft") or {}
+        return sec if isinstance(sec, dict) else {"enabled": False}
+    except Exception:
+        return {"enabled": False}
+
+
+def evaluate_cross_verification(rows: list[dict], mid: str, stage: str, cfg: dict) -> dict:
+    """在主线上数 source / bookmaker / verified / Pinnacle-or-亚洲，并按时效打标。不改动原 verification。"""
+    mains = [r for r in rows if r.get("match_id") == mid and r.get("stage") == stage
+             and r.get("source") and str(r.get("is_main")) == "1"]
+    sources = sorted({r["source"] for r in mains})
+    books = sorted({r["bookmaker"] for r in mains})
+    verified = sorted({r["bookmaker"] for r in mains if r.get("verification") == "verified"})
+    asian = sorted({"sbobet", "singbet", "crown", "sabasports"} & set(books))
+    pin_ok = "pinnacle" in books
+    anchor = next((parse_dt(r["captured_at"]) for r in mains if r.get("captured_at")), None)
+    stale_age_s = None
+    for r in mains:
+        pts = r.get("price_ts")
+        if not pts or not anchor:
+            continue
+        try:
+            age = (anchor - parse_dt(pts)).total_seconds()
+            stale_age_s = age if stale_age_s is None else max(stale_age_s, age)
+        except Exception:
+            continue
+    mins = cfg.get("min_sources") or {}
+    minb = cfg.get("min_bookmakers_on_main_line") or {}
+    minv = cfg.get("min_verified_books") or {}
+    stale = (cfg.get("stale_s") or {}).get(stage) or {}
+    need_src = int(mins.get(stage, 1 if stage == "open" else 2) or 0)
+    need_books = int(minb.get(stage, 2 if stage == "open" else 3) or 0)
+    need_verified = int(minv.get(stage, 0 if stage == "open" else 1) or 0)
+    reasons = []
+    if len(sources) < need_src:
+        reasons.append(f"sources:{len(sources)}<{need_src}")
+    if len(books) < need_books:
+        reasons.append(f"books:{len(books)}<{need_books}")
+    if len(verified) < need_verified:
+        reasons.append(f"verified:{len(verified)}<{need_verified}")
+    if stage != "open" and not (pin_ok or len(asian) >= 2):
+        reasons.append("no_pinnacle_and_asian<2")
+    freshness = "ok"
+    if stale_age_s is not None:
+        wd = stale.get("withdraw")
+        dg = stale.get("downgrade")
+        if wd is not None and stale_age_s > wd:
+            freshness = "stale_withdraw"
+            reasons.append(f"stale>{wd}s")
+        elif dg is not None and stale_age_s > dg:
+            freshness = "stale_downgrade"
+            reasons.append(f"stale>{dg}s")
+    passed = (not reasons) if stage != "open" else (len(sources) >= need_src and len(books) >= need_books)
+    return {
+        "passed": passed,
+        "reasons": reasons,
+        "sources": sources,
+        "bookmakers_on_main": books,
+        "verified_books": verified,
+        "pinnacle_or_asian": pin_ok or len(asian) >= 2,
+        "stale_age_s": round(stale_age_s) if stale_age_s is not None else None,
+        "freshness": freshness,
+        "deep_line": None,
+    }
+
+
+def cross_verification_for_rows(rows: list[dict], mid: str, cfg: dict | None = None) -> dict:
+    cfg = cfg if cfg is not None else load_cross_verification()
+    out = {"enabled": bool(cfg.get("enabled")), "phases": {}}
+    for ph in ("open", "report", "close"):
+        v = evaluate_cross_verification(rows, mid, ph, cfg)
+        mains = [r for r in rows if r.get("match_id") == mid and r.get("stage") == ph
+                 and r.get("source") and str(r.get("is_main")) == "1"]
+        line = None
+        if mains:
+            pin = [r for r in mains if r["bookmaker"] == "pinnacle"]
+            line = float((pin or mains)[0]["ah_home_line"])
+        deep = bool(line is not None and abs(line) >= 1.75)
+        v["main_line"] = line
+        v["deep_line"] = deep
+        if deep and ph in ((cfg.get("deep_line") or {}).get("check_stages") or ["report", "close"]):
+            v["reasons"].append("deep_line")
+            v["passed"] = False
+        out["phases"][ph] = v
+    # 出单建议（供先知拦截）：report/close 任一未过则 withhold；只打标
+    checks = [p for p in ("report", "close") if out["phases"][p]["sources"]]
+    out["verdict"] = "ok" if all(out["phases"][p]["passed"] for p in checks) and checks else "withhold"
+    return out
 
 
 def screened(report: dict, leagues=None) -> tuple[list[dict], list[str]]:
@@ -476,8 +578,9 @@ class Snapshotter:
     def __init__(self, date: str, papi=None, oddsapi=None, apif=None, now=None, snap_dir: Path | None = None,
                  sources=SOURCES, apif_mode: str = "auto", apif_floor: int = 30, papi_groups=PAPI_BOOK_GROUPS,
                  ah_markets: dict | None = None, aliases=None, leagues=None, odds_api_cache: Path = ODDS_API_CACHE,
-                 log=None, legacy_dir: Path | None = None):
+                 log=None, legacy_dir: Path | None = None, infs=None):
         self.date, self.papi, self.oddsapi, self.apif = date, papi, oddsapi, apif
+        self.infs = infs
         self.snap_dir, self.legacy_dir = snap_dir, legacy_dir
         self.now = now or (lambda: datetime.now(timezone.utc))
         self.p = paths(date, snap_dir)
@@ -492,6 +595,7 @@ class Snapshotter:
         self.map = _load_json(read_path(date, "map", snap_dir, legacy_dir), {})
         self.calls = Counter()
         self._oa_events: dict[str, list] = {}
+        self._infs_events: dict[str, dict] = {}
 
     # --- 映射 ---
     def _map_oddspapi(self, matches: list[dict]) -> None:
@@ -599,6 +703,54 @@ class Snapshotter:
                                   now, ts, now, hit["id"]))
         return {phases[0]: rows}, ([] if rows else ["odds_api:no_spreads"])
 
+    def _infs_event(self, m) -> tuple[str | None, list[str]]:
+        """match → InferSports event id（按开球 UTC 日期拉一次 events，队名+开球时间匹配；映射写入 map.json）。"""
+        e = self.map.setdefault(m["match_id"], {})
+        if e.get("infersports"):
+            return e["infersports"], []
+        from .consensus import find_event
+        from .infersports import event_index
+        day = parse_dt(m["kickoff_utc"]).strftime("%Y-%m-%d")
+        try:
+            if day not in self._infs_events:
+                before = self.infs.usage().get("used", 0)
+                self._infs_events[day] = event_index(self.infs.events(day))
+                self.calls["infersports"] += self.infs.usage().get("used", 0) - before
+        except Exception as ex:  # noqa: BLE001  含 BudgetExceeded
+            return None, [f"infersports:events_error({type(ex).__name__})"]
+        hit = find_event(self._infs_events[day], m["home"], m["away"], m["kickoff_utc"], self.aliases)
+        if not hit:
+            return None, ["infersports:no_event_match"]
+        e["infersports"] = hit["id"]
+        return hit["id"], []
+
+    def _rows_infs(self, m, phase, now, ko) -> tuple[dict, list[str]]:
+        """InferSports：open 用 /opening（每家 1 条初盘，opened_at 须早于开球）；report/close 用当前 /odds 全梯度。"""
+        from .infersports import ah_ladders, ah_opening
+        eid, why = self._infs_event(m)
+        if not eid:
+            return {}, why
+        rows = []
+        try:
+            before = self.infs.usage().get("used", 0)
+            if phase == "open":
+                op_ = ah_opening(self.infs.opening(eid))
+                for b, (line, ho, ao, ts) in sorted(op_.items()):
+                    t = parse_dt(ts) if ts else None
+                    if t is None or t >= ko:
+                        continue
+                    rows.append(self._row(m, phase, slug(b), "infersports", True, line, ho, ao, t, t, now, eid))
+            else:
+                lads = ah_ladders(self.infs.odds(eid, ttl=0 if phase == "close" else None))
+                for b, lad in sorted(lads.items()):
+                    lad = [(ln, ho, ao, parse_dt(ts) if ts else None) for ln, ho, ao, ts in lad]
+                    for (line, ho, ao, ts), main in ladder_rows(lad):
+                        rows.append(self._row(m, phase, slug(b), "infersports", main, line, ho, ao, now, ts, now, eid))
+            self.calls["infersports"] += self.infs.usage().get("used", 0) - before
+        except Exception as ex:  # noqa: BLE001
+            return {}, [f"infersports:error({type(ex).__name__})"]
+        return {phase: rows}, ([] if rows else [f"infersports:{phase}_no_ah_lines"])
+
     def _rows_apif(self, m, phases, now, fresh: bool) -> tuple[dict, list[str]]:
         from .api_football import asian_handicap_from_odds
         fid = m["fixture_id"]
@@ -666,8 +818,15 @@ class Snapshotter:
             for ph in phases:
                 live_ok = (ph == "report" and abs(now - as_of) <= REPORT_LIVE_TOLERANCE and now < ko) or \
                           (ph == "close" and now < ko and not backfill)
+                use_infs = "infersports" in self.sources and self.infs is not None and self.infs.enabled
+                if use_infs and (ph == "open" or live_ok):
+                    got, why = self._rows_infs(m, ph, now, ko)
+                    reasons[(m["match_id"], ph)] += why
+                    for p2, rs in got.items():
+                        replaced[(m["match_id"], p2, "infersports")] = rs
                 if ph == "open":
-                    reasons[(m["match_id"], ph)].append("live_sources:no_history")
+                    if not use_infs:
+                        reasons[(m["match_id"], ph)].append("live_sources:no_history")
                 elif not live_ok:
                     reasons[(m["match_id"], ph)].append("live_sources:skipped(started_or_as_of_far)")
                 if not live_ok:
@@ -724,6 +883,11 @@ def write_summary(date: str, all_matches: list[dict], skipped: list[str], result
             s = status.get((m["match_id"], ph))
             e["phases"][ph] = s or {"verification": "pending"}
             counts[ph][(s or {}).get("verification", "pending")] += 1
+        xcfg = load_cross_verification()
+        if xcfg.get("enabled"):
+            xv = cross_verification_for_rows(rows, m["match_id"], xcfg)
+            e["cross_verification"] = xv
+            e["deep_line"] = any(v.get("deep_line") for v in xv["phases"].values())
         ms.append(e)
     books = sorted({r["bookmaker"] for r in rows if r.get("source")})
     runs = (prev.get("runs") or [])[-50:] + [{"at": iso(now or datetime.now(timezone.utc)), "phases": list(phases),
@@ -755,8 +919,12 @@ def select(matches: list[dict], phases, now: datetime, lead_min: int, backfill: 
     return out
 
 
-def quota_snapshot(papi=None, oddsapi=None, apif=None) -> dict:
+def quota_snapshot(papi=None, oddsapi=None, apif=None, infs=None) -> dict:
     q = {}
+    if infs is not None and infs.enabled:
+        u = infs.usage()
+        q["infersports"] = {"used": u.get("used"), "remaining": infs.remaining(), "limit": u.get("limit"),
+                            "tier": u.get("tier"), "day_utc": u.get("day")}
     if papi is not None and papi.enabled:
         u = papi.usage()
         q["oddspapi"] = {"used": u.get("used"), "remaining": papi.remaining(), "limit": u.get("limit"), "month": u.get("month")}
@@ -779,7 +947,8 @@ def main(argv=None) -> None:
     ap.add_argument("--date", action="append", help="报告日期 YYYY-MM-DD（可多次）；close 默认扫描北京时间昨天/今天/明天的报告")
     ap.add_argument("--match", action="append", help="只处理这些 match_id（apif-xxx）")
     ap.add_argument("--as-of", help="report 时点：ISO 时间或 'report'（=报告 generated_at）；默认现在")
-    ap.add_argument("--sources", default=",".join(SOURCES))
+    ap.add_argument("--sources", default=",".join(SOURCES),
+                    help=f"逗号分隔，可选 {','.join(ALL_SOURCES)}；infersports 免 key 已进默认（200 次/天/IP）")
     ap.add_argument("--apif", choices=("off", "auto", "all"), default="auto")
     ap.add_argument("--apif-floor", type=int, default=30)
     ap.add_argument("--lead", type=int, default=10, help="close：处理未来多少分钟内开赛的场次（默认 10）")
@@ -799,6 +968,10 @@ def main(argv=None) -> None:
     papi = PAPI() if "oddspapi" in sources else None
     oddsapi = OddsAPI(regions="eu") if "odds_api" in sources else None
     apif = ApiFootball() if "api_football" in sources and a.apif != "off" else None
+    infs = None
+    if "infersports" in sources:
+        from .infersports import Client as InferSports
+        infs = InferSports()
     synced = False
     for date in dates:
         rp = report_path(date)
@@ -825,9 +998,9 @@ def main(argv=None) -> None:
         if a.as_of:
             as_of = parse_dt(report["generated_at"]) if a.as_of == "report" else parse_dt(a.as_of)
         snap = Snapshotter(date, papi=papi, oddsapi=oddsapi, apif=apif, sources=sources, apif_mode=a.apif,
-                           apif_floor=a.apif_floor, aliases=load_aliases())
+                           apif_floor=a.apif_floor, aliases=load_aliases(), infs=infs)
         res = snap.run(todo, list(a.phases), as_of=as_of, backfill=a.backfill)
-        q = quota_snapshot(papi, oddsapi, apif)
+        q = quota_snapshot(papi, oddsapi, apif, infs)
         summ = write_summary(date, allm, skipped, res, a.phases, q, now=datetime.now(timezone.utc))
         if papi is not None and papi.backoffs:
             print(f"[snap] oddspapi 429 退避 {len(papi.backoffs)} 次", file=sys.stderr)

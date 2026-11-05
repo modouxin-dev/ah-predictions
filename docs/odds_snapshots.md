@@ -28,7 +28,7 @@
 | `ah_home_line` | **主队视角让球数，负数 = 主队让球**（-0.5 = 主让半球；+0.25 = 主受让平半）。与 API-Football `Home -0.5`、报告 watchlist 的 `ah_home_line` 同号；注意 titan007 原始字段和 odds_api.normalize_spreads 的 `ah_home_line` 是相反号（正=主让），本文件不用那个约定 |
 | `odds_home` / `odds_away` | 该盘口线的主队 / 客队赔率 |
 | `odds_format` | 固定 `decimal`（十进制，含本金）；港盘水位 = 十进制 − 1，另见 `home_hk` / `away_hk` |
-| `source` | `oddspapi`（/historical-odds）、`odds_api`（The Odds API spreads）、`api_football`（/odds）；missing 行为空 |
+| `source` | `oddspapi`（/historical-odds）、`odds_api`（The Odds API spreads）、`api_football`（/odds）、`infersports`（/v1 odds、opening，需 `--sources` 显式加入，见 docs/sources_v2.md）；missing 行为空 |
 | `verification` | 行级（同一公司、同一时点）：≥2 个来源**主盘线相同且该线两边赔率差都 ≤0.06** = `verified`；主盘线不同但同一条线两边赔率差都 ≤0.06 = `conflict`，`status_detail` 标 `same_market`（不算 verified）；同一主线但赔率差 >0.06 = `conflict`，标 `same_line_price_diff`；只有一个来源 = `single`；无数据 = `missing`。不再使用 `verified_ladder` |
 | `match_verification` | 场级：每个来源取各公司主盘线的众数（并列取离 Pinnacle 主线更近，无则绝对值较小）作为该源共识；共同公司 = ≥2 个来源都有的公司。共同公司有 `conflict` = `conflict`；否则共识一致或共同公司全 `verified` = `verified`；共识不同且没有共同公司 = `conflict`；1 个来源 = `single`；无数据 = `missing` |
 | `is_main` | `1` = 完整盘口里去水后主队概率最接近 0.5 的线（优先 Pinnacle）；单线来源/公司仅当其线等于该主线时才为 1。`0` = 相邻线。验证只看主盘 |

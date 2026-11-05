@@ -236,7 +236,7 @@ odds_snapshots:
   stages: [open, report, close]            # close = 开赛前最后一次报价（开赛前 10 分钟内运行，或赛后 --backfill）
   sources:
     oddspapi:   {endpoint: "/v4/historical-odds", billable: false, max_bookmakers_per_call: 3,
-                 bookmakers: [pinnacle, sbobet, singbet, dafabet, sabasports, 3et], keep_remaining: 30,
+                 bookmakers: [pinnacle, sbobet, singbet, dafabet, sabasports, 3et, ps3838, 198bet], keep_remaining: 30,
                  backoff: "429 指数退避 2s·2^n（最长 60s，尊重 Retry-After / retryMs），最多 3 次；计费请求 5xx 不重试",
                  # 同一端点两次请求的最小间隔（秒），src/ah/oddspapi.py 读取。依据：官方 Rate limits 表
                  # historical-odds 5s / fixtures 2s / 其它 1s / odds 0.5s，各加 ~10% 余量；2026-11-04 按 1.1s 跑
@@ -247,8 +247,87 @@ odds_snapshots:
                  keep_remaining: 20, note: "只有当前盘，不覆盖亚冠二级/卡塔尔"}
     api_football: {endpoint: "/odds?fixture", cost: "1/场（日 100）", mode: auto, floor: 30,
                    note: "auto：只在 Odds API 没覆盖时用"}
+    infersports: {endpoint: "/v1/events/{id}/odds?markets=asian_handicap（report/close）、/v1/events/{id}/opening（open）",
+                  opt_in: false, note: "用户 2026-11-05 确认：免 key 进默认 SOURCES 并进收盘循环；
+                  免 key 200 次/天/IP，每场 report/close 1 次 + 每个开球日期 1 次 events（缓存 30m）"}
   main_line: "完整盘口去水后主队概率最接近 0.5 的线，优先 Pinnacle；单线来源/公司（odds_api、1xbet/coolbet/marathonbet 等）只核价"
   single_line_sources: [odds_api]
   single_line_bookmakers: [1xbet, coolbet, marathonbet, betanything, gtbets, betonline, matchbook]
   overround_warn: 0.06          # 超过则 status_detail 标 high_overround；亚冠联2 Pinnacle 实测同期 6.5–8.4%（非拼价）
   verification: "同一公司 ≥2 来源同一主盘线且两边赔率差 ≤0.06 → verified；主盘线不同但同线价差 ≤0.06 → conflict+same_market（不算 verified）；同主线价差 >0.06 → conflict+same_line_price_diff；单源 single；无数据 missing。取消 verified_ladder"
+
+# ---------------------------------------------------------------------------
+# data/sources-v2（2026-11-05）：InferSports 亚洲公司亚盘（免注册免 key 档）。客户端 src/ah/infersports.py。
+infersports:
+  base_url: "https://api.infersports.dev/v1"
+  docs: ["https://infersports.dev/docs", "https://infersports.dev/pricing", "https://infersports.dev/terms", "https://infersports.dev/aup"]
+  auth: "免 key 可用（keyless 档）；有 INFERSPORTS_KEY（环境变量或 ah-secrets.env）时发 Authorization: Bearer，绝不写入仓库。申请 key 需注册 → 用户决定"
+  plan: keyless         # 200 次/天/IP（UTC 0 点重置）、60 次/分钟、报价新鲜度约 90s；免费 key 5000 次/天
+  reserve: 20           # 剩余 <= 20 拒绝请求；用量 data/cache/infersports_usage.json（含 last_request_at，跨进程保证同站 >=10s）
+  min_interval_s: 10
+  cache_ttl_s: {events: 1800, odds: 90, opening: 21600}   # close 阶段 odds 强制不读缓存
+  bookmakers_keyless: [crown, sbobet, macau, m8bet, nova88, hkjc]   # 无 Pinnacle
+  maybe_same_book_as: {crown: singbet, nova88: sabasports, m8bet: sabasports}  # 2026-11-05 实测价高度一致，未证实，暂不合并
+  leagues:              # leagues.yaml id -> InferSports league.name（/v1/leagues 实测）
+    acl_two: AFCTwo
+    j1: Jap1
+    j2: Jap2
+    k1: KoreaK1
+    aleague: AUSLA
+    spl: SaudiPL
+    qsl: QatarSL
+    ucl: UCL
+    uel: UEL
+    epl: ENPL
+    laliga: SPA
+    seriea: ITA
+    bundesliga: GER
+    ligue1: FRA
+    championship: EFLC
+  not_covered: [acl_elite, csl]   # 2026-11-05 /v1/leagues 未见（暂无）
+  line_convention: "line = 主队让球（负=主让），与 ah_home_line 相同；suspended 报价价格为 0，丢弃"
+  terms: "公测期（public beta，条款 2026-06-08 版）。AUP：遵守本档限流与新鲜度、不得用多 key/多账号规避限流、不得超出本档用途批量抽取、
+         原始数据整体转发需另签协议（衍生产品可）、不得接入下单/结算系统。本项目只读取+衍生分析，符合；不得把原始赔率表对外发布"
+  tested_2026-11-05: "亚冠二 6 场全部匹配（别名补 BG Pathum/Tai Po/P.P.Crown 后）；report 主盘与 oddspapi 的 sbobet 6/6 同线同价 → verified；初盘 sbobet 3/6 同线、3/6 价差 >0.06（两边初盘取值时间不同）"
+
+# 各来源风险等级（low=官方 API 且条款允许；medium=免费档/条款模糊/依赖第三方转售；high=爬取页面或条款限制；prohibited=禁止接入）
+risk_levels:
+  api_football: low
+  football_data: low
+  the_odds_api: low
+  oddspapi: low
+  fivedollar: low
+  infersports: medium        # 新服务、免 key 档按 IP 计数、Asian 公司数据来源未公开
+  football_data_co_uk: low   # 只做历史收盘核对
+  scrapers.jleague: medium
+  scrapers.afc: medium
+  scrapers.aleagues: medium
+  scrapers.spl: high         # 已禁用
+  websearch_previews: medium
+  titan007: high             # 降级与否由用户决定，本分支未改动
+  okooo: high
+  oddsportal: high           # 赔率 JS 加载，条款禁止抓取
+  transfermarkt: prohibited
+  kleague_official: prohibited
+  sofascore: prohibited
+  fotmob_api: prohibited
+
+# 交叉核验规则：用户 2026-11-05 确认启用（双源/3家/时效）。签发拦截由先知侧读 summary.verdict；本岗只打标，不改主线。
+cross_verification_draft:
+  enabled: true
+  same_market: "比较对象 = 同一场同一阶段的主盘线（main_line()，Pinnacle 优先）；ah_home_line 完全相等才算同一市场"
+  independence: "独立来源按 source 字段计；公司按 bookmaker 计。同一公司从两个来源看到（如 sbobet 来自 oddspapi+infersports）只算 1 家公司，
+                 但该公司 verification=verified 计 1 次‘来源一致’"
+  min_sources: {open: 1, report: 2, close: 2}                # 独立 source 数（同一主盘线上有报价）
+  min_bookmakers_on_main_line: {open: 2, report: 3, close: 3}
+  min_verified_books: {report: 1, close: 1}                   # 至少 1 家公司被 >=2 来源同线同价核实
+  require_pinnacle_or_two_asian: "主线有 Pinnacle 报价，或 sbobet/singbet(crown)/sabasports 中 >=2 家同线"
+  stale_s:                    # price_ts 距 captured_at（open 用 as_of 距开球）
+    open:   {downgrade: null, withdraw: null}                 # 初盘只记录，不按时效降级
+    report: {downgrade: 1800, withdraw: 7200}
+    close:  {downgrade: 600, withdraw: 1800}
+  on_fail: {report: "置信度降一级（中→低即不推）", close: "撤回或标 unverified，不改主线"}
+  deep_line:
+    field: "abs(ah_home_line) >= 1.75 （主盘行）"
+    output: "status_detail 追加 deep_line；summary.matches[].deep_line=true；出单侧直接拦截"
+    check_stages: [report, close]                              # 任一阶段主线达到深盘即拦截

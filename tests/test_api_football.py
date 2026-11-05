@@ -52,6 +52,13 @@ class Clock:
         return self.t
 
 
+@pytest.fixture(autouse=True)
+def _isolate_apif_kill(monkeypatch, tmp_path):
+    """仓库 sources.yaml enabled:false / 本地 flag 不应污染离线单测。"""
+    monkeypatch.delenv("AH_API_FOOTBALL_DISABLED", raising=False)
+    monkeypatch.setattr(af, "DISABLED_FLAG", tmp_path / "api_football_disabled.json")
+
+
 def client(tmp_path, routes, remaining="90", clock=None):
     # check_yaml=False：单测不读仓库 sources.yaml（其中 enabled:false 会全局熔断）
     return af.Client(key="test-key", cache_dir=tmp_path, session=FakeSession(routes, remaining),

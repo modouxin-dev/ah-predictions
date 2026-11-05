@@ -506,3 +506,55 @@ def test_overround_and_high_flag():
     snap.assign_status(rows)
     assert abs(float(rows[0]["overround"]) - round(1/1.884 + 1/1.813 - 1, 4)) < 1e-9
     assert "high_overround" in rows[0]["status_detail"]
+
+
+def test_default_sources_include_infersports_and_papi_ps3838():
+    assert "infersports" in snap.SOURCES
+    assert any("ps3838" in g and "198bet" in g for g in snap.PAPI_BOOK_GROUPS)
+
+
+def _xv_row(mid, stage, book, source, line, oh=1.9, oa=1.9, verified="single", ts="2026-11-05T09:00:00Z", cap="2026-11-05T09:05:00Z"):
+    return {"match_id": mid, "stage": stage, "bookmaker": book, "source": source,
+            "is_main": "1", "ah_home_line": str(line), "odds_home": str(oh), "odds_away": str(oa),
+            "verification": verified, "price_ts": ts, "captured_at": cap}
+
+
+def test_cross_verification_pass_two_sources_three_books():
+    rows = [
+        _xv_row("m", "report", "pinnacle", "oddspapi", -0.5, verified="single"),
+        _xv_row("m", "report", "sbobet", "oddspapi", -0.5, oh=1.95, verified="verified"),
+        _xv_row("m", "report", "sbobet", "infersports", -0.5, oh=1.95, verified="verified"),
+        _xv_row("m", "report", "singbet", "oddspapi", -0.5),
+    ]
+    v = snap.evaluate_cross_verification(rows, "m", "report", snap.load_cross_verification())
+    assert v["passed"], v
+    assert len(v["sources"]) == 2 and len(v["bookmakers_on_main"]) == 3 and v["verified_books"] == ["sbobet"]
+
+
+def test_cross_verification_fail_single_source():
+    rows = [_xv_row("m", "report", "pinnacle", "oddspapi", -0.5, verified="verified")]
+    v = snap.evaluate_cross_verification(rows, "m", "report", snap.load_cross_verification())
+    assert not v["passed"] and any(r.startswith("sources:") for r in v["reasons"])
+
+
+def test_cross_verification_stale_downgrade_and_withdraw():
+    rows = [
+        _xv_row("m", "close", "pinnacle", "oddspapi", -0.5, verified="single", ts="2026-11-05T08:00:00Z"),
+        _xv_row("m", "close", "sbobet", "oddspapi", -0.5, verified="verified"),
+        _xv_row("m", "close", "sbobet", "infersports", -0.5, verified="verified"),
+        _xv_row("m", "close", "singbet", "oddspapi", -0.5),
+    ]
+    v = snap.evaluate_cross_verification(rows, "m", "close", snap.load_cross_verification())
+    assert v["freshness"] == "stale_withdraw" and not v["passed"]
+
+
+def test_deep_line_blocks_verdict():
+    rows = [
+        _xv_row("m", "report", "pinnacle", "oddspapi", -2.0, verified="single"),
+        _xv_row("m", "report", "sbobet", "oddspapi", -2.0, verified="verified"),
+        _xv_row("m", "report", "sbobet", "infersports", -2.0, verified="verified"),
+        _xv_row("m", "report", "singbet", "oddspapi", -2.0),
+    ]
+    xv = snap.cross_verification_for_rows(rows, "m")
+    assert xv["phases"]["report"]["deep_line"] is True
+    assert xv["verdict"] == "withhold"
