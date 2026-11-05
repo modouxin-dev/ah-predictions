@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-04T13:20:54Z",
+  "updated_at": "2026-11-05T06:58:10Z",
   "track": "experiment",
   "note": "实验盘单独记账，不计入正式命中率；null = 暂无数据",
   "daily_cap": 3,
@@ -16,6 +16,41 @@
     "significant": "clv_n ≥ 100 且 CLV 95% 置信区间不含 0；未达到一律 false",
     "overlap": "同场同玩法的其他模型 model:same|opposite；official:same|opposite = 与正式推荐重叠"
   },
-  "by_model_market": {},
+  "by_model_market": {
+    "A": {
+      "1x2": {
+        "picks": 3,
+        "settled": 0,
+        "pending": 3,
+        "win": 0,
+        "half_win": 0,
+        "push": 0,
+        "half_loss": 0,
+        "loss": 0,
+        "void": 0,
+        "decided": 0,
+        "hit_rate": null,
+        "units": null,
+        "roi": null,
+        "max_drawdown": null,
+        "clv_n": 0,
+        "clv_mean": null,
+        "clv_ci95": null,
+        "line_move_n": 0,
+        "line_move_mean": null,
+        "brier_n": 0,
+        "brier": null,
+        "market_brier_n": 0,
+        "market_brier": null,
+        "brier_skill": null,
+        "overlap_models": 0,
+        "overlap_official": 0,
+        "significant": false,
+        "model_versions": [
+          "market-pinnacle-devig-v0"
+        ]
+      }
+    }
+  },
   "rejected": []
 }
