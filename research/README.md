@@ -3,14 +3,14 @@
 只做研究与离线输出，**不接入每日发布流程**。所有数字都必须由本目录脚本运行得到，不手填。
 
 ## 环境
-- 使用仓库 `.venv`。研究依赖（未写入 `requirements.txt`，需项目负责人决定是否加入）：
-  `numpy scipy pandas tabulate penaltyblog`（`src/ah/model/` 的生产函数只依赖 numpy/scipy；`dixon_coles.py` 惰性导入 penaltyblog）。
+- 使用仓库 `.venv`。研究依赖已写入根目录 `requirements.txt`（numpy/scipy/pandas/penaltyblog 钉死到 .venv 版本）。（`src/ah/model/` 的生产函数只依赖 numpy/scipy；`dixon_coles.py` 惰性导入 penaltyblog）。
 
 ## 文件
 | 文件 | 作用 |
 |---|---|
 | `fd_data.py` | football-data.co.uk 下载（缓存 `research/data/raw/`，gitignore）与统一读取 |
 | `coverage.py` | 数据覆盖表 → `outputs/coverage.md` |
+| `calibrate_dc.py` | 模型 B（DC）温度/等渗 walk-forward 校准对比 → `outputs/calibration_dc.md` |
 | `backtest.py` | 滚动验证：Elo 基线 / Dixon-Coles / DC+Elo / 融合 / Pinnacle 市场 → `outputs/backtest_results.md` |
 | `paper_trades_model_p.py` | 审计员模拟单账本的“基准”概率 → `outputs/paper_trades_model_p_<时间戳>.csv` |
 

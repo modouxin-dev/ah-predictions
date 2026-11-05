@@ -13,6 +13,11 @@ dixon_coles:                # src/ah/model/dixon_coles.py（penaltyblog）
 elo_baseline:               # src/ah/model/baseline.py
   k: 20
   hfa: 60
+calibration:                 # src/ah/model/calibration.py — 模型 B 概率校准（walk-forward）
+  method: temperature          # temperature | none（isotonic 仅研究对比，不进发布）
+  t_bounds: [0.25, 4.0]
+  min_past_matches: 200        # 拟合 T / PAV 前至少这么多已实现预测
+  ah_target: ahead_prob        # 亚盘二元目标 = (赢+赢半)/(1-走)
 blend:                      # src/ah/model/blend.py
   w_model: 0.25                  # p = σ(w·logit p_模型 + (1−w)·logit p_市场)，路线图初始值
   w_elo_in_dc: 0.3
