@@ -138,6 +138,21 @@
      "pick_line": -0.5,
      "pick_water": 0.88
     }
+   },
+   "result": {
+    "score": "4-1",
+    "settlement": "win",
+    "settlement_cn": "赢",
+    "units": 1.06,
+    "line": -0.75,
+    "odds": 1.06,
+    "review": "赛果 4-1（半场 1-1）。波尔图 -0.75 全赢。升盘两档后仍大胜，主队后半场连入三球，基本面（那不勒斯伤病潮、欧冠客场疲软、波尔图主场抢分）兑现；赛前确认例程失败未复核，属流程缺口，本场仍按原中信心结算。",
+    "settled_at": "2026-11-05T06:38:08Z",
+    "sources": [
+     "https://api.football-data.org/v4 (CL, fullTime 4-1, FINISHED)",
+     "https://www.bbc.com/sport/football/live/cqvg0z3x9k77t",
+     "https://www.transfermarkt.com/fc-porto_ssc-napoli/index/spielbericht/5035910"
+    ]
    }
   }
  ],

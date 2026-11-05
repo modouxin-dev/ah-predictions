@@ -23,9 +23,10 @@ def test_backfilled_kashima_cancelled_and_void():
     assert p["result"]["settlement"] == "void" and p["result"]["units"] == 0
 
 
-def test_porto_pending():
+def test_porto_settled():
     p = records.find_pick(rep(), "titan007-3073152")
-    assert records.status(p) == "待确认" and records.prematch_of(p) is None
+    assert records.status(p) == "已结算" and records.prematch_of(p) is None
+    assert p["result"]["score"] == "4-1" and p["result"]["settlement"] == "win"
 
 
 def test_legacy_final_check_mapping():
@@ -35,6 +36,7 @@ def test_legacy_final_check_mapping():
 
 def test_prematch_keep_then_settle():
     r = rep()
+    records.find_pick(r, "titan007-3073152")["result"] = None  # 从已结算快照回退，测确认→结算流程
     records.set_prematch(r, "titan007-3073152", "保留", "盘口稳定", checked_at="2026-11-04T19:10:00Z", pol=POL)
     p = records.find_pick(r, "titan007-3073152")
     assert records.status(p) == "已确认"
@@ -47,6 +49,7 @@ def test_prematch_keep_then_settle():
 
 def test_prematch_adjust_uses_new_line():
     r = rep()
+    records.find_pick(r, "titan007-3073152")["result"] = None
     records.set_prematch(r, "titan007-3073152", "adjust", "降盘", new_line=-0.5, new_odds=0.9, pol=POL)
     res = records.set_result(r, "titan007-3073152", "1-1")
     assert res["line"] == -0.5 and res["settlement"] == "loss"
@@ -54,6 +57,7 @@ def test_prematch_adjust_uses_new_line():
 
 def test_confidence_drop_auto_cancels():
     r = rep()
+    records.find_pick(r, "titan007-3073152")["result"] = None
     pm = records.set_prematch(r, "titan007-3073152", "保留", "首发变化", confidence="低", pol=POL)
     assert pm["decision"] == "撤销" and "自动撤销" in pm["reason"]
     assert records.set_result(r, "titan007-3073152", None)["settlement"] == "void"
@@ -71,6 +75,7 @@ def test_sync_csv_roundtrip(tmp_path):
     c = tmp_path / "p.csv"
     shutil.copy("data/predictions.csv", c)
     r = rep()
+    records.find_pick(r, "titan007-3073152")["result"] = None
     records.set_prematch(r, "titan007-3073152", "保留", "ok", pol=POL)
     records.set_result(r, "titan007-3073152", "0-2", review="r")
     assert records.sync_csv(r, c) == 2
@@ -83,9 +88,13 @@ def test_sync_csv_roundtrip(tmp_path):
 def test_sync_from_csv(tmp_path):
     reports = tmp_path / "reports"
     (reports / "2026" / "11").mkdir(parents=True)
-    (reports / "2026" / "11" / "2026-11-04.json").write_text(json.dumps(R, ensure_ascii=False))
+    pending = copy.deepcopy(R)
+    records.find_pick(pending, "titan007-3073152")["result"] = None
+    (reports / "2026" / "11" / "2026-11-04.json").write_text(json.dumps(pending, ensure_ascii=False))
     c = tmp_path / "p.csv"
-    c.write_text(Path("data/predictions.csv").read_text().replace(",medium,,,,false", ",medium,3-1,win,1.06,true"))
+    # 未结算行 → 已结算 3-1，触发从 csv 回写报告
+    base = Path("data/predictions.csv").read_text().replace(",medium,4-1,win,1.06,true", ",medium,,,,false")
+    c.write_text(base.replace(",medium,,,,false", ",medium,3-1,win,1.06,true"))
     assert records.sync_from_csv(c, reports) == ["2026-11-04 titan007-3073152"]
     r = records.load_report("2026-11-04", reports)
     assert records.find_pick(r, "titan007-3073152")["result"]["score"] == "3-1"

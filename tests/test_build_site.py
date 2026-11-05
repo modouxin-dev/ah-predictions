@@ -37,7 +37,7 @@ def test_kickoff_in_beijing_and_status_badges(tmp_path):
     h = (_build(tmp_path) / "index.html").read_text()
     assert "2026-11-05 04:00 北京时间" in h          # Porto 20:00Z
     assert "2026-11-04 20:15 北京时间" in h          # Kashima 12:15Z
-    assert "st-待确认" in h and "st-已撤销" in h
+    assert "st-已结算" in h and "st-已撤销" in h
     assert "🔒 VIP 可见，输入密码解锁" in h and "盘口面板" in h
 
 
@@ -65,7 +65,7 @@ def test_records_page_rows(tmp_path):
     h = (_build(tmp_path) / "records.html").read_text()
     assert h.count("class='rec'") == 2 and "id='filters'" in h and "class='detail'" in h
     recs = json.loads((tmp_path / "site" / "data" / "records.json").read_text())
-    assert {r["status"] for r in recs} == {"已撤销", "待确认"}
+    assert {r["status"] for r in recs} == {"已撤销", "已结算"}
 
 
 def test_stats_with_series_and_tables(tmp_path):
