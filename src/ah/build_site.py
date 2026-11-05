@@ -28,6 +28,7 @@ NAV = [("index.html", "今日"), ("records.html", "推荐记录"), ("stats.html"
 LOCK = "🔒 VIP 可见，输入密码解锁"
 NONE = "暂无"
 CREDIT = "Football data by 5DollarFootballAPI"
+FREEZE_STAMP = "赛前研究·已冻结·非临场"
 e = html.escape
 
 
@@ -258,7 +259,8 @@ def report_head(r: dict, pol: dict, n_live: int, n_shown: int) -> str:
     if wl or r.get("watched"):
         chips.append(f"<span class='hchip'>👀 观察 <b>{len(wl) or len(r.get('watched') or [])}</b> 场</span>")
     ed = " · 提前版" if r.get("edition") == "early" else ""
-    return (f"<div class='rhead'><div class='rdate'>📅 {e(r['date'])}<small>{ed}</small></div>"
+    stamp = f"<span class='freeze-stamp' title='赛前研究已冻结，非临场盘口'>{e(FREEZE_STAMP)}</span>"
+    return (f"<div class='rhead'><div class='rhead-top'><div class='rdate'>📅 {e(r['date'])}<small>{ed}</small></div>{stamp}</div>"
             f"<div class='muted rgen'>生成于 {bjt(r.get('generated_at'))} · 盘口为港盘水位（十进制赔率 = 1 + 水位）</div>"
             f"<div class='hchips'>{''.join(chips)}</div></div>")
 

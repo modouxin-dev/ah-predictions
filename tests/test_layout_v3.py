@@ -43,3 +43,25 @@ def test_web_no_pick_card():
     h = build_site.no_pick_html(REP)
     assert policy.no_pick_title() in h and "观察名单 4 场" in h and "中信心 2 场" in h
     assert "深盘 2" in h and "中信心仅 1 场" not in h
+
+
+def test_web_freeze_stamp_on_index_and_report(tmp_path):
+    """首页与报告页首屏带冻结印戳；文案固定；不动 main_line 相关逻辑。"""
+    from datetime import datetime, timezone
+    import shutil
+    data = tmp_path / "data"; data.mkdir()
+    (data / "stats.json").write_text("{}", encoding="utf-8")
+    reports = tmp_path / "reports"
+    shutil.copytree(build_site.REPORTS, reports,
+                    ignore=lambda d, fs: [f for f in fs if f[:10] > "2026-11-04" and f[:4] == "2026"])
+    site = tmp_path / "site"
+    build_site.build(site=site, reports=reports, data=data,
+                     now=datetime(2026, 11, 4, 12, 30, tzinfo=timezone.utc))
+    stamp = build_site.FREEZE_STAMP
+    assert stamp == "赛前研究·已冻结·非临场"
+    for name in ("index.html", "reports/2026-11-04.html"):
+        h = (site / name).read_text(encoding="utf-8")
+        assert stamp in h and "freeze-stamp" in h
+        assert policy.DISCLAIMER in h and "先知" in h
+    # 非日报页（战绩等）不带印戳
+    assert stamp not in (site / "stats.html").read_text(encoding="utf-8")

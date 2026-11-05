@@ -221,3 +221,14 @@ body:has(.demobanner)::after{content:"示例数据";position:fixed;inset:0;displ
  #labboard td .muted.sm{display:none}
 }
 @media (max-width:639px){#labboard th,#labboard td{padding:8px 4px}#labboard th{font-size:12px}}
+
+/* 冻结印戳：赛前研究已冻结，非临场 */
+.rhead-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin-bottom:2px}
+.freeze-stamp{display:inline-flex;align-items:center;flex:0 0 auto;font-size:12px;font-weight:700;letter-spacing:.4px;line-height:1.4;color:#4a5568;background:#f3f5f8;border:1.5px dashed #7a8496;border-radius:4px;padding:3px 9px;white-space:nowrap;user-select:none}
+@media (max-width:639px){
+ .freeze-stamp{font-size:11px;padding:2px 7px;letter-spacing:.2px}
+ .rhead-top{align-items:flex-start}
+}
+@media (min-width:1024px){
+ .freeze-stamp{font-size:13px;padding:4px 11px}
+}
