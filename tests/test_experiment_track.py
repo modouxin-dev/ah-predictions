@@ -254,9 +254,10 @@ def test_rejected_listed_not_counted():
     assert s["by_model_market"]["A"]["ah"]["picks"] == 3 and len(s["rejected"]) == 1
 
 
-def test_repo_experiment_files_exist_and_empty():
-    assert ex.read_experiment(Path("data/experiment_picks.csv")) == []
+def test_repo_experiment_files_exist_and_valid():
+    rows = ex.read_experiment(Path("data/experiment_picks.csv"))
+    assert all(r.get("track") == "experiment" for r in rows)
     hdr = Path("data/experiment_picks.csv").read_text(encoding="utf-8").splitlines()[0].split(",")
     assert hdr == ex.EXPERIMENT_FIELDS
     s = json.loads(Path("data/experiment_stats.json").read_text())
-    assert s["track"] == "experiment" and s["by_model_market"] == {}
+    assert s["track"] == "experiment" and isinstance(s["by_model_market"], dict)

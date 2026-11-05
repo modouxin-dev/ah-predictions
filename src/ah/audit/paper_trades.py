@@ -64,7 +64,7 @@ FIELDS = ["date", "match_id", "league", "home", "away", "kickoff_utc", "kickoff_
           "close_source", "close_note", "line_move", "implied_p_bet", "clv",
           "result", "score_sources", "score_note", "ah_outcome", "units",
           "model_version", "model_label", "model_pick_side", "model_line", "model_generated_at", "model_y",
-          "model_p", "brier", "model_note", "note", "updated_at",
+          "model_p", "brier", "model_margin", "model_margin_flag", "model_note", "note", "updated_at",
           # 产品工程师要求的别名列（与上面同源，便于网站直接读取）
           "pick", "odds_taken", "odds_close", "stake", "pnl", "settled_at"]
 BJ = timezone(timedelta(hours=8))
@@ -269,6 +269,9 @@ def apply_model(r: dict, m: dict | None, reject: str | None) -> None:
     r["model_pick_side"], r["model_line"] = m["pick_side"], _num(m["line"])
     r["model_generated_at"], r["model_p"] = to_bj(m["generated_at"]), _fmt(float(m["model_p"]), 6)
     r["model_note"] = f"{m.get('decision', '')}；{m['_file']}"
+    r["model_margin"], r["model_margin_flag"] = m.get("margin", "") or "", m.get("margin_flag", "") or ""
+    if r["model_margin_flag"] == "high":
+        r["model_note"] += "；margin_flag=high（抽水>5%，待数据官核实是否旧价，结论暂不采信）"
     if r.get("status") == "watch" and not r.get("pick_side"):
         r["pick_side"], r["line"] = m["pick_side"], _num(m["line"])
         r["home_line"] = r["home_line"] or _num(m["home_line"])

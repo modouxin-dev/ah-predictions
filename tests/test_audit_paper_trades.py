@@ -159,3 +159,14 @@ def test_engineer_columns_and_bj_time(env):
     assert m2["pick"] == "C" and m2["odds_taken"] == "1.06" and m2["stake"] == "1" and m2["settled_at"] == ""
     assert m1["stake"] == "0" and m1["pnl"] == "0" and m1["settled_at"].endswith("+08:00")
     assert m3["stake"] == "" and m3["pick"] == ""
+
+
+def test_apply_model_margin_flag_high_is_annotated():
+    from ah.audit.paper_trades import apply_model
+    r = {"status": "watch", "pick_side": "", "home_line": "", "home": "H", "away": "A", "note": "no_model_direction；x"}
+    m = {"model_version": "market-baseline-v0", "baseline_label": "基准", "pick_side": "home", "line": "-0.5",
+         "home_line": "-0.5", "generated_at": "2026-11-04T21:21:32+08:00", "model_p": "0.51", "decision": "watch",
+         "_file": "f.csv", "margin": "0.061", "margin_flag": "high", "pick_odds_pinnacle": "1.95"}
+    apply_model(r, m, None)
+    assert r["model_margin"] == "0.061" and r["model_margin_flag"] == "high"
+    assert "margin_flag=high" in r["model_note"]
