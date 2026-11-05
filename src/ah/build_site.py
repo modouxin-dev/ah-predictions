@@ -622,27 +622,30 @@ def paper_section(rows: list[dict]) -> str:
 # ---------- 模型实验场（experiment track，不计入正式命中率） ----------
 
 LAB_BANNER = ("<div class='labbanner'><b>🧪 实验，非正式推荐，不计入正式命中率</b>"
-              "<span>各模型独立出场次、单独记账（1 单位平注），只用于检验模型；正式推荐只看首页的高信心亚盘。</span></div>")
+              "<span>各模型独立出场次、单独记账（1 单位平注），只用于检验模型；正式推荐只看首页的高信心亚盘。"
+              "战绩直接读 experiment_stats.json（按平均 CLV 排序），不在前端重算。</span></div>")
 DEMO_BANNER = "<div class='demobanner'>⚠️ 示例数据 · 仅用于版式预览，不是真实推荐</div>"
 
 
 def _lab_rows(rows: list[dict]) -> list[str]:
     out = []
-    for r in sorted(rows, key=lambda r: (r["kickoff_bj"] or r["kickoff_utc"] or "", r["model_id"])):
-        ko = r["kickoff_bj"] or ""
-        ko_s = f"{ko[5:10]} {ko[11:16]}" if len(ko) >= 16 else (bjt(r["kickoff_utc"], "%m-%d %H:%M") if r["kickoff_utc"] else NONE)
-        res = records.SETTLE_CN.get(r["outcome"], NONE) if r["outcome"] else "待结算"
-        lbl = f"<div class='muted sm'>{e(r['model_label'])}</div>" if r["model_label"] else ""
+    for r in sorted(rows, key=lambda r: (r.get("kickoff_bj") or r.get("kickoff_utc") or "", r["model_id"])):
+        ko = r.get("kickoff_bj") or ""
+        ko_s = f"{ko[5:10]} {ko[11:16]}" if len(ko) >= 16 else (bjt(r.get("kickoff_utc"), "%m-%d %H:%M") if r.get("kickoff_utc") else NONE)
+        res = records.SETTLE_CN.get(r["outcome"], NONE) if r.get("outcome") else "待结算"
+        ver = f"<div class='muted sm'>{e(r['model_version'])}</div>" if r.get("model_version") else ""
+        tags = model_lab.overlap_tags(r.get("overlap") or "")
+        ov = ("<div class='muted sm'>" + " · ".join(e(x) for x in tags) + "</div>") if tags else ""
         out.append(
             f"<tr class='crow'><td data-label='对阵' class='m-full'>{e(r['home'] or NONE)} vs {e(r['away'] or NONE)}"
-            + (f"<div class='muted sm'>{e(r['league'])}</div>" if r["league"] else "") + "</td>"
-            f"<td data-label='模型'><code>{e(r['model_id'])}</code>{lbl}</td>"
+            + (f"<div class='muted sm'>{e(r['league'])}</div>" if r.get("league") else "") + ov + "</td>"
+            f"<td data-label='模型'><code>{e(r['model_id'])}</code>{ver}</td>"
             f"<td data-label='选项'><b>{e(model_lab.selection_text(r))}</b></td>"
             f"<td data-label='盘口' class='num'>{e(model_lab.line_text(r) or ('—' if r['market'] == '1x2' else NONE))}</td>"
             f"<td data-label='水位' class='num'>{e(model_lab.odds_text(r) or NONE)}</td>"
             f"<td data-label='开赛'>{e(ko_s)}</td>"
-            f"<td data-label='模型概率'>{vip_inline(pct(r['model_p']))}</td>"
-            f"<td data-label='结果' class='res-{e(r['outcome'])}'>{e(res)}</td></tr>")
+            f"<td data-label='模型概率'>{vip_inline(pct(r.get('model_p')))}</td>"
+            f"<td data-label='结果' class='res-{e(r.get('outcome') or '')}'>{e(res)}</td></tr>")
     return out
 
 
@@ -650,35 +653,56 @@ LAB_HEAD = ["对阵", "模型", "选项", "盘口", "水位", "开赛（北京�
 
 
 def lab_board_html(board: list[dict]) -> str:
-    rows = [f"<tr><td><code>{e(a['model_id'])}</code></td><td>{model_lab.MARKET_CN[a['market']]}</td>"
-            f"<td data-v='{a['settled']}'>{a['settled']}<span class='muted sm'> / {a['picks']}</span></td>"
-            f"<td data-v='{'' if a['hit_rate'] is None else a['hit_rate']}'>{pct(a['hit_rate'])}</td>"
-            f"<td data-v='{'' if a['roi'] is None else a['roi']}' class='{'pos' if (a['roi'] or 0) > 0 else 'neg' if (a['roi'] or 0) < 0 else ''}'>"
-            f"{model_lab.pct(a['roi'], True)}</td>"
-            f"<td data-v='{'' if a['clv'] is None else a['clv']}'>{model_lab.pct(a['clv'], True)}"
-            + (f"<span class='muted sm'>（{a['clv_n']}）</span>" if a["clv_n"] else "") + "</td></tr>" for a in board]
-    return tbl(["模型", "玩法", "场数", "命中率", "ROI", "CLV"], rows, cls="sortable", tid="labboard", empty=NONE)
+    rows = []
+    for a in board:
+        settled = a.get("settled")
+        picks = a.get("picks")
+        clv = a.get("clv_mean")
+        clv_n = a.get("clv_n") or 0
+        n_cell = model_lab.n_label(settled if settled is not None else picks)
+        if settled is not None and picks is not None:
+            n_cell = f"{n_cell}<span class='muted sm'> / {picks}</span>"
+        cov = model_lab.coverage_text(a)
+        rows.append(
+            f"<tr><td><code>{e(a['model_id'])}</code></td><td>{model_lab.MARKET_CN.get(a['market'], a['market'])}</td>"
+            f"<td data-v='{settled if settled is not None else ''}'>{n_cell}</td>"
+            f"<td data-v='{'' if a.get('hit_rate') is None else a['hit_rate']}'>{pct(a.get('hit_rate'))}</td>"
+            f"<td data-v='{'' if a.get('roi') is None else a['roi']}' class="
+            f"'{'pos' if (a.get('roi') or 0) > 0 else 'neg' if (a.get('roi') or 0) < 0 else ''}'>"
+            f"{model_lab.pct(a.get('roi'), True)}</td>"
+            f"<td data-v='{'' if clv is None else clv}'>{model_lab.pct(clv, True)}"
+            + (f"<span class='muted sm'>（{clv_n}）</span>" if clv_n else "") + "</td>"
+            f"<td data-v='{'' if a.get('coverage') is None else a['coverage']}'>{cov}</td></tr>")
+    return tbl(["模型", "玩法", "场数", "命中率", "ROI", "CLV", "收盘覆盖"], rows, cls="sortable", tid="labboard", empty=NONE)
 
 
-def model_lab_html(rows: list[dict], day: str, demo: bool = False) -> str:
+def model_lab_html(lab, day: str, demo: bool = False) -> str:
+    lab = model_lab.as_lab(lab)
+    rows = lab.rows
     today = model_lab.for_date(rows, day)
     groups = model_lab.by_market(today)
-    head = (DEMO_BANNER if demo else "") + LAB_BANNER
-    n_set = sum(1 for r in rows if r["outcome"])
+    head = (DEMO_BANNER if demo or lab.sample else "") + LAB_BANNER
+    n_set = sum(1 for r in rows if r.get("outcome"))
     chips = (f"<div class='hchips labchips'><span class='hchip'>📅 {e(day)}</span><span class='hchip'>🧪 今日 <b>{len(today)}</b> 场</span>"
              + "".join(f"<span class='hchip'>{model_lab.MARKET_CN[m]} <b>{len(rs)}</b></span>" for m, rs in groups)
              + f"<span class='hchip'>📒 累计 <b>{len(rows)}</b> · 已结算 <b>{n_set}</b></span></div>")
+    skip = model_lab.skipped_text(lab.skipped)
+    if skip:
+        chips += f"<p class='muted sm'>{e(skip)}</p>"
     body = head + chips + "<h2>📋 今日实验盘</h2>"
     if not groups:
         body += f"<div class='empty'>{NONE}（今日各模型均未出场次）</div>"
     for m, rs in groups:
         body += (f"<h3>{model_lab.MARKET_CN[m]} · {len(rs)} 场</h3>"
                  + tbl(LAB_HEAD, _lab_rows(rs), cls="sortable cardify labtbl", tid=f"lab-{m}", empty=NONE))
-    board = model_lab.leaderboard(rows)
+    board = model_lab.board(lab.stats)
+    asof = model_lab.stats_time(lab.stats)
     body += ("<h2>📊 模型 × 玩法 战绩</h2>"
+             + (f"<p class='muted sm'>统计截至 {e(asof)} 北京时间 · 按平均 CLV 排序</p>" if asof else "")
              + (lock(lab_board_html(board)) if board else f"<div class='empty'>{NONE}（暂无历史记录）</div>")
-             + "<p class='muted'>命中率 = (赢 + 0.5×赢半) / (已结算 − 走 − 取消)；ROI = 盈亏 / 投注单位（1 单位平注，按出单时水位）；"
-               "CLV 为有收盘价场次的均值（括号内为场数）。实验盘不计入正式命中率。</p>")
+             + "<p class='muted'>命中率 = (赢 + 0.5×赢半) / (已结算 − 走 − 作废)；ROI = 盈亏 / 同一分母（1 单位平注，报告时刻赔率）；"
+               "CLV 为有收盘价场次的均值（括号内为场数），按 CLV 排序、空值排最后；"
+               "收盘覆盖优先读 stats 字段，没有则显示「暂无」。实验盘不计入正式命中率。</p>")
     return body + f"<p class='disc-inline'>{e(policy.DISCLAIMER)} —— 先知</p>"
 
 
@@ -779,9 +803,13 @@ def build(site: Path = SITE, reports: Path = REPORTS, data: Path = DATA, now: da
     write("stats.html", "战绩", bar + stats_html(s, today) + paper_section(paper), "stats.html")
     write("sources.html", "数据源状态", sources_html(st), "sources.html")
     write("rules.html", "规则说明", rules_html(pol, cfg), "rules.html")
-    lab_rows = model_lab.load(lab or data / "model_lab.csv")
-    demo = lab_demo or any("示例" in r["note"] for r in lab_rows)
-    write("model-lab.html", "模型实验场", model_lab_html(lab_rows, latest["date"] if latest else today, demo), "model-lab.html")
+    lab_obj = model_lab.load(lab or data / "experiment_picks.csv",
+                             None if lab is None else model_lab.resolve_stats_path(lab))
+    # 若 --lab 指向样例 CSV，仍自动找同目录 stats；默认走 data/experiment_*. 
+    if lab is not None and lab_obj.stats is None:
+        lab_obj = model_lab.load(lab, model_lab.resolve_stats_path(lab))
+    demo = lab_demo or lab_obj.sample
+    write("model-lab.html", "模型实验场", model_lab_html(lab_obj, latest["date"] if latest else today, demo), "model-lab.html")
     hist = [f"<tr><td><a href='reports/{r['date']}.html'>{r['date']}</a></td><td>{len(policy.published(r, pol))}</td>"
             f"<td>{len(records.published_picks(r, pol))}</td></tr>" for r in reversed(reps)]
     write("history.html", "历史日报", tbl(["日期", "当前有效推荐", "公开推荐（含撤销）"], hist, empty="暂无报告"), "")
@@ -798,7 +826,7 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--out", type=Path, default=SITE, help=f"输出目录（默认 {SITE}）")
     ap.add_argument("--reports", type=Path, default=REPORTS, help="日报 JSON 目录（默认仓库 reports/）")
     ap.add_argument("--data", type=Path, default=DATA, help="数据目录（stats.json、paper_trades.csv 等；默认仓库 data/）")
-    ap.add_argument("--lab", type=Path, default=None, help="模型实验盘 CSV（默认 <data>/model_lab.csv）")
+    ap.add_argument("--lab", type=Path, default=None, help="实验盘 picks CSV（默认 <data>/experiment_picks.csv）")
     ap.add_argument("--lab-demo", action="store_true", help="实验场页面加「示例数据」横幅（用样例数据预览时）")
     a = ap.parse_args(argv)
     print(build(site=a.out, reports=a.reports, data=a.data, lab=a.lab, lab_demo=a.lab_demo))

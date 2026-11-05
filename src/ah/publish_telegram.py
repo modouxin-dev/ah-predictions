@@ -6,10 +6,12 @@
   python -m ah telegram daily YYYY-MM-DD [--dry-run]
   python -m ah telegram prematch YYYY-MM-DD MATCH_ID [--dry-run]      # 读 pick.prematch（或旧 final_check）
   python -m ah telegram backtest YYYY-MM-DD MATCH_ID [--dry-run]      # 读 pick.result
-  python -m ah telegram weekly [YYYY-MM-DD] [--lab CSV] --dry-run      # 每周模型排行样稿（实验盘，无定时任务）
+  python -m ah telegram weekly [YYYY-MM-DD] [--lab CSV] [--lab-stats JSON] --dry-run
+                                                                  # 每周模型排行样稿（读 experiment_stats.json，按 CLV）
 
-日报可选：--announce-upgrade（开头加「🆕 看板已升级」+ 网站链接）；--lab CSV（模型实验盘，默认 data/model_lab.csv，
-不存在则整段省略）。
+日报可选：--announce-upgrade（开头加「🆕 看板已升级」+ 网站链接）；
+--lab CSV（实验盘，默认 data/experiment_picks.csv，不存在则整段省略）；
+--lab-stats JSON（默认与 --lab 同目录的 experiment_stats.json / data/experiment_stats.json）。
 """
 from __future__ import annotations
 
@@ -522,8 +524,10 @@ def lab_block(rows: list[dict] | None) -> str | None:
         for r in rs:
             pick = " ".join(x for x in (ml.selection_text(r), ml.line_text(r)) if x)
             odds = f" @{ml.odds_text(r)}" if ml.odds_text(r) else ""
+            ov = " · ".join(ml.overlap_tags(r.get("overlap") or ""))
+            ov_s = f" <i>{e(ov)}</i>" if ov else ""
             body.append(f"<code>{e(ml.model_code(r['model_id']))}</code> {e(ml.short_team(r['home']))}-{e(ml.short_team(r['away']))}"
-                        f"｜<b>{e(pick)}</b>{odds}")
+                        f"｜<b>{e(pick)}</b>{odds}{ov_s}")
     return sec("🧪", "模型实验盘", "（不计入正式命中率）") + "\n" + quote(body, expandable=True)
 
 
@@ -551,25 +555,46 @@ def daily(rep: dict, stats: dict | None = None, site_url: str = SITE_URL, lab: l
     return split(blocks)
 
 
-def weekly(rows: list[dict] | None, end: str | None = None, top: int = 12) -> list[str]:
-    """每周模型排行（实验盘）：按「模型 × 玩法」以 ROI 排名，展示场数、命中率、ROI、CLV。"""
+def weekly(lab=None, end: str | None = None, top: int = 12) -> list[str]:
+    """每周模型排行（实验盘）：直接读 experiment_stats.json，按平均 CLV 排序（null 排最后）。
+    ROI/命中率为参考列；场数 &lt; 30 标 *；另列收盘覆盖率（stats 无该字段则「暂无」）。"""
     from . import model_lab as ml
+    lab = ml.as_lab(lab)
     start, end = ml.week_range(end)
-    board = [a for a in ml.leaderboard(rows or [], start, end) if a["settled"]]
-    head = (f"<b>【先知】🏆 模型周排行</b>\n📅 {start[5:]} – {end[5:]} 北京时间\n"
-            "🧪 实验盘，非正式推荐，不计入正式命中率")
+    board = [a for a in ml.board(lab.stats) if (a.get("picks") or 0) > 0]
+    asof = ml.stats_time(lab.stats)
+    head = (f"<b>【先知】🏆 模型周排行</b>\n📅 {start[5:]} – {end[5:]} 北京时间"
+            + (f" · 统计截至 {asof}" if asof else "")
+            + "\n🧪 实验盘，非正式推荐，不计入正式命中率\n📊 主指标：平均 CLV（ROI / 命中率仅供参考）")
     if not board:
-        body = "暂无已结算的实验盘场次"
+        body = "暂无实验盘战绩"
     else:
-        n = sum(a["settled"] for a in board)
-        rows_ = [[str(i), ml.model_code(a["model_id"]), ml.MARKET_CN[a["market"]], str(a["settled"]) + ("*" if a["settled"] < 30 else ""),
-                  "暂无" if a["hit_rate"] is None else f"{a['hit_rate']:.0%}",
-                  "暂无" if a["roi"] is None else f"{a['roi']:+.0%}",
-                  "暂无" if a["clv"] is None else f"{a['clv']:+.1%}"] for i, a in enumerate(board[:top], 1)]
-        lg = ml.legend([r for r in rows or [] if start <= r["date"] <= end])
-        body = (f"📊 本周已结算 {n} 场 · {len(board)} 个模型×玩法\n" + (f"<i>{e(lg)}</i>\n" if lg else "")
-                + pre_table(["#", "模型", "玩法", "场", "命中", "ROI", "CLV"], rows_, right_from=3)
-                + "\n<i>* 样本 &lt; 30 场，排名波动大，仅供参考。ROI 按 1 单位平注；CLV 为有收盘价场次的均值。</i>")
+        n = sum(a.get("settled") or 0 for a in board)
+        rows_ = []
+        for i, a in enumerate(board[:top], 1):
+            settled = a.get("settled")
+            rows_.append([
+                str(i),
+                ml.model_code(a["model_id"]),
+                ml.MARKET_CN.get(a["market"], a["market"]),
+                ml.n_label(settled if settled is not None else a.get("picks")),
+                "暂无" if a.get("hit_rate") is None else f"{a['hit_rate']:.0%}",
+                "暂无" if a.get("roi") is None else f"{a['roi']:+.0%}",
+                "暂无" if a.get("clv_mean") is None else f"{a['clv_mean']:+.1%}",
+                ml.coverage_text(a),
+            ])
+        skip = ml.skipped_text(lab.skipped)
+        rej = ml.rejected_total(lab.stats)
+        notes = []
+        if skip:
+            notes.append(skip)
+        if rej:
+            notes.append(f"拒绝 {rej} 行（配额/校验）")
+        body = (f"📊 已结算 {n} 场 · {len(board)} 个模型×玩法\n"
+                + (("；".join(notes) + "\n") if notes else "")
+                + pre_table(["#", "模型", "玩法", "场", "命中", "ROI", "CLV", "收盘"], rows_, right_from=3)
+                + "\n<i>* 样本 &lt; 30 场，排名波动大，仅供参考。按平均 CLV 排序（空值排最后）；"
+                  "收盘 = 有 CLV 的已结算场次占比（stats 无该字段则暂无）。</i>")
     return split([head, DIV + "\n" + body, DIV + "\n" + "\n".join(footer())])
 
 
@@ -680,18 +705,20 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("match_id", nargs="?")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--announce-upgrade", action="store_true", help="日报开头加「🆕 看板已升级」与网站链接")
-    ap.add_argument("--lab", help="模型实验盘 CSV（默认 data/model_lab.csv，不存在则省略该段）")
+    ap.add_argument("--lab", help="实验盘 picks CSV（默认 data/experiment_picks.csv，不存在则省略该段）")
+    ap.add_argument("--lab-stats", help="实验盘 stats JSON（默认同目录 experiment_stats.json）")
     a = ap.parse_args(argv)
     from . import model_lab
+    lab = model_lab.load(a.lab, a.lab_stats)
     if a.kind == "weekly":
-        send(weekly(model_lab.load(a.lab), a.date), a.dry_run)
+        send(weekly(lab, a.date), a.dry_run)
         return
     if not a.date:
         ap.error("需要日期 YYYY-MM-DD")
     rep = json.loads(report_paths(a.date)[0].read_text(encoding="utf-8"))
     if a.kind == "daily":
         msgs = daily(rep, _stats(), os.environ.get("SITE_URL") or SITE_URL,
-                     lab=model_lab.for_date(model_lab.load(a.lab), a.date), announce=a.announce_upgrade)
+                     lab=model_lab.for_date(lab.rows, a.date), announce=a.announce_upgrade)
     else:
         if not a.match_id:
             ap.error("prematch/backtest 需要 MATCH_ID")
