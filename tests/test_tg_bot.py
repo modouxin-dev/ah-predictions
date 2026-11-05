@@ -121,14 +121,17 @@ def test_today_published_only(repo):
 
 
 def test_today_no_picks(repo, tmp_path):
+    from ah import policy as _pol
     p = next(repo[0].glob("*/*/*.json"))
     r = json.loads(p.read_text(encoding="utf-8"))
     r["date"] = "2026-11-06"
-    r["picks"][1]["confidence"] = "medium"   # 新规则下中信心不发布
+    # 清空正式 picks；低信心不应发布
+    r["picks"] = [{**r["picks"][1], "confidence": "low", "cancelled": False}]
+    r["picks"][0].pop("final_check", None)
     r["watchlist"] = [{"home": "WATCHED", "away": "X"}]
     (p.parent / "2026-11-06.json").write_text(json.dumps(r, ensure_ascii=False), encoding="utf-8")
     text, _ = tg_bot.render("today", repo[0], repo[1])
-    assert "今日无高信心推荐（宁缺毋滥）" in text
+    assert _pol.no_pick_title() + "（宁缺毋滥）" in text
     assert "波尔图" not in text and "WATCHED" not in text
 
 

@@ -31,7 +31,7 @@ e = pt.e
 # (command, 中文描述) —— setMyCommands 用
 COMMANDS = [
     ("start", "打开先知菜单"),
-    ("today", "今日推荐（高信心）"),
+    ("today", "今日推荐"),
     ("sources", "数据源状态"),
     ("stats", "历史命中率 / 回测"),
     ("records", "赛前确认 / 赛后结算"),
@@ -105,8 +105,10 @@ def _status_icon(st: str) -> str:
 # ---------- 各回复 ----------
 
 def menu_text() -> str:
+    pol = policy.load()
+    rule = policy.publish_rule_title(pol)
     return ("<b>【先知】⚽ 亚盘分析菜单</b>\n"
-            "命中率优先：只推高信心场次，宁缺毋滥。\n\n"
+            f"命中率优先：{rule}，宁缺毋滥。\n\n"
             "⚽ 今日推荐 ｜ 📡 数据源状态\n📈 历史命中率 ｜ 🔎 赛前确认 / 🏁 赛后结算\n📜 规则说明 ｜ 📰 最新报告\n\n"
             + footer())
 
@@ -115,7 +117,7 @@ def today_text(rep: dict | None, pol: dict | None = None, stats: dict | None = N
     pol = pol or policy.load()
     head = "<b>【先知】⚽ 今日推荐</b>"
     if not rep:
-        return f"{head}\n\n今日无高信心推荐（宁缺毋滥）\n\n{footer()}"
+        return f"{head}\n\n{policy.no_pick_title(pol)}（宁缺毋滥）\n\n{footer()}"
     picks = policy.published(rep, pol)
     lines = [head, pt.date_line(rep, len(picks))]
     if not picks:
@@ -236,8 +238,10 @@ def rules_text(pol: dict | None = None, cfg: dict | None = None) -> str:
     tol = float(pol.get("alignment_tolerance", 0.25))
     lines = ["<b>【先知】📜 规则说明</b>", "",
              "🎯 <b>命中率优先</b>：宁可少推，不推不确定的场次。",
-             f"🔥 <b>只推高信心</b>：只公开信心「{e(pol['min_confidence_to_publish'])}」的推荐；中/低信心只作内部观察，不推送。",
-             f"📅 <b>每日上限</b>：最多 {pol['max_picks_per_day']} 场。",
+             f"🔥 <b>{e(policy.publish_rule_title(pol))}</b>：{e(policy.publish_rule_desc(pol))}",
+             f"📅 <b>每日上限</b>：最多 {pol['max_picks_per_day']} 场（积累期目标 5–10 场）。",
+             (f"🛡 <b>深盘</b>：|线|≥{float(pol.get('max_abs_line_to_publish', 1.75)):g} 默认进观察，不进正式。"
+              if pol.get("max_abs_line_to_publish") is not None else None),
              "📊 <b>真实盘口</b>：没有真实盘口与水位绝不推荐，绝不编造数据。" if pol.get("require_real_odds") else None,
              f"⚖️ <b>市场共识</b>：推荐盘与多家中位盘相差 &gt;{tol:g} 降一档，&gt;{2 * tol:g} 直接撤下。",
              f"🔎 <b>赛前确认</b>：开赛前 {pm} 分钟复核临场盘口、首发、伤停；"

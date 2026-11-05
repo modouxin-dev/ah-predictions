@@ -42,7 +42,7 @@ def test_cjk_pad():
 
 def test_no_picks_and_escape():
     m = tg.summary({"date": "2026-11-05", "picks": [], "watched": []})
-    assert "今日无高信心推荐（宁缺毋滥）" in m and "📈" in m
+    assert policy.no_pick_title() + "（宁缺毋滥）" in m and "📈" in m
     p = {**PORTO, "home": "A<b>&", "reasons": ["x < y"]}
     m = tg.pick_block(p)
     assert "A&lt;b&gt;&amp;" in m and "x &lt; y" in m

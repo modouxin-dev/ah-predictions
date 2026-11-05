@@ -490,8 +490,10 @@ def watch_counts(rep: dict) -> tuple[dict, dict]:
     return conf, cat
 
 
-def no_pick_lines(rep: dict) -> list[str]:
-    lines = ["🛡 <b>今日无高信心推荐（宁缺毋滥）</b>"]
+def no_pick_lines(rep: dict, pol: dict | None = None) -> list[str]:
+    from . import policy as _policy
+    title = _policy.no_pick_title(pol)
+    lines = [f"🛡 <b>{e(title)}（宁缺毋滥）</b>"]
     conf, cat = watch_counts(rep)
     if conf:
         n = sum(conf.values())

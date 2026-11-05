@@ -273,7 +273,8 @@ def no_pick_html(r: dict) -> str:
         if x.get("withheld_category"):
             cats[x["withheld_category"]] = cats.get(x["withheld_category"], 0) + 1
     chips = "".join(f"<span class='cat'>{e(k)} {v}</span>" for k, v in sorted(cats.items(), key=lambda kv: -kv[1]))
-    return ("<div class='nopick'><div class='np-ico'>🛡️</div><div><div class='np-title'>今日无高信心推荐</div>"
+    title = policy.no_pick_title()
+    return (f"<div class='nopick'><div class='np-ico'>🛡️</div><div><div class='np-title'>{e(title)}</div>"
             "<div class='np-sub'>宁缺毋滥：没有达到发布标准的场次，今天不推。</div>"
             + (f"<div class='np-cnt'>观察名单 {len(wl)} 场：{cnt}</div>" if wl else "")
             + (f"<div class='np-cats'>{chips}</div>" if chips else "")
@@ -622,7 +623,7 @@ def paper_section(rows: list[dict]) -> str:
 # ---------- 模型实验场（experiment track，不计入正式命中率） ----------
 
 LAB_BANNER = ("<div class='labbanner'><b>🧪 实验，非正式推荐，不计入正式命中率</b>"
-              "<span>各模型独立出场次、单独记账（1 单位平注），只用于检验模型；正式推荐只看首页的高信心亚盘。"
+              "<span>各模型独立出场次、单独记账（1 单位平注），只用于检验模型；正式推荐只看首页达到发布门槛的亚盘。"
               "战绩直接读 experiment_stats.json（按平均 CLV 排序），不在前端重算。</span></div>")
 DEMO_BANNER = "<div class='demobanner'>⚠️ 示例数据 · 仅用于版式预览，不是真实推荐</div>"
 
@@ -749,8 +750,10 @@ def rules_html(pol: dict, cfg: dict) -> str:
     tol = float(pol.get("alignment_tolerance", 0.25))
     items = [
         ("命中率优先", "宁可少推，不推不确定的场次。"),
-        ("只推高信心", f"只公开发布信心「{e(str(pol['min_confidence_to_publish']))}」的推荐；中/低信心只作内部观察，不推送、不展示为推荐。"),
-        ("每日上限", f"每天最多 {pol['max_picks_per_day']} 场。"),
+        (policy.publish_rule_title(pol), e(policy.publish_rule_desc(pol))),
+        ("每日上限", f"每天最多 {pol['max_picks_per_day']} 场（积累期目标 5–10 场）。"),
+        ("深盘", f"|线|≥{float(pol.get('max_abs_line_to_publish', 1.75)):g} 默认进观察名单，不进正式推荐。"
+         if pol.get("max_abs_line_to_publish") is not None else "—"),
         ("必须有真实盘口与水位", "没有真实赔率的比赛一律不推荐，绝不编造数据。" if pol.get("require_real_odds") else "—"),
         ("与市场共识对齐", f"推荐盘口与多家公司中位盘相差超过 {tol:g} 降一档信心；超过 {2 * tol:g} 直接撤下。"),
         ("赛前最终确认", f"开赛前 {pm} 分钟复核临场盘口、水位、首发与伤停；信心下降即撤销推荐（结论：保留 / 调整 / 撤销）。"),

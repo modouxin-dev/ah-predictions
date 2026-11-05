@@ -11,7 +11,7 @@ REP = {"date": "2026-11-05", "picks": [], "no_pick_reason": "中信心仅 1 场"
 
 def test_tg_no_pick_counts_from_watchlist_without_names():
     msg = "\n".join(pt.daily(REP, None))
-    assert "今日无高信心推荐（宁缺毋滥）" in msg
+    assert policy.no_pick_title() + "（宁缺毋滥）" in msg
     assert "观察 4 场" in msg and "中 2" in msg and "低 1" in msg and "未定 1" in msg
     assert "<code>2</code>  深盘" in msg and "<code>1</code>  信号不足" in msg
     assert "中信心仅 1 场" not in msg            # 不用手写原因里的错误计数
@@ -41,5 +41,5 @@ def test_daily_lists_cancelled():
 
 def test_web_no_pick_card():
     h = build_site.no_pick_html(REP)
-    assert "今日无高信心推荐" in h and "观察名单 4 场" in h and "中信心 2 场" in h
+    assert policy.no_pick_title() in h and "观察名单 4 场" in h and "中信心 2 场" in h
     assert "深盘 2" in h and "中信心仅 1 场" not in h

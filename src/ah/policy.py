@@ -1,9 +1,11 @@
 """准确率优先的发布策略（config/settings.yaml: policy）。
 
-- 只发布信心「高」的推荐；其余进入 report["watchlist"]（内部字段，不推送、不在网站作为推荐展示）。
+- 发布门槛可配置（默认「中」及以上）；低于门槛进入 report["watchlist"]（内部字段，不推送、不在网站作为推荐展示）。
+- 深盘 |line|≥max_abs_line_to_publish（默认 1.75）默认不进正式，进观察名单；line 为 None 时不按深盘拦。
 - 必须有真实赔率；推荐盘口偏离多家公司中位数 > 0.25 时降级一档，偏离 > 0.5 直接撤下。
 - 赛前最终确认信心下降 -> 撤销（cancel_on_drop）。
 - 生效日之前的历史报告保持原样（作为历史记录）。
+- 命中率按高/中分账（hit_rate_by_confidence）。
 """
 from __future__ import annotations
 
@@ -16,9 +18,17 @@ EN = {"高": "high", "中": "medium", "低": "low", "high": "high", "medium": "m
 ORDER = {"high": 0, "medium": 1, "low": 2}
 DOWN = {"high": "medium", "medium": "low", "low": None}
 DISCLAIMER = "基于数据的分析参考，亚盘有风险，不构成投注建议。"
-DEFAULT = {"min_confidence_to_publish": "高", "max_picks_per_day": 3, "require_real_odds": True,
-           "consensus_alignment": "pick line within 0.25 of multi-book median, else downgrade or skip",
-           "alignment_tolerance": 0.25, "prematch_cancel_on_confidence_drop": True, "effective_from": "2026-11-05"}
+DEFAULT = {
+    "min_confidence_to_publish": "中",
+    "max_picks_per_day": 10,
+    "max_abs_line_to_publish": 1.75,
+    "hit_rate_by_confidence": True,
+    "require_real_odds": True,
+    "consensus_alignment": "pick line within 0.25 of multi-book median, else downgrade or skip",
+    "alignment_tolerance": 0.25,
+    "prematch_cancel_on_confidence_drop": True,
+    "effective_from": "2026-11-05",
+}
 
 
 def load(path: Path | None = None) -> dict:
@@ -34,6 +44,33 @@ def applies(report: dict, pol: dict) -> bool:
     return str(report.get("date", "")) >= str(pol.get("effective_from", ""))
 
 
+def threshold_cn(pol: dict | None = None) -> str:
+    """发布门槛中文标签（高/中/低）。"""
+    pol = pol or load()
+    return CN[EN[pol["min_confidence_to_publish"]]]
+
+
+def no_pick_title(pol: dict | None = None) -> str:
+    """无推荐时的标题文案（随门槛动态变化）。"""
+    t = threshold_cn(pol)
+    if t == "高":
+        return "今日无高信心推荐"
+    return f"今日无{t}及以上信心推荐"
+
+
+def publish_rule_title(pol: dict | None = None) -> str:
+    t = threshold_cn(pol)
+    if t == "高":
+        return "只推高信心"
+    return f"发布门槛：{t}及以上"
+
+
+def publish_rule_desc(pol: dict | None = None) -> str:
+    t = threshold_cn(pol)
+    return (f"只公开发布信心「{t}」及以上的推荐；低于门槛只作内部观察，不推送、不展示为推荐。"
+            "高/中分账命中率。")
+
+
 def check(p: dict, pol: dict) -> tuple[str | None, str]:
     """返回 (调整后信心 or None=不发布, 原因)。"""
     conf = EN.get(p.get("confidence", ""), None)
@@ -41,6 +78,10 @@ def check(p: dict, pol: dict) -> tuple[str | None, str]:
         return None, "无信心等级"
     if pol["require_real_odds"] and p.get("odds") is None:
         return None, "无真实赔率"
+    if p.get("line") is not None:
+        max_abs = float(pol.get("max_abs_line_to_publish", 1.75))
+        if abs(float(p["line"])) >= max_abs:
+            return None, f"深盘 |{float(p['line']):g}|≥{max_abs:g}，默认不进正式"
     mc = p.get("market_consensus") or {}
     if mc.get("pick_line") is not None and p.get("line") is not None:
         gap = abs(float(p["line"]) - float(mc["pick_line"]))

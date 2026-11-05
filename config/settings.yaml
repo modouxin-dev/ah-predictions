@@ -4,8 +4,8 @@ bot_name: 先知                    # 机器人名称（报告/推送/站点统�
 vip_password_sha256: "6d19ca72de1fe7973e5a763cdbaf47af34674d4f45a8a2cacd881b751d680a4f"
 timezone: "America/Los_Angeles"  # 用户时区（报告内时间统一用 UTC）
 report_window_hours: 36          # 覆盖未来多少小时开球的比赛
-max_picks_per_day: 3
-min_confidence_to_publish: high  # high | medium | low（见 policy）
+max_picks_per_day: 10             # 积累期目标每天 5–10 场，上限 10
+min_confidence_to_publish: medium  # high | medium | low（见 policy）；积累期正式发中及以上
 confidence_thresholds:           # analyze.score 加权分阈值
   high: 7.0
   medium: 4.5
@@ -31,9 +31,12 @@ push_rules:                      # 由 Grok Bot 定时任务执行（报告研�
     web: "https://modouxin-dev.github.io/ah-predictions/"
 
 # 准确率优先策略（宁可少推，不推不确定的场次）—— src/ah/policy.py
+# 积累期：正式发「中」及以上；样本够、模型稳后再收回「只发高」。深盘 |line|≥1.75 默认进观察。
 policy:
-  min_confidence_to_publish: 高      # 只发布「高」；中/低 进 JSON watchlist，不推送、不在网站展示为推荐
-  max_picks_per_day: 3
+  min_confidence_to_publish: 中      # 发布门槛：中及以上；低于门槛进 JSON watchlist，不推送、不展示为推荐
+  max_picks_per_day: 10             # 积累期目标每天 5–10 场，上限 10
+  max_abs_line_to_publish: 1.75     # |line|≥1.75 默认不进正式，进 watchlist（深盘）
+  hit_rate_by_confidence: true      # 高/中分账命中率（统计侧 by_confidence）
   require_real_odds: true
   consensus_alignment: "pick line within 0.25 of multi-book median, else downgrade or skip"
   alignment_tolerance: 0.25         # >0.25 降一档；>0.5 直接撤下
