@@ -58,7 +58,7 @@ def test_split_under_limit():
 def test_prematch_and_backtest():
     m = "\n".join(tg.prematch(PORTO, {"decision": "调整", "new_line": -0.5, "new_odds": 0.95,
                                        "confidence": "高", "reason": "r"}))
-    assert "🔎 赛前确认" in m and "🔄 调整" in m and "推荐 波尔图 -0.5 @0.95</b> ｜ 信心 🟢<b>高</b>" in m
+    assert "🔎 赛前确认" in m and "🔄 调整" in m and "仍推 波尔图 -0.5 @0.95</b> ｜ 信心 🟢<b>高</b>" in m
     kashima = REP["picks"][0]
     assert "❌ 撤销" in "".join(tg.prematch(kashima))
     b = "\n".join(tg.backtest(PORTO, {"score": "2-0", "settlement": "win", "units": 1.06, "review": "ok"}))
@@ -136,3 +136,40 @@ def test_split_hard_cuts_single_long_line_outside_entities():
     msgs = tg.split([line])
     assert len(msgs) > 1 and all(tg.tlen(x) <= tg.LIMIT for x in msgs)
     assert all(not x.endswith("&") and not x.startswith("amp;") for x in msgs)
+
+
+def test_prematch_declutter_first_screen_and_folds():
+    """临场复核减负：首屏短结论；首发/临场水位/早盘机构对比默认折叠；不含 main_line。"""
+    import json
+    from pathlib import Path
+    rep = json.loads((Path(__file__).resolve().parents[1] / "reports/2026/11/2026-11-05.json").read_text())
+    p = next(x for x in rep["picks"] if x["match_id"] == "apif-1630401")
+    msgs = tg.prematch(p)
+    m = "\n".join(msgs)
+    plain = tg.plain(m)
+    assert "决定：<b>🔄 调整</b> · 盘口不变、水位调整" in m
+    assert "仍推 町田泽维亚 -1.5 @0.96" in m and "信心" in m and "🟡" in m
+    assert "复核 11-05 17:19" in m and "主线一致" in m
+    assert "API-Football 已停用" in plain
+    # 首发 / 临场水位 / 早盘快照 都在 expandable 里
+    assert "展开首发" in m and "临场水位" in m and "早盘快照" in m
+    assert m.count("<blockquote expandable>") >= 3
+    # 首屏不把 22 人名单或 SBOBet 明细摊开在非 expandable 区块
+    # （名单只应出现在 expandable 内）
+    import re
+    non_exp = re.sub(r"<blockquote expandable>.*?</blockquote>", "", m, flags=re.S)
+    assert "谷晃生" not in non_exp and "SBOBet" not in non_exp
+    assert "谷晃生" in m and "SBOBet" in m
+    # 早盘快照水位是早间 1.02，不是临场 0.96
+    assert "-1.50  1.02  本推荐" in m
+    assert "main_line" not in m
+    assert policy.DISCLAIMER in m and m.rstrip().endswith("—— 先知")
+    for tag in ("b", "blockquote", "pre", "a"):
+        assert len(re.findall(f"<{tag}[ >]", m)) == m.count(f"</{tag}>"), tag
+
+
+def test_prematch_pending_still_omits_reason():
+    p = {"home": "X", "away": "Y", "pick_side": "home", "line": -0.5, "odds": 0.9, "league": "L"}
+    msg = "\n".join(tg.prematch(p, {}, None))
+    assert "📌" not in msg and "暂无" in msg and "—— 先知" in msg
+    assert "展开首发" not in msg and "早盘快照" not in msg

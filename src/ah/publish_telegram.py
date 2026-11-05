@@ -614,30 +614,219 @@ def prematch_of(p: dict) -> dict:
             "current_line": fc.get("current_line"), "sources": fc.get("sources", [])}
 
 
+def _pm_title(pm: dict, p: dict) -> str:
+    """决定旁的短注：盘口不变/调整水位等，不编造。优先结构化字段，否则取 reason 首句。"""
+    if pm.get("summary"):
+        return short(str(pm["summary"]), 28)
+    reason = str(pm.get("reason") or "").strip()
+    if not reason:
+        return ""
+    head = reason.split("：", 1)[0].split(":", 1)[0].strip()
+    if 4 <= len(head) <= 20 and "首发" not in head and "风险" not in head:
+        return head
+    return short(reason, 28)
+
+
+def _pm_split_reason(reason: str) -> tuple[str, str | None, str | None, list[str]]:
+    """从自由文本 reason 尽量拆：短结论、水位明细、首发明细、风险短句。拆不出则明细整段折叠。"""
+    reason = str(reason or "").strip()
+    if not reason:
+        return "", None, None, []
+    risks: list[str] = []
+    body, risk_part = reason, ""
+    for sep in ("风险：", "风险:"):
+        if sep in body:
+            body, risk_part = body.split(sep, 1)
+            break
+    if risk_part:
+        for bit in re.split(r"[；;]", risk_part):
+            bit = bit.strip(" 。．")
+            if bit:
+                risks.append(short(bit, 48))
+    lineup = None
+    books = None
+    m = re.search(r"((?:J联赛)?(?:官网)?首发已公布[：:]?)(.*)$", body)
+    if not m:
+        m = re.search(r"(首发[^；;]{0,12}公布[：:]?)(.*)$", body)
+    if m:
+        books = body[: m.start()].strip(" ；;。．")
+        lineup = (m.group(1) + m.group(2)).strip(" ；;。．")
+        lineup = re.sub(r"[。．]?\s*信心维持.?$", "", lineup).strip(" ；;。．")
+    else:
+        books = body.strip(" ；;。．") or None
+    title = ""
+    if books:
+        title = books.split("：", 1)[0].split(":", 1)[0].strip()
+    summary = title if 4 <= len(title) <= 20 and "首发" not in title else short(books or reason, 40)
+    if books and summary and books.startswith(summary):
+        rest = books[len(summary):].lstrip("：: ；;")
+        books = rest or books
+    return summary, books, lineup, risks
+
+
+def _pm_alignment(pm: dict, reason: str) -> str | None:
+    if pm.get("alignment"):
+        return str(pm["alignment"])
+    if "主线一致" in reason:
+        return "主线一致"
+    if "主线冲突消除" in reason:
+        return "主线一致（冲突已消除）"
+    return None
+
+
+def _pm_live_books_lines(pm: dict, books: str | None) -> list[str]:
+    """临场多家水位：优先 pm.live_books（list/str），否则用 reason 拆出的水位段。
+    自由文本按分号拆成至多 3 行，避免按逗号切碎括号内说明。"""
+    raw = pm.get("live_books")
+    if isinstance(raw, list) and raw:
+        return [e(short(str(x), 72)) for x in raw[:8]]
+    if isinstance(raw, str) and raw.strip():
+        return [e(short(raw.strip(), 160))]
+    if books:
+        parts = [x.strip(" ；;。．") for x in re.split(r"[；;]", books) if x.strip(" ；;。．")]
+        if len(parts) >= 2:
+            return [e(short(x, 120)) for x in parts[:3]]
+        return [e(short(books, 200))]
+    return []
+
+
+def _pm_lineup_lines(pm: dict, lineup: str | None) -> list[str]:
+    raw = pm.get("lineups") or pm.get("lineup_text")
+    if isinstance(raw, dict):
+        out = []
+        for side, label in (("home", "主队"), ("away", "客队")):
+            block = raw.get(side) or raw.get(label)
+            if isinstance(block, dict):
+                xi = block.get("starting_xi") or block.get("xi") or []
+                names = [x.get("name") if isinstance(x, dict) else str(x) for x in xi]
+                if names:
+                    out.append(e(f"{label}：" + "、".join(names[:11])))
+            elif isinstance(block, str) and block.strip():
+                out.append(e(f"{label}：{block.strip()}"))
+        if out:
+            return out
+    if isinstance(raw, str) and raw.strip():
+        return [e(x.strip()) for x in re.split(r"[；;]", raw) if x.strip()][:4]
+    if isinstance(raw, list) and raw:
+        return [e(str(x)) for x in raw[:4]]
+    if lineup:
+        parts = [x.strip(" 。．") for x in re.split(r"[；;]", lineup) if x.strip(" 。．")]
+        return [e(short(x, 96)) for x in parts[:4]] or [e(short(lineup, 160))]
+    return []
+
+
+def _pm_risk_lines(pm: dict, p: dict, parsed: list[str]) -> list[str]:
+    out: list[str] = []
+    for r in (pm.get("risks") or [])[:2]:
+        out.append(f"• {e(short(r, 56))}")
+    for r in parsed[:2]:
+        line = f"• {e(r)}"
+        if line not in out:
+            out.append(line)
+    if not out:
+        for r in (p.get("risks") or [])[:1]:
+            out.append(f"• {e(short(r, 56))}")
+    blob = " ".join([str(pm.get("reason") or ""), *[str(x) for x in (pm.get("risks") or [])],
+                     *[str(x) for x in (p.get("risks") or [])]])
+    if re.search(r"API-Football|api[_-]?football", blob, re.I):
+        note = "• API-Football 已停用，首发/伤停仅单源"
+        replaced = False
+        new_out = []
+        for x in out:
+            if re.search(r"API-Football|api[_-]?football", x, re.I):
+                if not replaced:
+                    new_out.append(note)
+                    replaced = True
+            else:
+                new_out.append(x)
+        if not replaced:
+            new_out.append(note)
+        out = new_out
+    return out[:3]
+
+
 def prematch(p: dict, pm: dict | None = None, stats: dict | None = None) -> list[str]:
+    """赛前确认（减负首屏）：推什么 → 为什么 → 风险 → 来源。
+
+    首屏只留结论/仍推/信心/复核时间/主线一致/风险短句；首发与多家水位默认
+    ``<blockquote expandable>`` 折叠。机构对比若仍是早报 ``market_consensus``，
+    标「早盘快照」并放折叠区。不读 ``main_line``。
+    """
     pm = pm or prematch_of(p)
-    dec = DECISION.get(pm.get("decision"), e(pm.get("decision") or "⏳ 暂无（尚未复核）"))
-    q = dict(p)
-    if pm.get("new_line") is not None:
-        q["line"], q["odds"] = pm["new_line"], pm.get("new_odds")
-    if pm.get("confidence"):
-        q["confidence"] = pm["confidence"]
+    dec_raw = pm.get("decision")
+    dec = DECISION.get(dec_raw, e(dec_raw or "⏳ 暂无（尚未复核）"))
+    reason = str(pm.get("reason") or "")
+    summary, books, lineup, parsed_risks = _pm_split_reason(reason)
+    title = _pm_title(pm, p) or summary
     when = f"\n🕐 复核 {bj(pm['checked_at'])} 北京时间" if pm.get("checked_at") else ""
-    head = f"<b>【先知】🔎 赛前确认</b>\n决定：<b>{dec}</b>{when}"
-    info = [f"📊 临场：{e(pm['current_line'])}"] if pm.get("current_line") else []
-    if pm.get("reason"):
-        info.append(f"📌 {e(pm['reason'])}")
+    head = f"<b>【先知】🔎 赛前确认</b>\n决定：<b>{dec}</b>" + (f" · {e(title)}" if title else "") + when
+
     if "撤销" in dec:
         odds = f" @{wt(p['odds'])}" if p.get("odds") is not None else ""
         body = (match_head(p) + f"\n🎯 原推荐 <s>{e(_team(p))} {ln(p['line'])}{odds}</s>\n⛔ 已撤销，不计入命中率")
-    else:
-        body = compact_block({**q, "reasons": [], "risks": []}, stats, show_sources=False)
-    if info:
-        body += "\n\n" + sec("🔎", "临场复核") + "\n" + quote(info)
-    srcs = pm.get("sources") or ([] if "撤销" in dec else p.get("sources"))
+        if reason:
+            body += "\n\n" + sec("🔎", "撤销说明") + "\n" + quote([e(short(reason, 120))])
+        srcs = pm.get("sources") or []
+        if srcs:
+            body += "\n\n" + "\n".join(sources_block(srcs[:4]))
+        return split([head, DIV + "\n" + body, DIV + "\n" + "\n".join(footer())])
+
+    q = dict(p)
+    if pm.get("new_line") is not None:
+        q["line"] = pm["new_line"]
+    if pm.get("new_odds") is not None:
+        q["odds"] = pm["new_odds"]
+    if pm.get("confidence"):
+        q["confidence"] = pm["confidence"]
+    conf_raw = q.get("confidence")
+    conf = CONF.get(conf_raw, str(conf_raw)) if conf_raw not in (None, "") else ""
+    odds = f" @{wt(q['odds'])}" if q.get("odds") is not None else ""
+    kept = dec_raw in ("保留", "keep", "调整", "adjust")
+    verb = "仍推" if kept else "推荐"
+    pick_line = f"🎯 <b>{verb} {e(_team(q))} {ln(q['line'])}{odds}</b>"
+    if conf:
+        pick_line += f" ｜ 信心 {CONF_ICON.get(conf, '')}<b>{e(conf)}</b>"
+
+    lines = [match_head(p), pick_line]
+    align = _pm_alignment(pm, reason)
+    if align:
+        lines.append(f"📊 {e(align)}")
+    if pm.get("current_line"):
+        lines.append(f"📍 临场：{e(pm['current_line'])}")
+
+    why = []
+    if title:
+        why.append(f"• {e(title)}")
+    elif summary:
+        why.append(f"• {e(summary)}")
+    if why:
+        lines += ["", sec("✅", "为什么推"), quote(why)]
+
+    risks = _pm_risk_lines(pm, p, parsed_risks)
+    if risks:
+        lines += ["", sec("⚠️", "风险在哪"), quote(risks)]
+
+    lu = _pm_lineup_lines(pm, lineup)
+    if lu:
+        lines += ["", sec("👥", "展开首发"), quote(lu, expandable=True)]
+
+    live = _pm_live_books_lines(pm, books)
+    if live:
+        lines += ["", sec("💧", "临场水位", "展开明细"), quote(live, expandable=True)]
+
+    # 早报机构对比与临场可能不一致 → 标「早盘快照」并折叠；不读 main_line
+    early_rows = tg_rows(p)
+    if len(early_rows) > 1:
+        lines += ["", sec("🏦", "机构对比", "早盘快照 · 盘口 · 水位 · 机构"),
+                  quote([num_table(early_rows)], expandable=True)]
+
+    srcs = pm.get("sources") or p.get("sources")
     if srcs:
-        body += "\n\n" + "\n".join(sources_block(srcs[:4]))
+        lines += ["", *sources_block(srcs[:4])]
+
+    body = "\n".join(lines)
     return split([head, DIV + "\n" + body, DIV + "\n" + "\n".join(footer())])
+
 
 
 def backtest(p: dict, res: dict | None = None, stats: dict | None = None) -> list[str]:
