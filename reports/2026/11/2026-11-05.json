@@ -1,352 +1,385 @@
 {
- "date": "2026-11-05",
- "generated_at": "2026-11-04T12:38:53Z",
- "edition": "early",
- "edition_note": "11-05 提前版（2026-11-04 约 20:40 北京时间生成），覆盖至 2026-11-06 00:00 北京时间开球的比赛；明早日报更新本文件，不另建",
- "odds_format": "HK (港盘水位，十进制赔率 = 1 + 水位)",
- "odds_source_note": "盘口：titan007 即时/初盘（今晚亚冠联2与欧冠）、The Odds API 8 家共识（欧冠）、API-Football Pinnacle 等 6 家（明日亚冠联2）、OddsPapi Pinnacle 初盘→即时（町田、巴吞联）；积分：football-data.org 欧冠积分榜。watchlist 中 ah_home_line 负数=主队让球。",
- "not_covered": "沙特联 阿布哈 vs 青年、哈卢德 vs 海湾 两场（API-Football 状态 PST 延期）；波尔图 vs 那不勒斯 已在 11-04 报告中，另有 03:10 赛前确认；欧联/英冠/巴甲等不在优先联赛范围。",
- "no_pick_reason": "欧冠 8 场、亚冠联2 12 场中，深盘/盘口已透支 9 场，盘口与基本面背离或逆向退盘 3 场，信号不足 5 场，中信心 3 场，临近开赛 1 场，无亚盘 1 场；最接近达标的是 BG巴吞联 -1.75、科莫 -0.5，均为中信心。",
- "screened": 20,
- "picks": [],
- "watched": [],
- "watchlist": [
-  {
-   "match_id": "apif-1635606",
-   "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
-   "home": "AEK雅典 AEK Athens",
-   "away": "皇家马德里 Real Madrid",
-   "kickoff_utc": "2026-11-04T17:45:00Z",
-   "ah_home_line": 2.0,
-   "ah_home_line_open": 1.5,
-   "confidence": "low",
-   "withheld_category": "深盘",
-   "withheld_reason": "皇马由-1.5升至-2（共识中位-2，6/8 家一致）；皇马欧冠3战全胜，但-2 深盘需净胜3球才全赢，盘口已透支",
-   "sources": [
-    "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)",
-    "https://the-odds-api.com/ (soccer_uefa_champs_league spreads, 8 家, 抓取约 12:38 UTC)",
-    "https://www.football-data.org/ (CL standings, 抓取约 12:50 UTC)"
-   ],
-   "consensus": {
-    "home_line": 2.0,
-    "agree": 6,
-    "bookmakers": 8,
-    "pinnacle": "AEK +2 @0.91 / 皇马 @0.99"
-   }
-  },
-  {
-   "match_id": "apif-1635658",
-   "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
-   "home": "费内巴切 Fenerbahçe",
-   "away": "利物浦 Liverpool",
-   "kickoff_utc": "2026-11-04T17:45:00Z",
-   "ah_home_line": 1.25,
-   "ah_home_line_open": 0.75,
-   "confidence": "low",
-   "withheld_category": "深盘+机构分歧",
-   "withheld_reason": "利物浦由-0.75升至-1.25，但8家公司盘口分散在-1/-1.25/-1.5（0家与中位一致）；利物浦24天第8场、格拉文贝赫缺阵将轮换，此前4次土耳其客场不胜；费内巴切欧冠0胜、后防缺奥斯特沃尔德/奥蓬",
-   "sources": [
-    "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)",
-    "https://the-odds-api.com/ (soccer_uefa_champs_league spreads, 8 家, 抓取约 12:38 UTC)",
-    "https://www.football-data.org/ (CL standings, 抓取约 12:50 UTC)",
-    "https://www.liverpoolfc.com/news/fenerbahce-v-liverpool-team-news-champions-league",
-    "https://www.si.com/soccer/fenerbahce-vs-liverpool-preview-predictions-lineups-11-4-26"
-   ],
-   "consensus": {
-    "home_line": 1.125,
-    "agree": 0,
-    "bookmakers": 8,
-    "pinnacle": "费内巴切 +1.25 @0.94 / 利物浦 @0.98"
-   }
-  },
-  {
-   "match_id": "apif-1635726",
-   "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
-   "home": "布拉格斯拉维亚 Slavia Praha",
-   "away": "阿森纳 Arsenal",
-   "kickoff_utc": "2026-11-04T20:00:00Z",
-   "ah_home_line": 1.75,
-   "ah_home_line_open": 1.75,
-   "confidence": "low",
-   "withheld_category": "深盘",
-   "withheld_reason": "阿森纳-1.75初即盘未变（共识中位-1.5，Pinnacle -1.75），深盘无变盘信号",
-   "sources": [
-    "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)",
-    "https://the-odds-api.com/ (soccer_uefa_champs_league spreads, 8 家, 抓取约 12:38 UTC)",
-    "https://www.football-data.org/ (CL standings, 抓取约 12:50 UTC)"
-   ]
-  },
-  {
-   "match_id": "apif-1635710",
-   "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
-   "home": "RB莱比锡 RB Leipzig",
-   "away": "曼城 Manchester City",
-   "kickoff_utc": "2026-11-04T20:00:00Z",
-   "ah_home_line": 1.0,
-   "ah_home_line_open": 1.0,
-   "confidence": "low",
-   "withheld_category": "深盘",
-   "withheld_reason": "曼城-1初即盘未变、曼城方水位0.80低水但无升盘；曼城欧冠2胜1负，方向不清",
-   "sources": [
-    "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)",
-    "https://the-odds-api.com/ (soccer_uefa_champs_league spreads, 8 家, 抓取约 12:38 UTC)",
-    "https://www.football-data.org/ (CL standings, 抓取约 12:50 UTC)"
-   ]
-  },
-  {
-   "match_id": "apif-1635651",
-   "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
-   "home": "多特蒙德 Borussia Dortmund",
-   "away": "皇家贝蒂斯 Real Betis",
-   "kickoff_utc": "2026-11-04T20:00:00Z",
-   "ah_home_line": -0.75,
-   "ah_home_line_open": -0.75,
-   "confidence": "low",
-   "withheld_category": "信号不足",
-   "withheld_reason": "多特-0.75初即盘未变，机构分歧大（-0.5~-1.5，仅2/8家一致）；贝蒂斯欧冠3战全胜，与主让盘口不一致",
-   "sources": [
-    "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)",
-    "https://the-odds-api.com/ (soccer_uefa_champs_league spreads, 8 家, 抓取约 12:38 UTC)",
-    "https://www.football-data.org/ (CL standings, 抓取约 12:50 UTC)"
-   ]
-  },
-  {
-   "match_id": "apif-1635707",
-   "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
-   "home": "埃因霍温 PSV Eindhoven",
-   "away": "布鲁日 Club Brugge",
-   "kickoff_utc": "2026-11-04T20:00:00Z",
-   "ah_home_line": -0.5,
-   "ah_home_line_open": 0.0,
-   "confidence": "low",
-   "withheld_category": "盘口与基本面背离",
-   "withheld_reason": "PSV由平手升至让半，但布鲁日欧冠2胜（含客胜国米）、PSV欧冠1胜1平1负且缺万纳/拉莫斯/舒滕/普莱亚等6人，盘口与基本面背离",
-   "sources": [
-    "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)",
-    "https://the-odds-api.com/ (soccer_uefa_champs_league spreads, 8 家, 抓取约 12:38 UTC)",
-    "https://www.football-data.org/ (CL standings, 抓取约 12:50 UTC)",
-    "https://sports.yahoo.com/articles/psv-vs-club-brugge-champions-063034119.html"
-   ]
-  },
-  {
-   "match_id": "apif-1635681",
-   "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
-   "home": "朗斯 RC Lens",
-   "away": "科莫 Como",
-   "kickoff_utc": "2026-11-04T20:00:00Z",
-   "ah_home_line": 0.5,
-   "ah_home_line_open": 0.25,
-   "confidence": "medium",
-   "withheld_category": "信心不足（中）",
-   "withheld_reason": "科莫由-0.25升至-0.5（共识中位-0.5，5/8家一致），科莫欧冠2胜1负进10球、朗斯1胜2负失7球，方向一致；但客队、未获可靠伤停信息，仅中信心",
-   "sources": [
-    "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)",
-    "https://the-odds-api.com/ (soccer_uefa_champs_league spreads, 8 家, 抓取约 12:38 UTC)",
-    "https://www.football-data.org/ (CL standings, 抓取约 12:50 UTC)"
-   ]
-  },
-  {
-   "match_id": "apif-1635745",
-   "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
-   "home": "维京 Viking",
-   "away": "萨巴赫 Sabah",
-   "kickoff_utc": "2026-11-04T20:00:00Z",
-   "ah_home_line": -1.5,
-   "ah_home_line_open": -1.0,
-   "confidence": "low",
-   "withheld_category": "盘口与基本面背离",
-   "withheld_reason": "维京由-1升至-1.5，但维京欧冠0胜1平2负失9球，深盘与战绩背离",
-   "sources": [
-    "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)",
-    "https://the-odds-api.com/ (soccer_uefa_champs_league spreads, 8 家, 抓取约 12:38 UTC)",
-    "https://www.football-data.org/ (CL standings, 抓取约 12:50 UTC)"
-   ]
-  },
-  {
-   "match_id": "apif-1630393",
-   "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
-   "home": "阿卡达格 Arkadag",
-   "away": "高尔高赫 Gol Gohar",
-   "kickoff_utc": "2026-11-04T13:45:00Z",
-   "ah_home_line": -0.75,
-   "ah_home_line_open": -0.25,
-   "confidence": "low",
-   "withheld_category": "临近开赛",
-   "withheld_reason": "阿卡达格由-0.25升至-0.75，但开球时间 21:45 北京时间，报告发布时（约 20:40 北京时间）距开赛约 1 小时，来不及完成研究与赛前确认",
-   "sources": [
-    "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)"
-   ]
-  },
-  {
-   "match_id": "apif-1630394",
-   "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
-   "home": "科威特竞技 Al Kuwait",
-   "away": "纳萨夫 Nasaf",
-   "kickoff_utc": "2026-11-04T16:00:00Z",
-   "ah_home_line": 0.0,
-   "ah_home_line_open": 0.0,
-   "confidence": "low",
-   "withheld_category": "信号不足",
-   "withheld_reason": "平手盘初即盘未变，无方向信号",
-   "sources": [
-    "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)"
-   ]
-  },
-  {
-   "match_id": "apif-1630395",
-   "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
-   "home": "赖扬 Al-Rayyan",
-   "away": "拿达 Al-Nahda",
-   "kickoff_utc": "2026-11-04T16:00:00Z",
-   "ah_home_line": -1.25,
-   "ah_home_line_open": -1.25,
-   "confidence": "low",
-   "withheld_category": "深盘",
-   "withheld_reason": "赖扬-1.25初即盘未变，深盘无信号",
-   "sources": [
-    "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)"
-   ]
-  },
-  {
-   "match_id": "apif-1630396",
-   "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
-   "home": "阿布扎比统一 Al Wahda",
-   "away": "哈尔迪亚 Khalidiya",
-   "kickoff_utc": "2026-11-04T16:00:00Z",
-   "ah_home_line": -1.0,
-   "ah_home_line_open": -1.0,
-   "confidence": "low",
-   "withheld_category": "深盘",
-   "withheld_reason": "阿布扎比统一-1初即盘未变，深盘无信号",
-   "sources": [
-    "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)"
-   ]
-  },
-  {
-   "match_id": "apif-1630397",
-   "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
-   "home": "慕哈瑞克 Muharraq",
-   "away": "阿布扎比半岛 Al-Jazira",
-   "kickoff_utc": "2026-11-04T18:15:00Z",
-   "ah_home_line": 0.5,
-   "ah_home_line_open": 0.75,
-   "confidence": "low",
-   "withheld_category": "逆向退盘",
-   "withheld_reason": "半岛由-0.75退至-0.5，盘口逆向，不推",
-   "sources": [
-    "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)"
-   ]
-  },
-  {
-   "match_id": "apif-1630398",
-   "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
-   "home": "布赖代合作 Al Taawon",
-   "away": "阿尔费萨里 Al Faisaly",
-   "kickoff_utc": "2026-11-04T18:15:00Z",
-   "ah_home_line": -0.75,
-   "ah_home_line_open": -0.75,
-   "confidence": "low",
-   "withheld_category": "信号不足",
-   "withheld_reason": "合作-0.75初即盘未变，无方向信号",
-   "sources": [
-    "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)"
-   ]
-  },
-  {
-   "match_id": "apif-1630399",
-   "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
-   "home": "杰志 Kitchee",
-   "away": "金边皇冠 Phnom Penh Crown",
-   "kickoff_utc": "2026-11-05T10:00:00Z",
-   "ah_home_line": -0.25,
-   "ah_home_line_open": null,
-   "confidence": "low",
-   "withheld_category": "信号不足",
-   "withheld_reason": "Pinnacle 杰志-0.25；未取得初盘/变盘数据（OddsPapi 历史接口限流），无法判断走势",
-   "sources": [
-    "API-Football /odds (Pinnacle 等 6 家, 抓取约 12:36 UTC)"
-   ]
-  },
-  {
-   "match_id": "apif-1630400",
-   "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
-   "home": "狮城水手 Lion City Sailors",
-   "away": "阿德莱德联 Adelaide United",
-   "kickoff_utc": "2026-11-05T10:00:00Z",
-   "ah_home_line": -0.5,
-   "ah_home_line_open": null,
-   "confidence": "low",
-   "withheld_category": "信号不足",
-   "withheld_reason": "Pinnacle 狮城水手-0.5（@0.80/0.96），狮城水手小组7分居首、阿德莱德6分；未取得变盘数据，强弱接近",
-   "sources": [
-    "API-Football /odds (Pinnacle 等 6 家, 抓取约 12:36 UTC)",
-    "https://www.espn.com/soccer/match/_/gameId/401912758/tai-po-fc-bg-pathum-united"
-   ]
-  },
-  {
-   "match_id": "apif-1630401",
-   "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
-   "home": "町田泽维亚 Machida Zelvia",
-   "away": "上海申花 Shanghai Shenhua",
-   "kickoff_utc": "2026-11-05T10:00:00Z",
-   "ah_home_line": -1.25,
-   "ah_home_line_open": -1.25,
-   "confidence": "medium",
-   "withheld_category": "深盘",
-   "withheld_reason": "Pinnacle 初盘町田-1.25，即时-1.25/-1.5之间，主胜1.369→1.358 小幅流向町田；町田小组9分全胜、上周客胜申花1-0（轮换8人），但两队上次仅差1球，-1.25 需净胜2球，仅中信心",
-   "sources": [
-    "API-Football /odds (Pinnacle 等 6 家, 抓取约 12:36 UTC)",
-    "https://oddspapi.io/ (Pinnacle historical-odds 初盘→即时)",
-    "https://www.the-afc.com/en/club/afc_champions_league_two.html/news/kuroda-pleased-with-machida%E2%80%99s-depth-milojevic-promises-shenhua-rebound"
-   ]
-  },
-  {
-   "match_id": "apif-1630404",
-   "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
-   "home": "柴桢 Svay Rieng",
-   "away": "淡滨尼流浪 Tampines Rovers",
-   "kickoff_utc": "2026-11-05T12:15:00Z",
-   "ah_home_line": -1.25,
-   "ah_home_line_open": null,
-   "confidence": "low",
-   "withheld_category": "深盘",
-   "withheld_reason": "Pinnacle 柴桢-1.25（@0.93/0.83），无变盘数据，深盘",
-   "sources": [
-    "API-Football /odds (Pinnacle 等 6 家, 抓取约 12:36 UTC)"
-   ]
-  },
-  {
-   "match_id": "apif-1630402",
-   "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
-   "home": "古晋城 Kuching City",
-   "away": "江原FC Gangwon",
-   "kickoff_utc": "2026-11-05T12:15:00Z",
-   "ah_home_line": null,
-   "ah_home_line_open": null,
-   "confidence": null,
-   "withheld_category": "无盘口",
-   "withheld_reason": "API-Football 无亚盘数据，按规则不推",
-   "sources": [
-    "API-Football /odds (Pinnacle 等 6 家, 抓取约 12:36 UTC)"
-   ]
-  },
-  {
-   "match_id": "apif-1630403",
-   "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
-   "home": "BG巴吞联 BG Pathum United",
-   "away": "大埔 Tai Po",
-   "kickoff_utc": "2026-11-05T12:15:00Z",
-   "ah_home_line": -1.75,
-   "ah_home_line_open": -1.25,
-   "confidence": "medium",
-   "withheld_category": "深盘/盘口已透支",
-   "withheld_reason": "Pinnacle 由-1.25升至-1.75、主胜1.371→1.24，资金明显流向巴吞联；大埔小组3战全负0进球失7球、上周主场0-3负巴吞联。但-1.75 已超过模型预期净胜约1.5球，价值被吃掉，仅中信心；明早 09:09 日报再复核",
-   "sources": [
-    "API-Football /odds (Pinnacle 等 6 家, 抓取约 12:36 UTC)",
-    "https://oddspapi.io/ (Pinnacle historical-odds 初盘→即时)",
-    "https://www.espn.com/soccer/match/_/gameId/401912758/tai-po-fc-bg-pathum-united",
-    "https://thethao247.vn/63-nhan-dinh-pathum-united-vs-tai-po-co-hoi-ap-sat-nhom-dau-19h15-ngay-5-11-2026-c288-d443754.html"
-   ]
-  }
- ]
+  "date": "2026-11-05",
+  "generated_at": "2026-11-05T08:42:24Z",
+  "edition": "rescreen-policy-medium",
+  "edition_note": "2026-11-05 北京时间 16:42 按新门槛重筛：正式发中及以上、日上限10、深盘|线|≥1.75挡；仅纳入尚未开球场次。升入正式 1 场。",
+  "odds_format": "HK (港盘水位，十进制赔率 = 1 + 水位)",
+  "odds_source_note": "盘口：titan007 即时/初盘（今晚亚冠联2与欧冠）、The Odds API 8 家共识（欧冠）、API-Football Pinnacle 等 6 家（明日亚冠联2）、OddsPapi Pinnacle 初盘→即时（町田、巴吞联）；积分：football-data.org 欧冠积分榜。watchlist 中 ah_home_line 负数=主队让球。",
+  "not_covered": "沙特联 阿布哈 vs 青年、哈卢德 vs 海湾 两场（API-Football 状态 PST 延期）；波尔图 vs 那不勒斯 已在 11-04 报告中，另有 03:10 赛前确认；欧联/英冠/巴甲等不在优先联赛范围。",
+  "no_pick_reason": "",
+  "screened": 20,
+  "picks": [
+    {
+      "match_id": "apif-1630401",
+      "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
+      "home": "町田泽维亚 Machida Zelvia",
+      "away": "上海申花 Shanghai Shenhua",
+      "kickoff_utc": "2026-11-05T10:00:00Z",
+      "pick_side": "home",
+      "pick_team": "町田泽维亚",
+      "line": -1.5,
+      "line_open": -1.25,
+      "odds": 1.02,
+      "confidence": "medium",
+      "score": 5.0,
+      "reasons": [
+        "Pinnacle 初盘町田-1.25，即时升至主线-1.5（oddspapi），主胜小数赔小幅走低，资金倾向主队",
+        "町田小组9分全胜；上周客场1-0击败申花（当时轮换8人），状态与交锋占优",
+        "按积累期门槛（中及以上、|线|<1.75）升入正式推荐；深盘≥1.75 的巴吞联仍观察"
+      ],
+      "risks": [
+        "多家主线冲突（oddspapi -1.5 vs api_football -1.25），以 oddspapi Pinnacle 为准",
+        "让-1.5：仅赢1球可能输半/走水；临场升盘或伤停变化，赛前约50分钟可撤销"
+      ],
+      "sources": [
+        "https://oddspapi.io/",
+        "https://www.the-afc.com/en/club/afc_champions_league_two.html/news/kuroda-pleased-with-machida%E2%80%99s-depth-milojevic-promises-shenhua-rebound"
+      ],
+      "market_consensus": {
+        "source": "odds_snapshots report-stage is_main median",
+        "bookmakers": 8,
+        "agree": 4,
+        "home_line": -1.25,
+        "pick_line": -1.25,
+        "pick_water": 1.02,
+        "lines": [
+          -1.5,
+          -1.5,
+          -1.5,
+          -1.25,
+          -1.25,
+          -1.25,
+          -1.25,
+          -1.0
+        ],
+        "pinnacle": {
+          "pick_line": -1.5,
+          "pick_water": 1.02
+        }
+      }
+    }
+  ],
+  "watched": [],
+  "watchlist": [
+    {
+      "match_id": "apif-1635606",
+      "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
+      "home": "AEK雅典 AEK Athens",
+      "away": "皇家马德里 Real Madrid",
+      "kickoff_utc": "2026-11-04T17:45:00Z",
+      "ah_home_line": 2.0,
+      "ah_home_line_open": 1.5,
+      "confidence": "low",
+      "withheld_category": "深盘",
+      "withheld_reason": "皇马由-1.5升至-2（共识中位-2，6/8 家一致）；皇马欧冠3战全胜，但-2 深盘需净胜3球才全赢，盘口已透支",
+      "sources": [
+        "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)",
+        "https://the-odds-api.com/ (soccer_uefa_champs_league spreads, 8 家, 抓取约 12:38 UTC)",
+        "https://www.football-data.org/ (CL standings, 抓取约 12:50 UTC)"
+      ],
+      "consensus": {
+        "home_line": 2.0,
+        "agree": 6,
+        "bookmakers": 8,
+        "pinnacle": "AEK +2 @0.91 / 皇马 @0.99"
+      }
+    },
+    {
+      "match_id": "apif-1635658",
+      "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
+      "home": "费内巴切 Fenerbahçe",
+      "away": "利物浦 Liverpool",
+      "kickoff_utc": "2026-11-04T17:45:00Z",
+      "ah_home_line": 1.25,
+      "ah_home_line_open": 0.75,
+      "confidence": "low",
+      "withheld_category": "深盘+机构分歧",
+      "withheld_reason": "利物浦由-0.75升至-1.25，但8家公司盘口分散在-1/-1.25/-1.5（0家与中位一致）；利物浦24天第8场、格拉文贝赫缺阵将轮换，此前4次土耳其客场不胜；费内巴切欧冠0胜、后防缺奥斯特沃尔德/奥蓬",
+      "sources": [
+        "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)",
+        "https://the-odds-api.com/ (soccer_uefa_champs_league spreads, 8 家, 抓取约 12:38 UTC)",
+        "https://www.football-data.org/ (CL standings, 抓取约 12:50 UTC)",
+        "https://www.liverpoolfc.com/news/fenerbahce-v-liverpool-team-news-champions-league",
+        "https://www.si.com/soccer/fenerbahce-vs-liverpool-preview-predictions-lineups-11-4-26"
+      ],
+      "consensus": {
+        "home_line": 1.125,
+        "agree": 0,
+        "bookmakers": 8,
+        "pinnacle": "费内巴切 +1.25 @0.94 / 利物浦 @0.98"
+      }
+    },
+    {
+      "match_id": "apif-1635726",
+      "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
+      "home": "布拉格斯拉维亚 Slavia Praha",
+      "away": "阿森纳 Arsenal",
+      "kickoff_utc": "2026-11-04T20:00:00Z",
+      "ah_home_line": 1.75,
+      "ah_home_line_open": 1.75,
+      "confidence": "low",
+      "withheld_category": "深盘",
+      "withheld_reason": "阿森纳-1.75初即盘未变（共识中位-1.5，Pinnacle -1.75），深盘无变盘信号",
+      "sources": [
+        "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)",
+        "https://the-odds-api.com/ (soccer_uefa_champs_league spreads, 8 家, 抓取约 12:38 UTC)",
+        "https://www.football-data.org/ (CL standings, 抓取约 12:50 UTC)"
+      ]
+    },
+    {
+      "match_id": "apif-1635710",
+      "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
+      "home": "RB莱比锡 RB Leipzig",
+      "away": "曼城 Manchester City",
+      "kickoff_utc": "2026-11-04T20:00:00Z",
+      "ah_home_line": 1.0,
+      "ah_home_line_open": 1.0,
+      "confidence": "low",
+      "withheld_category": "深盘",
+      "withheld_reason": "曼城-1初即盘未变、曼城方水位0.80低水但无升盘；曼城欧冠2胜1负，方向不清",
+      "sources": [
+        "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)",
+        "https://the-odds-api.com/ (soccer_uefa_champs_league spreads, 8 家, 抓取约 12:38 UTC)",
+        "https://www.football-data.org/ (CL standings, 抓取约 12:50 UTC)"
+      ]
+    },
+    {
+      "match_id": "apif-1635651",
+      "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
+      "home": "多特蒙德 Borussia Dortmund",
+      "away": "皇家贝蒂斯 Real Betis",
+      "kickoff_utc": "2026-11-04T20:00:00Z",
+      "ah_home_line": -0.75,
+      "ah_home_line_open": -0.75,
+      "confidence": "low",
+      "withheld_category": "信号不足",
+      "withheld_reason": "多特-0.75初即盘未变，机构分歧大（-0.5~-1.5，仅2/8家一致）；贝蒂斯欧冠3战全胜，与主让盘口不一致",
+      "sources": [
+        "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)",
+        "https://the-odds-api.com/ (soccer_uefa_champs_league spreads, 8 家, 抓取约 12:38 UTC)",
+        "https://www.football-data.org/ (CL standings, 抓取约 12:50 UTC)"
+      ]
+    },
+    {
+      "match_id": "apif-1635707",
+      "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
+      "home": "埃因霍温 PSV Eindhoven",
+      "away": "布鲁日 Club Brugge",
+      "kickoff_utc": "2026-11-04T20:00:00Z",
+      "ah_home_line": -0.5,
+      "ah_home_line_open": 0.0,
+      "confidence": "low",
+      "withheld_category": "盘口与基本面背离",
+      "withheld_reason": "PSV由平手升至让半，但布鲁日欧冠2胜（含客胜国米）、PSV欧冠1胜1平1负且缺万纳/拉莫斯/舒滕/普莱亚等6人，盘口与基本面背离",
+      "sources": [
+        "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)",
+        "https://the-odds-api.com/ (soccer_uefa_champs_league spreads, 8 家, 抓取约 12:38 UTC)",
+        "https://www.football-data.org/ (CL standings, 抓取约 12:50 UTC)",
+        "https://sports.yahoo.com/articles/psv-vs-club-brugge-champions-063034119.html"
+      ]
+    },
+    {
+      "match_id": "apif-1635681",
+      "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
+      "home": "朗斯 RC Lens",
+      "away": "科莫 Como",
+      "kickoff_utc": "2026-11-04T20:00:00Z",
+      "ah_home_line": 0.5,
+      "ah_home_line_open": 0.25,
+      "confidence": "medium",
+      "withheld_category": "已开球",
+      "withheld_reason": "已开球（北京时间 11-05 04:00），新门槛下不补推；原：科莫由-0.25升至-0.5（共识中位-0.5，5/8家一致），科莫欧冠2胜1负进10球、朗斯1胜2负失7球，方向一致；但客队、未获可靠伤停信息，仅中信心",
+      "sources": [
+        "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)",
+        "https://the-odds-api.com/ (soccer_uefa_champs_league spreads, 8 家, 抓取约 12:38 UTC)",
+        "https://www.football-data.org/ (CL standings, 抓取约 12:50 UTC)"
+      ]
+    },
+    {
+      "match_id": "apif-1635745",
+      "league": "UEFA Champions League（欧冠 联赛阶段第4轮）",
+      "home": "维京 Viking",
+      "away": "萨巴赫 Sabah",
+      "kickoff_utc": "2026-11-04T20:00:00Z",
+      "ah_home_line": -1.5,
+      "ah_home_line_open": -1.0,
+      "confidence": "low",
+      "withheld_category": "盘口与基本面背离",
+      "withheld_reason": "维京由-1升至-1.5，但维京欧冠0胜1平2负失9球，深盘与战绩背离",
+      "sources": [
+        "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)",
+        "https://the-odds-api.com/ (soccer_uefa_champs_league spreads, 8 家, 抓取约 12:38 UTC)",
+        "https://www.football-data.org/ (CL standings, 抓取约 12:50 UTC)"
+      ]
+    },
+    {
+      "match_id": "apif-1630393",
+      "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
+      "home": "阿卡达格 Arkadag",
+      "away": "高尔高赫 Gol Gohar",
+      "kickoff_utc": "2026-11-04T13:45:00Z",
+      "ah_home_line": -0.75,
+      "ah_home_line_open": -0.25,
+      "confidence": "low",
+      "withheld_category": "临近开赛",
+      "withheld_reason": "阿卡达格由-0.25升至-0.75，但开球时间 21:45 北京时间，报告发布时（约 20:40 北京时间）距开赛约 1 小时，来不及完成研究与赛前确认",
+      "sources": [
+        "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)"
+      ]
+    },
+    {
+      "match_id": "apif-1630394",
+      "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
+      "home": "科威特竞技 Al Kuwait",
+      "away": "纳萨夫 Nasaf",
+      "kickoff_utc": "2026-11-04T16:00:00Z",
+      "ah_home_line": 0.0,
+      "ah_home_line_open": 0.0,
+      "confidence": "low",
+      "withheld_category": "信号不足",
+      "withheld_reason": "平手盘初即盘未变，无方向信号",
+      "sources": [
+        "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)"
+      ]
+    },
+    {
+      "match_id": "apif-1630395",
+      "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
+      "home": "赖扬 Al-Rayyan",
+      "away": "拿达 Al-Nahda",
+      "kickoff_utc": "2026-11-04T16:00:00Z",
+      "ah_home_line": -1.25,
+      "ah_home_line_open": -1.25,
+      "confidence": "low",
+      "withheld_category": "深盘",
+      "withheld_reason": "赖扬-1.25初即盘未变，深盘无信号",
+      "sources": [
+        "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)"
+      ]
+    },
+    {
+      "match_id": "apif-1630396",
+      "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
+      "home": "阿布扎比统一 Al Wahda",
+      "away": "哈尔迪亚 Khalidiya",
+      "kickoff_utc": "2026-11-04T16:00:00Z",
+      "ah_home_line": -1.0,
+      "ah_home_line_open": -1.0,
+      "confidence": "low",
+      "withheld_category": "深盘",
+      "withheld_reason": "阿布扎比统一-1初即盘未变，深盘无信号",
+      "sources": [
+        "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)"
+      ]
+    },
+    {
+      "match_id": "apif-1630397",
+      "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
+      "home": "慕哈瑞克 Muharraq",
+      "away": "阿布扎比半岛 Al-Jazira",
+      "kickoff_utc": "2026-11-04T18:15:00Z",
+      "ah_home_line": 0.5,
+      "ah_home_line_open": 0.75,
+      "confidence": "low",
+      "withheld_category": "逆向退盘",
+      "withheld_reason": "半岛由-0.75退至-0.5，盘口逆向，不推",
+      "sources": [
+        "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)"
+      ]
+    },
+    {
+      "match_id": "apif-1630398",
+      "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
+      "home": "布赖代合作 Al Taawon",
+      "away": "阿尔费萨里 Al Faisaly",
+      "kickoff_utc": "2026-11-04T18:15:00Z",
+      "ah_home_line": -0.75,
+      "ah_home_line_open": -0.75,
+      "confidence": "low",
+      "withheld_category": "信号不足",
+      "withheld_reason": "合作-0.75初即盘未变，无方向信号",
+      "sources": [
+        "https://live.titan007.com/vbsxml/goal3.xml (抓取约 2026-11-04 12:35 UTC)"
+      ]
+    },
+    {
+      "match_id": "apif-1630399",
+      "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
+      "home": "杰志 Kitchee",
+      "away": "金边皇冠 Phnom Penh Crown",
+      "kickoff_utc": "2026-11-05T10:00:00Z",
+      "ah_home_line": -0.25,
+      "ah_home_line_open": null,
+      "confidence": "low",
+      "withheld_category": "信号不足",
+      "withheld_reason": "Pinnacle 杰志-0.25；未取得初盘/变盘数据（OddsPapi 历史接口限流），无法判断走势",
+      "sources": [
+        "API-Football /odds (Pinnacle 等 6 家, 抓取约 12:36 UTC)"
+      ]
+    },
+    {
+      "match_id": "apif-1630400",
+      "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
+      "home": "狮城水手 Lion City Sailors",
+      "away": "阿德莱德联 Adelaide United",
+      "kickoff_utc": "2026-11-05T10:00:00Z",
+      "ah_home_line": -0.5,
+      "ah_home_line_open": null,
+      "confidence": "low",
+      "withheld_category": "信号不足",
+      "withheld_reason": "Pinnacle 狮城水手-0.5（@0.80/0.96），狮城水手小组7分居首、阿德莱德6分；未取得变盘数据，强弱接近",
+      "sources": [
+        "API-Football /odds (Pinnacle 等 6 家, 抓取约 12:36 UTC)",
+        "https://www.espn.com/soccer/match/_/gameId/401912758/tai-po-fc-bg-pathum-united"
+      ]
+    },
+    {
+      "match_id": "apif-1630404",
+      "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
+      "home": "柴桢 Svay Rieng",
+      "away": "淡滨尼流浪 Tampines Rovers",
+      "kickoff_utc": "2026-11-05T12:15:00Z",
+      "ah_home_line": -1.25,
+      "ah_home_line_open": null,
+      "confidence": "low",
+      "withheld_category": "深盘",
+      "withheld_reason": "Pinnacle 柴桢-1.25（@0.93/0.83），无变盘数据，深盘",
+      "sources": [
+        "API-Football /odds (Pinnacle 等 6 家, 抓取约 12:36 UTC)"
+      ]
+    },
+    {
+      "match_id": "apif-1630402",
+      "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
+      "home": "古晋城 Kuching City",
+      "away": "江原FC Gangwon",
+      "kickoff_utc": "2026-11-05T12:15:00Z",
+      "ah_home_line": null,
+      "ah_home_line_open": null,
+      "confidence": null,
+      "withheld_category": "无盘口",
+      "withheld_reason": "API-Football 无亚盘数据，按规则不推",
+      "sources": [
+        "API-Football /odds (Pinnacle 等 6 家, 抓取约 12:36 UTC)"
+      ]
+    },
+    {
+      "match_id": "apif-1630403",
+      "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
+      "home": "BG巴吞联 BG Pathum United",
+      "away": "大埔 Tai Po",
+      "kickoff_utc": "2026-11-05T12:15:00Z",
+      "ah_home_line": -1.75,
+      "ah_home_line_open": -1.25,
+      "confidence": "medium",
+      "withheld_category": "深盘",
+      "withheld_reason": "深盘 |-1.75|≥1.75，默认不进正式（新门槛）；原：Pinnacle 由-1.25升至-1.75、主胜1.371→1.24，资金明显流向巴吞联；大埔小组3战全负0进球失7球、上周主场0-3负巴吞联。但-1.75 已超过模型预期净胜约1.5球，价值被吃掉，仅中信心；明早 09:09 日报再复核",
+      "sources": [
+        "API-Football /odds (Pinnacle 等 6 家, 抓取约 12:36 UTC)",
+        "https://oddspapi.io/ (Pinnacle historical-odds 初盘→即时)",
+        "https://www.espn.com/soccer/match/_/gameId/401912758/tai-po-fc-bg-pathum-united",
+        "https://thethao247.vn/63-nhan-dinh-pathum-united-vs-tai-po-co-hoi-ap-sat-nhom-dau-19h15-ngay-5-11-2026-c288-d443754.html"
+      ]
+    }
+  ]
 }
