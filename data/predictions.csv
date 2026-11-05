@@ -1,4 +1,4 @@
 date,match_id,league,home,away,kickoff_utc,pick_side,pick,line,odds_if_known,confidence,result,ah_outcome,units,settled,odds_format,odds_estimated,status,final_line,final_odds,track,model_id,model_version,market,overlap
 2026-11-04,titan007-3068888,AFC Champions League Elite（亚冠精英·东区 第4轮）,武里南联 Buriram United,鹿岛鹿角 Kashima Antlers,2026-11-04T12:15:00Z,away,鹿岛鹿角,-0.75,0.78,medium,,void,0,true,hk,false,cancelled,-0.25,0.92,official,,,ah,
 2026-11-04,titan007-3073152,UEFA Champions League（欧冠 联赛阶段第4轮）,波尔图 Porto,那不勒斯 Napoli,2026-11-04T20:00:00Z,home,波尔图,-0.75,1.06,medium,4-1,win,1.06,true,hk,false,active,,,official,,,ah,
-2026-11-05,apif-1630401,AFC Champions League Two（亚冠联2 小组赛第4轮）,町田泽维亚 Machida Zelvia,上海申花 Shanghai Shenhua,2026-11-05T10:00:00Z,home,町田泽维亚,-1.5,0.96,medium,,,,false,hk,false,active,-1.5,0.96,official,,,ah,
+2026-11-05,apif-1630401,AFC Champions League Two（亚冠联2 小组赛第4轮）,町田泽维亚 Machida Zelvia,上海申花 Shanghai Shenhua,2026-11-05T10:00:00Z,home,町田泽维亚,-1.5,0.96,medium,2-1,loss,-1.0,true,hk,false,active,-1.5,0.96,official,,,ah,

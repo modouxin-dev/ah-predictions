@@ -68,6 +68,17 @@
      "https://www.jleague.jp/en/match/acl2/2026/110503/",
      "https://oddspapi.io/"
     ]
+   },
+   "result": {
+    "score": "2-1",
+    "settlement": "loss",
+    "settlement_cn": "输",
+    "units": -1.0,
+    "line": -1.5,
+    "odds": 0.96,
+    "review": null,
+    "settled_at": "2026-11-05T12:24:13Z",
+    "sources": []
    }
   }
  ],

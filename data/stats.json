@@ -1,22 +1,22 @@
 {
-  "updated_at": "2026-11-05T09:19:44Z",
+  "updated_at": "2026-11-05T12:24:13Z",
   "hit_rate_definition": "(win + 0.5*half_win)/(picks - push - void)",
   "roi_definition": "units/(picks - push - void)（每注1单位）",
   "cancelled_definition": "cancelled = 赛前撤销场数（已计入 void，不计入命中率/ROI）",
   "overall": {
-    "picks": 2,
+    "picks": 3,
     "win": 1,
     "half_win": 0,
     "push": 0,
     "half_loss": 0,
-    "loss": 0,
+    "loss": 1,
     "void": 1,
-    "hit_rate": 1.0,
-    "units": 1.06,
-    "roi": 1.06,
+    "hit_rate": 0.5,
+    "units": 0.06,
+    "roi": 0.03,
     "cancelled": 1,
     "odds_estimated": 0,
-    "decided": 1,
+    "decided": 2,
     "hits": 1.0
   },
   "odds_estimated": {
@@ -43,6 +43,22 @@
       "decided": 0,
       "hits": 0.0
     },
+    "AFC Champions League Two（亚冠联2 小组赛第4轮）": {
+      "picks": 1,
+      "win": 0,
+      "half_win": 0,
+      "push": 0,
+      "half_loss": 0,
+      "loss": 1,
+      "void": 0,
+      "hit_rate": 0.0,
+      "units": -1.0,
+      "roi": -1.0,
+      "cancelled": 0,
+      "odds_estimated": 0,
+      "decided": 1,
+      "hits": 0.0
+    },
     "UEFA Champions League（欧冠 联赛阶段第4轮）": {
       "picks": 1,
       "win": 1,
@@ -62,19 +78,19 @@
   },
   "by_confidence": {
     "中": {
-      "picks": 2,
+      "picks": 3,
       "win": 1,
       "half_win": 0,
       "push": 0,
       "half_loss": 0,
-      "loss": 0,
+      "loss": 1,
       "void": 1,
-      "hit_rate": 1.0,
-      "units": 1.06,
-      "roi": 1.06,
+      "hit_rate": 0.5,
+      "units": 0.06,
+      "roi": 0.03,
       "cancelled": 1,
       "odds_estimated": 0,
-      "decided": 1,
+      "decided": 2,
       "hits": 1.0
     }
   },
@@ -94,6 +110,22 @@
       "odds_estimated": 0,
       "decided": 1,
       "hits": 1.0
+    },
+    "-1.5": {
+      "picks": 1,
+      "win": 0,
+      "half_win": 0,
+      "push": 0,
+      "half_loss": 0,
+      "loss": 1,
+      "void": 0,
+      "hit_rate": 0.0,
+      "units": -1.0,
+      "roi": -1.0,
+      "cancelled": 0,
+      "odds_estimated": 0,
+      "decided": 1,
+      "hits": 0.0
     }
   },
   "by_depth": {
@@ -112,23 +144,39 @@
       "odds_estimated": 0,
       "decided": 1,
       "hits": 1.0
+    },
+    "深盘 ≥1.25": {
+      "picks": 1,
+      "win": 0,
+      "half_win": 0,
+      "push": 0,
+      "half_loss": 0,
+      "loss": 1,
+      "void": 0,
+      "hit_rate": 0.0,
+      "units": -1.0,
+      "roi": -1.0,
+      "cancelled": 0,
+      "odds_estimated": 0,
+      "decided": 1,
+      "hits": 0.0
     }
   },
   "by_role": {
     "让球方（上盘）": {
-      "picks": 2,
+      "picks": 3,
       "win": 1,
       "half_win": 0,
       "push": 0,
       "half_loss": 0,
-      "loss": 0,
+      "loss": 1,
       "void": 1,
-      "hit_rate": 1.0,
-      "units": 1.06,
-      "roi": 1.06,
+      "hit_rate": 0.5,
+      "units": 0.06,
+      "roi": 0.03,
       "cancelled": 1,
       "odds_estimated": 0,
-      "decided": 1,
+      "decided": 2,
       "hits": 1.0
     }
   },
@@ -143,6 +191,17 @@
       "units": 1.06,
       "odds_estimated": false,
       "cum_units": 1.06
+    },
+    {
+      "date": "2026-11-05",
+      "kickoff_utc": "2026-11-05T10:00:00Z",
+      "match_id": "apif-1630401",
+      "match": "町田泽维亚 Machida Zelvia vs 上海申花 Shanghai Shenhua",
+      "league": "AFC Champions League Two（亚冠联2 小组赛第4轮）",
+      "outcome": "loss",
+      "units": -1.0,
+      "odds_estimated": false,
+      "cum_units": 0.06
     }
   ]
 }
