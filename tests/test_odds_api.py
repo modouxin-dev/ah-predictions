@@ -76,3 +76,15 @@ def test_cross_check_graceful(tmp_path):
     bad = odds_api.OddsAPI(key="k", session=Sess({}, status=500), usage_file=tmp_path / "u2.json")
     assert cross_check_odds_api("x", client=bad) == {}
     assert cross_check_odds_api("x", client=odds_api.OddsAPI(key="", usage_file=tmp_path / "u3.json")) == {}
+
+
+def test_consensus_mode_tie_breaks():
+    lines = [
+        {"home_line": -0.5, "home_hk": 0.9, "away_hk": 0.95},
+        {"home_line": -0.25, "home_hk": 0.85, "away_hk": 1.0},
+        {"home_line": -0.5, "home_hk": 0.92, "away_hk": 0.93},
+        {"home_line": -0.25, "home_hk": 0.88, "away_hk": 0.98},
+    ]
+    assert odds_api.consensus(lines, pinnacle_main=-0.25)["home_line"] == -0.25
+    assert odds_api.consensus(lines, pinnacle_main=-0.5)["home_line"] == -0.5
+    assert odds_api.consensus(lines)["home_line"] == -0.25  # 无 Pinnacle：|line| 较小

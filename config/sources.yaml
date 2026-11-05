@@ -235,4 +235,8 @@ odds_snapshots:
                  keep_remaining: 20, note: "只有当前盘，不覆盖亚冠二级/卡塔尔"}
     api_football: {endpoint: "/odds?fixture", cost: "1/场（日 100）", mode: auto, floor: 30,
                    note: "auto：只在 Odds API 没覆盖时用"}
-  verification: "同一公司 ≥2 来源同一主盘线且两边赔率差 ≤0.06 → verified；主盘线不同但同一条线赔率差 ≤0.06 → verified_ladder（仅辅助证据，不能单独满足签发门槛）；否则 conflict；单源 single；无数据 missing"
+  main_line: "完整盘口去水后主队概率最接近 0.5 的线，优先 Pinnacle；单线来源/公司（odds_api、1xbet/coolbet/marathonbet 等）只核价"
+  single_line_sources: [odds_api]
+  single_line_bookmakers: [1xbet, coolbet, marathonbet, betanything, gtbets, betonline, matchbook]
+  overround_warn: 0.06          # 超过则 status_detail 标 high_overround；亚冠联2 Pinnacle 实测同期 6.5–8.4%（非拼价）
+  verification: "同一公司 ≥2 来源同一主盘线且两边赔率差 ≤0.06 → verified；主盘线不同但同线价差 ≤0.06 → conflict+same_market（不算 verified）；同主线价差 >0.06 → conflict+same_line_price_diff；单源 single；无数据 missing。取消 verified_ladder"

@@ -126,16 +126,26 @@ def normalize_spreads(event: dict) -> list[dict]:
     return out
 
 
-def consensus(lines: list[dict]) -> dict | None:
+def consensus(lines: list[dict], pinnacle_main: float | None = None) -> dict | None:
+    """共识盘口：取众数；并列时取离 Pinnacle 主线更近的，没有 Pinnacle 则取绝对值较小的。"""
     if not lines:
         return None
+    from collections import Counter
     hl = [x["home_line"] for x in lines]
-    med = statistics.median(hl)
-    at = [x for x in lines if x["home_line"] == med] or lines
-    return {"home_line": med, "bookmakers": len(lines), "lines": sorted(set(hl)),
+    c = Counter(hl)
+    top = max(c.values())
+    modes = sorted(x for x, n in c.items() if n == top)
+    if len(modes) == 1:
+        chosen = modes[0]
+    elif pinnacle_main is not None:
+        chosen = min(modes, key=lambda x: (abs(x - pinnacle_main), abs(x), x))
+    else:
+        chosen = min(modes, key=lambda x: (abs(x), x))
+    at = [x for x in lines if x["home_line"] == chosen] or lines
+    return {"home_line": chosen, "bookmakers": len(lines), "lines": sorted(set(hl)),
             "home_hk": round(statistics.median(x["home_hk"] for x in at), 3),
             "away_hk": round(statistics.median(x["away_hk"] for x in at), 3),
-            "agree": sum(1 for x in hl if x == med)}
+            "agree": sum(1 for x in hl if x == chosen)}
 
 
 def is_quarter(line: float) -> bool:

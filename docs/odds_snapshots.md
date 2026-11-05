@@ -29,9 +29,10 @@
 | `odds_home` / `odds_away` | 该盘口线的主队 / 客队赔率 |
 | `odds_format` | 固定 `decimal`（十进制，含本金）；港盘水位 = 十进制 − 1，另见 `home_hk` / `away_hk` |
 | `source` | `oddspapi`（/historical-odds）、`odds_api`（The Odds API spreads）、`api_football`（/odds）；missing 行为空 |
-| `verification` | 行级（同一公司、同一时点）：≥2 个来源**主盘线相同且该线两边赔率差都 ≤0.06** = `verified`（真正的两源一致）；主盘线不同，但同一条线在两个来源里都有、两边赔率差都 ≤0.06（同一市场，只是主盘选线不同）= `verified_ladder`，`status_detail` 标 `ladder_price_match`；其余 = `conflict`（同一主线但赔率差 >0.06 时 `status_detail` 标 `same_line_price_diff`，多为两源抓取时间不同）；只有一个来源 = `single`；无数据 = `missing` |
-| `match_verification` | 场级：每个来源取各公司主盘线的众数（并列取中位偏低）作为该源共识；共同公司 = ≥2 个来源都有的公司。共同公司有 `conflict` = `conflict`；否则有 `verified_ladder` = `verified_ladder`；否则共识一致或共同公司全 `verified` = `verified`；共识不同且没有共同公司 = `conflict`；1 个来源 = `single`；无数据 = `missing`。summary.json 的 `counts` 把 `verified_ladder` 单独计数 |
-| `is_main` | `1` = 该公司主盘（两边赔率最接近的线）；`0` = 主盘 ±0.5 以内的相邻线（方便在推荐盘口上直接算 CLV）。验证只看主盘 |
+| `verification` | 行级（同一公司、同一时点）：≥2 个来源**主盘线相同且该线两边赔率差都 ≤0.06** = `verified`；主盘线不同但同一条线两边赔率差都 ≤0.06 = `conflict`，`status_detail` 标 `same_market`（不算 verified）；同一主线但赔率差 >0.06 = `conflict`，标 `same_line_price_diff`；只有一个来源 = `single`；无数据 = `missing`。不再使用 `verified_ladder` |
+| `match_verification` | 场级：每个来源取各公司主盘线的众数（并列取离 Pinnacle 主线更近，无则绝对值较小）作为该源共识；共同公司 = ≥2 个来源都有的公司。共同公司有 `conflict` = `conflict`；否则共识一致或共同公司全 `verified` = `verified`；共识不同且没有共同公司 = `conflict`；1 个来源 = `single`；无数据 = `missing` |
+| `is_main` | `1` = 完整盘口里去水后主队概率最接近 0.5 的线（优先 Pinnacle）；单线来源/公司仅当其线等于该主线时才为 1。`0` = 相邻线。验证只看主盘 |
+| `overround` | `1/odds_home + 1/odds_away - 1`；超过阈值（默认 0.06）时 `status_detail` 标 `high_overround` |
 | `home_hk` / `away_hk` | 港盘水位 |
 | `as_of` | 该记录代表的时刻（UTC）：open = 开盘时刻；report = 运行时刻或 `--as-of`；close = min(运行时刻, 开赛前 1 秒) |
 | `price_ts` | 价格本身的时间戳（OddsPapi createdAt / The Odds API last_update / API-Football update）；无则空 |
@@ -39,7 +40,9 @@
 | `status_detail` | missing 行写各来源原因，如 `oddspapi:not_covered; live_sources:no_history` |
 | `source_ref` | 来源侧 id（OddsPapi fixtureId、The Odds API event id、API-Football fixture id） |
 
-**签发门槛：推荐的那条线本身（该公司、该时点、推荐的 `ah_home_line`）必须是普通 `verified`。`verified_ladder` 只能算辅助证据**（说明两个来源报的是同一个市场、价格一致，但两源没有选同一条主盘线），不能单独满足门槛；`single`、`conflict`、`missing` 更不能。
+**签发门槛：推荐的那条线本身必须是 `verified`。`same_market` 只能算辅助证据**（说明两个来源报的是同一个市场、价格一致，但主盘选线不同），不能单独满足门槛；`single`、`conflict`、`missing` 更不能。
+
+公开函数 `main_line(date, match_id, stage="report", bookmaker="pinnacle")`：读快照里该场该时点的主线（新路径优先，旧路径回退）。
 
 CLV 用法提示：取 `stage=close, source=oddspapi, bookmaker=pinnacle`，在推荐的同一 `ah_home_line` 上读 `odds_home/odds_away`（相邻线已存），去水后与下注赔率比较。
 

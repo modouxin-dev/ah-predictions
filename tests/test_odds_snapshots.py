@@ -84,71 +84,82 @@ def test_assign_status_levels():
     assert st[("d", "report")]["verification"] == "missing" and rows[-1]["verification"] == "missing"
 
 
-def test_verified_ladder_is_separate_from_verified():
+def test_same_market_is_not_verified():
     def r(src, line, oh, oa, main="1"):
         return {"match_id": "m", "stage": "report", "source": src, "bookmaker": "pinnacle", "ah_home_line": line,
                 "odds_home": oh, "odds_away": oa, "is_main": main}
-    # 主盘线不同（1.0 vs 1.25），但 1.0 这条线两边都有、赔率差 ≤0.06 → verified_ladder（不是 verified）
-    rows = [r("odds_api", 1.0, 2.10, 1.84), r("oddspapi", 1.25, 1.83, 2.06), r("oddspapi", 1.0, 2.09, 1.85, "0")]
+    # 主盘线不同（1.0 vs 1.25），但 1.0 这条线两边都有、赔率差 ≤0.06 → conflict + same_market（不是 verified）
+    rows = [r("odds_api", 1.0, 2.10, 1.84), r("oddspapi", 1.25, 1.833, 2.06),
+            r("oddspapi", 1.0, 2.09, 1.85, "0"), r("oddspapi", 1.5, 1.66, 2.28, "0")]
     st = snap.assign_status(rows)
-    assert st[("m", "report")]["verification"] == "verified_ladder"
-    assert all(x["verification"] == "verified_ladder" for x in rows)
-    assert all(x["match_verification"] == "verified_ladder" for x in rows)
-    assert "ladder_price_match" in rows[0]["status_detail"]
-    assert st[("m", "report")]["book_status"] == {"verified_ladder": 1}
-    # 同一条主线、赔率一致 → 普通 verified，且清掉旧的 ladder_price_match 标记
-    rows[1].update(ah_home_line=1.0, odds_home=2.11, odds_away=1.83)
-    rows[2].update(ah_home_line=1.25, odds_home=1.83, odds_away=2.06)
+    assert st[("m", "report")]["verification"] == "conflict"
+    assert "same_market" in rows[0]["status_detail"]
+    assert "verified_ladder" not in snap.STATUSES
+    # 同一条主线、赔率一致 → verified（+1.0 去水后更接近 0.5，是真正主线）
+    rows = [r("odds_api", 1.0, 1.95, 1.95), r("oddspapi", 1.0, 1.96, 1.94),
+            r("oddspapi", 1.25, 1.70, 2.20, "0")]
     st = snap.assign_status(rows)
     assert st[("m", "report")]["verification"] == "verified" and rows[0]["verification"] == "verified"
-    assert "ladder_price_match" not in rows[0]["status_detail"]
-    # 同一条主线但赔率差 > 0.06 → conflict（不是 verified），标 same_line_price_diff
+    assert rows[0]["is_main"] == "1" and rows[1]["is_main"] == "1"
+    assert "same_market" not in rows[0]["status_detail"]
+    # 同一条主线但赔率差 > 0.06 → conflict，标 same_line_price_diff
     rows[1]["odds_home"] = 2.30
     st = snap.assign_status(rows)
     assert st[("m", "report")]["verification"] == "conflict" and rows[0]["verification"] == "conflict"
     assert "same_line_price_diff" in rows[0]["status_detail"]
-    # 主盘线不同且同一线赔率差太多 → conflict
-    rows = [r("odds_api", 1.0, 2.10, 1.84), r("oddspapi", 1.25, 1.83, 2.06), r("oddspapi", 1.0, 2.30, 1.70, "0")]
-    st = snap.assign_status(rows)
-    assert st[("m", "report")]["verification"] == "conflict" and rows[0]["verification"] == "conflict"
 
 
-def test_match_level_ladder_with_consensus_agreeing():
-    # 两个来源共识线一致（-0.5），但共同公司 pinnacle 只是 ladder 一致 → 场级 verified_ladder
-    rows = [row("x", "report", "oddspapi", "pinnacle", -0.75, oh=2.05, oa=1.85),
-            row("x", "report", "oddspapi", "pinnacle", -0.5, "0", oh=1.80, oa=2.10),
-            row("x", "report", "oddspapi", "sbobet", -0.5), row("x", "report", "oddspapi", "singbet", -0.5),
-            row("x", "report", "odds_api", "pinnacle", -0.5, oh=1.82, oa=2.08),
-            row("x", "report", "odds_api", "1xbet", -0.5), row("x", "report", "odds_api", "bet365", -0.5)]
-    st = snap.assign_status(rows)
-    assert st[("x", "report")]["verification"] == "verified_ladder"
-    assert rows[0]["verification"] == "verified_ladder" and rows[2]["verification"] == "single"
+def test_pick_main_novig_leipzig_example():
+    # apif-1635710：Pinnacle +1.25 @1.833/2.06 去水主队概率 0.529；+1.0 @2.10/1.84 → 0.467 → 主线 +1.25
+    lad = [(1.0, 2.10, 1.84, None), (1.25, 1.833, 2.06, None), (0.75, 2.36, 1.653, None), (1.5, 1.662, 2.28, None)]
+    assert snap.pick_main(lad)[:3] == (1.25, 1.833, 2.06)
+    assert abs(snap.home_novig(1.833, 2.06) - 0.5) < abs(snap.home_novig(2.10, 1.84) - 0.5)
+
+
+def test_single_line_book_is_main_only_if_matches_pinnacle():
+    rows = [
+        row("m", "report", "oddspapi", "pinnacle", 1.25, oh=1.833, oa=2.06),
+        row("m", "report", "oddspapi", "pinnacle", 1.0, "0", oh=2.10, oa=1.84),
+        row("m", "report", "oddspapi", "pinnacle", 1.5, "0", oh=1.66, oa=2.28),
+        row("m", "report", "odds_api", "pinnacle", 1.0, oh=2.10, oa=1.84),
+        row("m", "report", "odds_api", "1xbet", 1.5, oh=1.69, oa=2.36),
+        row("m", "report", "odds_api", "matchbook", 1.25, oh=1.87, oa=2.12),
+    ]
+    snap.assign_status(rows)
+    pin = {(r["source"], float(r["ah_home_line"])): r["is_main"] for r in rows if r["bookmaker"] == "pinnacle"}
+    assert pin[("oddspapi", 1.25)] == "1" and pin[("oddspapi", 1.0)] == "0"
+    assert pin[("odds_api", 1.0)] == "0"   # 单线 ≠ 主线
+    assert next(r["is_main"] for r in rows if r["bookmaker"] == "1xbet") == "0"
+    assert next(r["is_main"] for r in rows if r["bookmaker"] == "matchbook") == "1"  # 线等于主线
 
 
 def test_match_level_consensus_differs_but_common_book_verified():
     # 共同公司 pinnacle 两源同线同价 → verified；各源其它公司让共识线不同，不影响
     rows = [row("y", "report", "oddspapi", "pinnacle", 1.25), row("y", "report", "odds_api", "pinnacle", 1.25),
-            row("y", "report", "odds_api", "1xbet", 1.0), row("y", "report", "odds_api", "bet365", 1.0)]
+            row("y", "report", "odds_api", "bet365", 1.0), row("y", "report", "oddspapi", "sbobet", 1.25)]
     st = snap.assign_status(rows)
     assert st[("y", "report")]["verification"] == "verified" and rows[0]["verification"] == "verified"
-    # 共识线不同、没有共同公司 → conflict
+    # 共识线不同、没有共同公司：各公司都是 single → 场级 single（没有可核对的共同公司）
     rows = [row("z", "report", "oddspapi", "sbobet", 1.25), row("z", "report", "odds_api", "1xbet", 1.0)]
-    assert snap.assign_status(rows)[("z", "report")]["verification"] == "conflict"
+    assert snap.assign_status(rows)[("z", "report")]["verification"] == "single"
+    # 两个完整盘口来源、主线不同、无共同公司 → conflict
+    rows = [row("z2", "report", "oddspapi", "sbobet", 1.25), row("z2", "report", "api_football", "dafabet", 1.0)]
+    assert snap.assign_status(rows)[("z2", "report")]["verification"] == "conflict"
 
 
-def test_summary_counts_verified_ladder_separately(tmp_path):
+def test_summary_counts_no_verified_ladder(tmp_path):
     ms = [{"match_id": f"apif-{i}", "fixture_id": i, "kickoff_utc": "2026-11-05T10:00:00Z", "league": "L",
            "league_id": "l", "home": "A", "away": "B", "list": "watchlist"} for i in (1, 2)]
     base = {"captured_at": "2026-11-04T10:00:00Z", "kickoff_utc": "2026-11-05T10:00:00Z", "odds_format": "decimal"}
     rows = [{**base, **row("apif-1", "report", "oddspapi", "pinnacle", -0.5)},
             {**base, **row("apif-1", "report", "odds_api", "pinnacle", -0.5)},
             {**base, **row("apif-2", "report", "odds_api", "pinnacle", 1.0, oh=2.10, oa=1.84)},
-            {**base, **row("apif-2", "report", "oddspapi", "pinnacle", 1.25, oh=1.83, oa=2.06)},
+            {**base, **row("apif-2", "report", "oddspapi", "pinnacle", 1.25, oh=1.833, oa=2.06)},
             {**base, **row("apif-2", "report", "oddspapi", "pinnacle", 1.0, "0", oh=2.09, oa=1.85)}]
     snap.write_rows(tmp_path / "s" / "2026-11-05.csv", rows)
     d = snap.write_summary("2026-11-05", ms, [], {}, ["report"], {}, snap_dir=tmp_path / "s", now=NOW)
-    assert d["counts"]["report"] == {"verified": 1, "verified_ladder": 1}
-    assert "verified_ladder" in snap.STATUSES
+    assert d["counts"]["report"] == {"verified": 1, "conflict": 1}
+    assert "verified_ladder" not in snap.STATUSES
 
 
 def test_slug_and_screened():
@@ -257,8 +268,10 @@ def test_run_report_and_open(tmp_path):
     rep_main = [r for r in p if r["stage"] == "report" and r["is_main"] == "1"]
     by = {(r["source"], r["bookmaker"]): r for r in rep_main}
     assert by[("oddspapi", "pinnacle")]["ah_home_line"] == "-0.5" and by[("oddspapi", "pinnacle")]["home_hk"] == "0.92" and by[("oddspapi", "pinnacle")]["odds_format"] == "decimal"
-    assert by[("odds_api", "pinnacle")]["ah_home_line"] == "-0.25"
-    assert res["verification"][("apif-100", "report")]["verification"] in ("conflict", "verified", "verified_ladder")
+    # odds_api 只有单线 -0.25，与 oddspapi 主线 -0.5 不同 → 不标 is_main，只核价
+    oa_pin = [r for r in p if r["stage"] == "report" and r["source"] == "odds_api" and r["bookmaker"] == "pinnacle"]
+    assert oa_pin and oa_pin[0]["ah_home_line"] == "-0.25" and oa_pin[0]["is_main"] == "0"
+    assert res["verification"][("apif-100", "report")]["verification"] in ("conflict", "verified", "single")
     op_ = [r for r in p if r["stage"] == "open" and r["is_main"] == "1"]
     assert {r["ah_home_line"] for r in op_} == {"-0.25"} and all(r["source"] == "oddspapi" for r in op_)
     assert res["verification"][("apif-100", "open")]["verification"] == "single"
@@ -460,3 +473,36 @@ def test_close_rows_carried_from_legacy_and_not_refetched(tmp_path):
     assert {key(r) for r in old_rows} <= {key(r) for r in new_rows}
     assert any(r["match_id"] == "apif-200" for r in new_rows)
     assert not (legacy / "2026-11-05.csv").read_text() == ""   # 旧文件不动
+
+
+def test_main_line_reads_new_path_and_legacy_fallback(tmp_path, monkeypatch):
+    new, old = tmp_path / "snapshots" / "odds", tmp_path / "odds_snapshots"
+    monkeypatch.setattr(snap, "SNAP_DIR", new)
+    monkeypatch.setattr(snap, "LEGACY_SNAP_DIR", old)
+    base = {"match_id": "apif-1", "stage": "report", "bookmaker": "pinnacle", "source": "oddspapi",
+            "is_main": "1", "ah_home_line": "-0.5", "odds_home": "1.90", "odds_away": "1.95",
+            "odds_format": "decimal", "captured_at": "2026-11-04T10:00:00Z", "verification": "single",
+            "kickoff_utc": "2026-11-05T10:00:00Z"}
+    old.mkdir(parents=True)
+    snap.write_rows(old / "2026-11-05.csv", [dict(base)])
+    ml = snap.main_line("2026-11-05", "apif-1")
+    assert ml["ah_home_line"] == -0.5 and ml["source"] == "oddspapi"
+    new.mkdir(parents=True)
+    snap.write_rows(new / "2026-11-05.csv", [{**base, "ah_home_line": "-0.25", "odds_home": "1.88", "odds_away": "1.98"}])
+    assert snap.main_line("2026-11-05", "apif-1")["ah_home_line"] == -0.25
+    assert snap.main_line("2026-11-05", "missing") is None
+
+
+def test_consensus_line_mode_tie_breaks():
+    # 众数并列：离 Pinnacle 更近
+    assert snap._consensus_line([-0.5, -0.25, -0.5, -0.25], pinnacle_main=-0.25) == -0.25
+    assert snap._consensus_line([-0.5, -0.25, -0.5, -0.25], pinnacle_main=-0.5) == -0.5
+    # 无 Pinnacle：取绝对值较小
+    assert snap._consensus_line([1.0, -0.5, 1.0, -0.5]) == -0.5
+
+
+def test_overround_and_high_flag():
+    rows = [row("a", "report", "oddspapi", "pinnacle", -0.25, oh=1.884, oa=1.813)]
+    snap.assign_status(rows)
+    assert abs(float(rows[0]["overround"]) - round(1/1.884 + 1/1.813 - 1, 4)) < 1e-9
+    assert "high_overround" in rows[0]["status_detail"]
