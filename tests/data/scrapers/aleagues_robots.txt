@@ -1,0 +1,56 @@
+User-agent: *
+
+# WordPress admin and login
+Disallow: /wp-admin/
+Disallow: /wp-login.php
+Allow: /wp-admin/admin-ajax.php
+
+# Social share links
+Disallow: /*?share=
+Disallow: /*&share=
+Disallow: /*?nb=
+Disallow: /*&nb=
+
+# Campaign and click tracking
+Disallow: /*?utm_source=
+Disallow: /*&utm_source=
+Disallow: /*?utm_medium=
+Disallow: /*&utm_medium=
+Disallow: /*?utm_campaign=
+Disallow: /*&utm_campaign=
+Disallow: /*?utm_content=
+Disallow: /*&utm_content=
+Disallow: /*?utm_term=
+Disallow: /*&utm_term=
+Disallow: /*?fbclid=
+Disallow: /*&fbclid=
+Disallow: /*?gclid=
+Disallow: /*&gclid=
+Disallow: /*?lid=
+Disallow: /*&lid=
+Disallow: /*?ref=
+Disallow: /*&ref=
+
+# Internal search
+Disallow: /*?s=
+Disallow: /*&s=
+
+# Interactivity directive values read as relative links (ALT-1855)
+Disallow: /*/context.
+Disallow: /*/state.
+Disallow: /*/callbacks.
+
+# Legacy Match Centre tabs (tabs are now #tab= fragments)
+Disallow: /*?tab=
+Disallow: /*&tab=
+
+# App state and loader endpoints
+Disallow: /*?destination=
+Disallow: /*?apiIdentifier=
+Disallow: /*&apiIdentifier=
+Disallow: /*?showform=
+Disallow: /*?post_type=
+Disallow: /*&post_type=
+Disallow: /fixtures/loaders/
+
+Sitemap: https://aleagues.com.au/sitemap_index.xml

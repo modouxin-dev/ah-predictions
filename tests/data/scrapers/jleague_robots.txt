@@ -1,0 +1,25 @@
+User-Agent:*
+Disallow: /en/photo/
+Disallow: /sp/en/photo/
+Disallow: /jtk/
+Disallow: /underConstruction.html
+Disallow: /match/*/201*
+Disallow: /sp/match/*/201*
+Disallow: /en/match/*/201*
+Disallow: /sp/en/match/*/201*
+Disallow: /jheader/
+Disallow: /application/
+Disallow: /tv/search/*/201*
+Disallow: /sp/tv/search/*/201*
+Disallow: /radio/*/201*
+Disallow: /sp/radio/*/201*
+Disallow: /photogallery/*/special/article/*
+Disallow: /sp/photogallery/*/special/article/*
+Disallow: /photogallery/special/article/*
+Disallow: /form/support/*
+Disallow: /img/aboutj/regulation/20.pdf
+
+User-Agent: spider
+Disallow: /
+
+Sitemap: https://www.jleague.jp/sitemap.xml

@@ -35,6 +35,14 @@ SOURCES = {
                    "limit": 60, "period": "小时", "url": "https://5dollarfootballapi.com/"},
     "titan007": {"name": "titan007（球探）", "role": "备用：即时赛程与默认公司盘口",
                  "limit": None, "period": None, "url": "https://live.titan007.com/"},
+    "scraper_jleague": {"name": "J.League 官网（爬虫）", "role": "J1/J2/J3 及日本球队亚冠赛事的官方首发",
+                        "limit": None, "period": None, "url": "https://www.jleague.jp/"},
+    "scraper_afc": {"name": "AFC 官网（爬虫）", "role": "亚冠官方首发（页面依赖 JS 渲染，暂不可用）",
+                    "limit": None, "period": None, "url": "https://www.the-afc.com/"},
+    "scraper_aleagues": {"name": "A-Leagues 官网（爬虫）", "role": "澳超官方首发（比赛中心依赖 JS/Opta，暂不可用）",
+                         "limit": None, "period": None, "url": "https://aleagues.com.au/"},
+    "scraper_spl": {"name": "沙特联官网（爬虫）", "role": "条款禁止机器人访问，已停用",
+                    "limit": None, "period": None, "url": "https://www.spl.com.sa/"},
 }
 
 
@@ -86,8 +94,9 @@ def load_latest(snapshot: Path) -> dict:
 
 
 def record(source: str, ok: bool, error: str | None = None, quota: dict | None = None,
-           at: str | None = None, p: Path | None = None) -> None:
-    """记录一次真实请求结果。永不抛异常（状态记录失败不影响数据抓取）。"""
+           at: str | None = None, p: Path | None = None, extra: dict | None = None) -> None:
+    """记录一次真实请求结果。永不抛异常（状态记录失败不影响数据抓取）。
+    extra：inc_failures/reset_failures 维护 consecutive_failures（爬虫告警用）；其余键原样写入。"""
     try:
         p = p or path()
         d = load(p)
@@ -99,6 +108,13 @@ def record(source: str, ok: bool, error: str | None = None, quota: dict | None =
         else:
             s["last_error_at"] = t
             s["last_error"] = sanitize(error or "未知错误")
+        ex = dict(extra or {})
+        if ex.pop("inc_failures", False):
+            s["consecutive_failures"] = int(s.get("consecutive_failures", 0)) + 1
+        if ex.pop("reset_failures", False):
+            s["consecutive_failures"] = 0
+        for k, v in ex.items():
+            s[k] = sanitize(v) if isinstance(v, str) else v
         if quota:
             q = {k: v for k, v in quota.items() if v is not None}
             if q:

@@ -1,0 +1,53 @@
+[
+ {
+  "fixture": {
+   "id": 1629973,
+   "date": "2026-11-04T10:00:00+00:00"
+  },
+  "league": {
+   "id": 17
+  },
+  "teams": {
+   "home": {
+    "name": "Pohang Steelers"
+   },
+   "away": {
+    "name": "Gamba Osaka"
+   }
+  }
+ },
+ {
+  "fixture": {
+   "id": 1630392,
+   "date": "2026-11-04T10:00:00+00:00"
+  },
+  "league": {
+   "id": 18
+  },
+  "teams": {
+   "home": {
+    "name": "FC Seoul"
+   },
+   "away": {
+    "name": "Viettel"
+   }
+  }
+ },
+ {
+  "fixture": {
+   "id": 1629974,
+   "date": "2026-11-04T12:15:00+00:00"
+  },
+  "league": {
+   "id": 17
+  },
+  "teams": {
+   "home": {
+    "name": "Buriram United"
+   },
+   "away": {
+    "name": "Kashima"
+   }
+  }
+ }
+]

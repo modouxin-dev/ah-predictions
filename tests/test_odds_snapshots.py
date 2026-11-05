@@ -65,8 +65,9 @@ def test_ladder_rows_window():
     assert [m for _, m in rows].count(True) == 1 and rows[2][1]
 
 
-def row(mid, ph, src, book, line, main="1"):
-    return {"match_id": mid, "stage": ph, "source": src, "bookmaker": book, "ah_home_line": line, "is_main": main}
+def row(mid, ph, src, book, line, main="1", oh=1.90, oa=1.90):
+    return {"match_id": mid, "stage": ph, "source": src, "bookmaker": book, "ah_home_line": line, "is_main": main,
+            "odds_home": oh, "odds_away": oa}
 
 
 def test_assign_status_levels():
@@ -83,19 +84,82 @@ def test_assign_status_levels():
     assert st[("d", "report")]["verification"] == "missing" and rows[-1]["verification"] == "missing"
 
 
-def test_ladder_price_match_counts_as_verified():
+def test_same_market_is_not_verified():
     def r(src, line, oh, oa, main="1"):
         return {"match_id": "m", "stage": "report", "source": src, "bookmaker": "pinnacle", "ah_home_line": line,
                 "odds_home": oh, "odds_away": oa, "is_main": main}
-    rows = [r("odds_api", 1.0, 2.10, 1.84), r("oddspapi", 1.25, 1.83, 2.06), r("oddspapi", 1.0, 2.09, 1.85, "0")]
+    # 主盘线不同（1.0 vs 1.25），但 1.0 这条线两边都有、赔率差 ≤0.06 → conflict + same_market（不是 verified）
+    rows = [r("odds_api", 1.0, 2.10, 1.84), r("oddspapi", 1.25, 1.833, 2.06),
+            r("oddspapi", 1.0, 2.09, 1.85, "0"), r("oddspapi", 1.5, 1.66, 2.28, "0")]
     st = snap.assign_status(rows)
-    assert st[("m", "report")]["verification"] == "verified"
-    assert all(x["verification"] == "verified" for x in rows) and "ladder_price_match" in rows[0]["status_detail"]
-    rows[2]["odds_home"] = 2.30            # 同一线价格差太多 → conflict
-    for x in rows:
-        x["status_detail"] = ""
+    assert st[("m", "report")]["verification"] == "conflict"
+    assert "same_market" in rows[0]["status_detail"]
+    assert "verified_ladder" not in snap.STATUSES
+    # 同一条主线、赔率一致 → verified（+1.0 去水后更接近 0.5，是真正主线）
+    rows = [r("odds_api", 1.0, 1.95, 1.95), r("oddspapi", 1.0, 1.96, 1.94),
+            r("oddspapi", 1.25, 1.70, 2.20, "0")]
+    st = snap.assign_status(rows)
+    assert st[("m", "report")]["verification"] == "verified" and rows[0]["verification"] == "verified"
+    assert rows[0]["is_main"] == "1" and rows[1]["is_main"] == "1"
+    assert "same_market" not in rows[0]["status_detail"]
+    # 同一条主线但赔率差 > 0.06 → conflict，标 same_line_price_diff
+    rows[1]["odds_home"] = 2.30
     st = snap.assign_status(rows)
     assert st[("m", "report")]["verification"] == "conflict" and rows[0]["verification"] == "conflict"
+    assert "same_line_price_diff" in rows[0]["status_detail"]
+
+
+def test_pick_main_novig_leipzig_example():
+    # apif-1635710：Pinnacle +1.25 @1.833/2.06 去水主队概率 0.529；+1.0 @2.10/1.84 → 0.467 → 主线 +1.25
+    lad = [(1.0, 2.10, 1.84, None), (1.25, 1.833, 2.06, None), (0.75, 2.36, 1.653, None), (1.5, 1.662, 2.28, None)]
+    assert snap.pick_main(lad)[:3] == (1.25, 1.833, 2.06)
+    assert abs(snap.home_novig(1.833, 2.06) - 0.5) < abs(snap.home_novig(2.10, 1.84) - 0.5)
+
+
+def test_single_line_book_is_main_only_if_matches_pinnacle():
+    rows = [
+        row("m", "report", "oddspapi", "pinnacle", 1.25, oh=1.833, oa=2.06),
+        row("m", "report", "oddspapi", "pinnacle", 1.0, "0", oh=2.10, oa=1.84),
+        row("m", "report", "oddspapi", "pinnacle", 1.5, "0", oh=1.66, oa=2.28),
+        row("m", "report", "odds_api", "pinnacle", 1.0, oh=2.10, oa=1.84),
+        row("m", "report", "odds_api", "1xbet", 1.5, oh=1.69, oa=2.36),
+        row("m", "report", "odds_api", "matchbook", 1.25, oh=1.87, oa=2.12),
+    ]
+    snap.assign_status(rows)
+    pin = {(r["source"], float(r["ah_home_line"])): r["is_main"] for r in rows if r["bookmaker"] == "pinnacle"}
+    assert pin[("oddspapi", 1.25)] == "1" and pin[("oddspapi", 1.0)] == "0"
+    assert pin[("odds_api", 1.0)] == "0"   # 单线 ≠ 主线
+    assert next(r["is_main"] for r in rows if r["bookmaker"] == "1xbet") == "0"
+    assert next(r["is_main"] for r in rows if r["bookmaker"] == "matchbook") == "1"  # 线等于主线
+
+
+def test_match_level_consensus_differs_but_common_book_verified():
+    # 共同公司 pinnacle 两源同线同价 → verified；各源其它公司让共识线不同，不影响
+    rows = [row("y", "report", "oddspapi", "pinnacle", 1.25), row("y", "report", "odds_api", "pinnacle", 1.25),
+            row("y", "report", "odds_api", "bet365", 1.0), row("y", "report", "oddspapi", "sbobet", 1.25)]
+    st = snap.assign_status(rows)
+    assert st[("y", "report")]["verification"] == "verified" and rows[0]["verification"] == "verified"
+    # 共识线不同、没有共同公司：各公司都是 single → 场级 single（没有可核对的共同公司）
+    rows = [row("z", "report", "oddspapi", "sbobet", 1.25), row("z", "report", "odds_api", "1xbet", 1.0)]
+    assert snap.assign_status(rows)[("z", "report")]["verification"] == "single"
+    # 两个完整盘口来源、主线不同、无共同公司 → conflict
+    rows = [row("z2", "report", "oddspapi", "sbobet", 1.25), row("z2", "report", "api_football", "dafabet", 1.0)]
+    assert snap.assign_status(rows)[("z2", "report")]["verification"] == "conflict"
+
+
+def test_summary_counts_no_verified_ladder(tmp_path):
+    ms = [{"match_id": f"apif-{i}", "fixture_id": i, "kickoff_utc": "2026-11-05T10:00:00Z", "league": "L",
+           "league_id": "l", "home": "A", "away": "B", "list": "watchlist"} for i in (1, 2)]
+    base = {"captured_at": "2026-11-04T10:00:00Z", "kickoff_utc": "2026-11-05T10:00:00Z", "odds_format": "decimal"}
+    rows = [{**base, **row("apif-1", "report", "oddspapi", "pinnacle", -0.5)},
+            {**base, **row("apif-1", "report", "odds_api", "pinnacle", -0.5)},
+            {**base, **row("apif-2", "report", "odds_api", "pinnacle", 1.0, oh=2.10, oa=1.84)},
+            {**base, **row("apif-2", "report", "oddspapi", "pinnacle", 1.25, oh=1.833, oa=2.06)},
+            {**base, **row("apif-2", "report", "oddspapi", "pinnacle", 1.0, "0", oh=2.09, oa=1.85)}]
+    snap.write_rows(tmp_path / "s" / "2026-11-05.csv", rows)
+    d = snap.write_summary("2026-11-05", ms, [], {}, ["report"], {}, snap_dir=tmp_path / "s", now=NOW)
+    assert d["counts"]["report"] == {"verified": 1, "conflict": 1}
+    assert "verified_ladder" not in snap.STATUSES
 
 
 def test_slug_and_screened():
@@ -204,8 +268,10 @@ def test_run_report_and_open(tmp_path):
     rep_main = [r for r in p if r["stage"] == "report" and r["is_main"] == "1"]
     by = {(r["source"], r["bookmaker"]): r for r in rep_main}
     assert by[("oddspapi", "pinnacle")]["ah_home_line"] == "-0.5" and by[("oddspapi", "pinnacle")]["home_hk"] == "0.92" and by[("oddspapi", "pinnacle")]["odds_format"] == "decimal"
-    assert by[("odds_api", "pinnacle")]["ah_home_line"] == "-0.25"
-    assert res["verification"][("apif-100", "report")]["verification"] in ("conflict", "verified")
+    # odds_api 只有单线 -0.25，与 oddspapi 主线 -0.5 不同 → 不标 is_main，只核价
+    oa_pin = [r for r in p if r["stage"] == "report" and r["source"] == "odds_api" and r["bookmaker"] == "pinnacle"]
+    assert oa_pin and oa_pin[0]["ah_home_line"] == "-0.25" and oa_pin[0]["is_main"] == "0"
+    assert res["verification"][("apif-100", "report")]["verification"] in ("conflict", "verified", "single")
     op_ = [r for r in p if r["stage"] == "open" and r["is_main"] == "1"]
     assert {r["ah_home_line"] for r in op_} == {"-0.25"} and all(r["source"] == "oddspapi" for r in op_)
     assert res["verification"][("apif-100", "open")]["verification"] == "single"
@@ -293,7 +359,7 @@ def test_oddspapi_429_exponential_backoff(tmp_path):
     slept = []
     sess = S([R({}, 429), R({}, 429, {"Retry-After": "7"}), R({"fixtureId": "x", "bookmakers": {}})])
     c = op.Client(key="KEY", session=sess, cache_dir=tmp_path / "c", usage_file=tmp_path / "u.json",
-                  sleep=slept.append, now=lambda: NOW)
+                  sleep=slept.append, now=lambda: NOW, min_interval=0)
     assert c.historical_odds("x", ("pinnacle",))["fixtureId"] == "x"
     backoff = [x for x in slept if x >= 2]
     assert backoff == [2.0, 7.0] and sess.calls == 3 and c.usage()["used"] == 0   # 免费端点、429 都不计数
@@ -313,3 +379,130 @@ def test_oddspapi_429_gives_up_and_billable_5xx_not_retried(tmp_path):
     with pytest.raises(op.OddsPapiError):
         c.odds("x")
     assert sess.calls == 1 and c.usage()["used"] == 1
+
+
+# ---------- 请求间隔可配置 ----------
+
+def test_min_interval_from_sources_yaml(tmp_path):
+    y = tmp_path / "sources.yaml"
+    y.write_text("odds_snapshots:\n  sources:\n    oddspapi:\n      min_interval_seconds: {historical-odds: 6, default: 1.5}\n")
+    iv = op.load_min_intervals(y)
+    assert iv["historical-odds"] == 6.0 and iv["default"] == 1.5 and iv["fixtures"] == op.MIN_INTERVAL_S["fixtures"]
+    y.write_text("odds_snapshots:\n  oddspapi:\n    min_interval_seconds: 3\n")
+    assert set(op.load_min_intervals(y).values()) == {3.0}
+    y.write_text(": : not yaml [")
+    assert op.load_min_intervals(y) == op.MIN_INTERVAL_S
+    assert op.load_min_intervals(tmp_path / "missing.yaml") == op.MIN_INTERVAL_S
+    # 仓库里的配置：historical-odds 不低于官方 5s
+    assert op.load_min_intervals()["historical-odds"] >= 5.0
+
+
+def test_client_waits_per_endpoint_interval(tmp_path):
+    t = [100.0]
+    slept = []
+
+    def sleep(x):
+        slept.append(round(x, 3))
+        t[0] += x
+
+    ok = {"fixtureId": "x", "bookmakers": {}}
+    sess = S([R(ok), R(ok), R([]), R(ok)])
+    c = op.Client(key="KEY", session=sess, cache_dir=tmp_path / "c", usage_file=tmp_path / "u.json", sleep=sleep,
+                  now=lambda: NOW, clock=lambda: t[0], min_interval={"historical-odds": 5.5, "fixtures": 2.2})
+    c.historical_odds("a", ttl=0)
+    t[0] += 1.0
+    c.historical_odds("b", ttl=0)                    # 距上次 1.0s → 再等 4.5s
+    c.get("fixtures", {"tournamentId": 1})            # 另一个端点，各自计时，不用等
+    c.historical_odds("c", ttl=0)                    # 距上次 historical 0s → 等 5.5s
+    assert slept == [4.5, 5.5] and sess.calls == 4
+
+
+def test_429_honours_retry_ms_body(tmp_path):
+    slept = []
+    sess = S([R({"error": {"code": "RATE_LIMITED", "retryMs": 9000}}, 429), R({"fixtureId": "x", "bookmakers": {}})])
+    c = op.Client(key="KEY", session=sess, cache_dir=tmp_path / "c", usage_file=tmp_path / "u.json",
+                  sleep=slept.append, now=lambda: NOW, min_interval=0)
+    c.historical_odds("x")
+    assert slept == [9.0]
+
+
+# ---------- 新路径 data/snapshots/odds/ + 旧路径兼容 ----------
+
+def test_paths_default_new_dir_and_legacy_fallback(tmp_path, monkeypatch):
+    assert snap.SNAP_DIR.parts[-2:] == ("snapshots", "odds") and snap.LEGACY_SNAP_DIR.name == "odds_snapshots"
+    new, old = tmp_path / "snapshots" / "odds", tmp_path / "odds_snapshots"
+    monkeypatch.setattr(snap, "SNAP_DIR", new)
+    monkeypatch.setattr(snap, "LEGACY_SNAP_DIR", old)
+    assert snap.read_path("2026-11-05", "csv") == new / "2026-11-05.csv"     # 都没有 → 新路径
+    old.mkdir(parents=True)
+    (old / "2026-11-05.csv").write_text("x")
+    assert snap.read_path("2026-11-05", "csv") == old / "2026-11-05.csv"     # 只有旧的 → 读旧的
+    new.mkdir(parents=True)
+    (new / "2026-11-05.csv").write_text("y")
+    assert snap.read_path("2026-11-05", "csv") == new / "2026-11-05.csv"     # 新的有了 → 新的优先
+    assert snap.paths("2026-11-05")["map"] == new / "2026-11-05.map.json"
+
+
+def test_close_rows_carried_from_legacy_and_not_refetched(tmp_path):
+    legacy = tmp_path / "legacy"
+    # 旧路径里已有 report + close（循环之前写的）
+    s0 = mk(tmp_path, now=datetime(2026, 11, 4, 19, 55, tzinfo=UTC))
+    s0.p = snap.paths("2026-11-05", legacy)
+    s0.run(matches()[:1], ["report", "close"])
+    old_rows = snap.load_rows(legacy / "2026-11-05.csv")
+    (legacy / "2026-11-05.map.json").write_text((tmp_path / "s" / "2026-11-05.map.json").read_text()
+                                                if (tmp_path / "s" / "2026-11-05.map.json").exists() else "{}")
+    for f in (tmp_path / "s").glob("*"):
+        f.unlink()
+    closes = [r for r in old_rows if r["stage"] == "close"]
+    assert closes
+    # select 读旧路径的 close 行 → 已抓过，不再抓
+    existing = snap.load_rows(snap.read_path("2026-11-05", "csv", tmp_path / "s", legacy))
+    assert snap.select(matches()[:1], ["close"], datetime(2026, 11, 4, 19, 56, tzinfo=UTC), 10, False,
+                       existing=existing) == []
+    # 新路径写入时把旧文件的记录（含 close）带过来
+    papi = FakePapi()
+    s1 = snap.Snapshotter("2026-11-05", papi=papi, oddsapi=FakeOddsAPI(), apif=FakeApif(),
+                          now=lambda: datetime(2026, 11, 4, 20, 30, tzinfo=UTC), snap_dir=tmp_path / "s",
+                          legacy_dir=legacy, ah_markets=AH, aliases={}, leagues=LEAGUES,
+                          odds_api_cache=tmp_path / "oa", log=lambda m: None)
+    assert s1.map == json.loads((legacy / "2026-11-05.map.json").read_text())
+    s1.run(matches()[1:2], ["report"])
+    new_rows = snap.load_rows(tmp_path / "s" / "2026-11-05.csv")
+    key = lambda r: (r["match_id"], r["stage"], r["source"], r["bookmaker"], r["ah_home_line"], r["captured_at"])  # noqa: E731
+    assert {key(r) for r in old_rows} <= {key(r) for r in new_rows}
+    assert any(r["match_id"] == "apif-200" for r in new_rows)
+    assert not (legacy / "2026-11-05.csv").read_text() == ""   # 旧文件不动
+
+
+def test_main_line_reads_new_path_and_legacy_fallback(tmp_path, monkeypatch):
+    new, old = tmp_path / "snapshots" / "odds", tmp_path / "odds_snapshots"
+    monkeypatch.setattr(snap, "SNAP_DIR", new)
+    monkeypatch.setattr(snap, "LEGACY_SNAP_DIR", old)
+    base = {"match_id": "apif-1", "stage": "report", "bookmaker": "pinnacle", "source": "oddspapi",
+            "is_main": "1", "ah_home_line": "-0.5", "odds_home": "1.90", "odds_away": "1.95",
+            "odds_format": "decimal", "captured_at": "2026-11-04T10:00:00Z", "verification": "single",
+            "kickoff_utc": "2026-11-05T10:00:00Z"}
+    old.mkdir(parents=True)
+    snap.write_rows(old / "2026-11-05.csv", [dict(base)])
+    ml = snap.main_line("2026-11-05", "apif-1")
+    assert ml["ah_home_line"] == -0.5 and ml["source"] == "oddspapi"
+    new.mkdir(parents=True)
+    snap.write_rows(new / "2026-11-05.csv", [{**base, "ah_home_line": "-0.25", "odds_home": "1.88", "odds_away": "1.98"}])
+    assert snap.main_line("2026-11-05", "apif-1")["ah_home_line"] == -0.25
+    assert snap.main_line("2026-11-05", "missing") is None
+
+
+def test_consensus_line_mode_tie_breaks():
+    # 众数并列：离 Pinnacle 更近
+    assert snap._consensus_line([-0.5, -0.25, -0.5, -0.25], pinnacle_main=-0.25) == -0.25
+    assert snap._consensus_line([-0.5, -0.25, -0.5, -0.25], pinnacle_main=-0.5) == -0.5
+    # 无 Pinnacle：取绝对值较小
+    assert snap._consensus_line([1.0, -0.5, 1.0, -0.5]) == -0.5
+
+
+def test_overround_and_high_flag():
+    rows = [row("a", "report", "oddspapi", "pinnacle", -0.25, oh=1.884, oa=1.813)]
+    snap.assign_status(rows)
+    assert abs(float(rows[0]["overround"]) - round(1/1.884 + 1/1.813 - 1, 4)) < 1e-9
+    assert "high_overround" in rows[0]["status_detail"]
