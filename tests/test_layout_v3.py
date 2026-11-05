@@ -13,7 +13,7 @@ def test_tg_no_pick_counts_from_watchlist_without_names():
     msg = "\n".join(pt.daily(REP, None))
     assert "今日无高信心推荐（宁缺毋滥）" in msg
     assert "观察 4 场" in msg and "中 2" in msg and "低 1" in msg and "未定 1" in msg
-    assert "深盘 2" in msg and "信号不足 1" in msg
+    assert "<code>2</code>  深盘" in msg and "<code>1</code>  信号不足" in msg
     assert "中信心仅 1 场" not in msg            # 不用手写原因里的错误计数
     assert "A vs B" not in msg and "<b>A" not in msg  # 中/低信心不点名推送
     assert policy.DISCLAIMER in msg and "—— 先知" in msg
@@ -36,7 +36,7 @@ def test_daily_lists_cancelled():
     rep = {"date": "2026-11-04", "picks": [{"home": "K", "away": "M", "pick_side": "away", "line": -0.75,
                                              "confidence": "cancelled", "cancelled": True}]}
     msg = "\n".join(pt.daily(rep, None))
-    assert "赛前已撤销" in msg and "<s>K vs M" in msg
+    assert "赛前已撤销" in msg and "<s>K</s> vs <s>M</s>" in msg
 
 
 def test_web_no_pick_card():

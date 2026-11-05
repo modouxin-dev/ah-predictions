@@ -141,28 +141,78 @@ def pick_block_v1(p: dict, i: int | None = None) -> str:
     return "\n".join(lines)
 
 
-def split(blocks: list[str], limit: int = LIMIT) -> list[str]:
-    """按块拼接，不超过 limit；单块过长时按行切。"""
-    msgs, cur = [], ""
-    pieces = []
-    for b in blocks:
-        if len(b) <= limit:
-            pieces.append(b)
+def tlen(s: str) -> int:
+    """Telegram 按 UTF-16 码元计长度（emoji 记 2）；这里对 HTML 源文计，比实体解析后的长度更保守。"""
+    return len(str(s).encode("utf-16-le")) // 2
+
+
+_TAG = re.compile(r"<(/?)([a-z][a-z0-9-]*)([^>]*)>")
+
+
+def _open_tags(chunk: str, carry: list[tuple[str, str]]) -> list[tuple[str, str]]:
+    """从 carry（进入 chunk 时已打开的标签）出发扫描 chunk，返回结束时仍未闭合的 [(name, 原开标签)]。"""
+    st = list(carry)
+    for m in _TAG.finditer(chunk):
+        if m.group(1):
+            for i in range(len(st) - 1, -1, -1):
+                if st[i][0] == m.group(2):
+                    del st[i]
+                    break
         else:
-            chunk = ""
-            for line in b.split("\n"):
-                while len(line) > limit:
-                    if chunk:
-                        pieces.append(chunk); chunk = ""  # noqa: E702
-                    pieces.append(line[:limit]); line = line[limit:]  # noqa: E702
-                if chunk and len(chunk) + 1 + len(line) > limit:
-                    pieces.append(chunk); chunk = ""  # noqa: E702
-                chunk = f"{chunk}\n{line}" if chunk else line
+            st.append((m.group(2), m.group(0)))
+    return st
+
+
+def _safe_cut(s: str, n: int) -> int:
+    """在 n 之前找一个不落在标签 <…> 或实体 &…; 中间的切点。"""
+    cut = n
+    lt, gt = s.rfind("<", 0, cut), s.rfind(">", 0, cut)
+    if lt > gt:
+        cut = lt
+    amp = s.rfind("&", 0, cut)
+    if amp != -1 and ";" not in s[amp:cut]:
+        cut = amp
+    return cut if cut > 0 else n
+
+
+def _raw_chunks(b: str, room: int) -> list[str]:
+    out, chunk = [], ""
+    for line in b.split("\n"):
+        while tlen(line) > room:
             if chunk:
-                pieces.append(chunk)
+                out.append(chunk)
+                chunk = ""
+            cut = _safe_cut(line, room // 2)  # 每字符最多 2 个 UTF-16 码元
+            out.append(line[:cut])
+            line = line[cut:]
+        if chunk and tlen(chunk) + 1 + tlen(line) > room:
+            out.append(chunk)
+            chunk = ""
+        chunk = f"{chunk}\n{line}" if chunk else line
+    if chunk:
+        out.append(chunk)
+    return out
+
+
+def split(blocks: list[str], limit: int = LIMIT) -> list[str]:
+    """按块拼成多条消息，每条 ≤ limit（UTF-16 计）。块尽量整块放；单块过长时按行拆，
+    跨条的 <pre>/<blockquote>/<b>/<a> 等在断点处自动闭合、下一条按原开标签重新打开，保证每条 HTML 独立合法。"""
+    room = limit - 200  # 给补齐的闭合/重开标签留余量
+    pieces: list[str] = []
+    for b in blocks:
+        if tlen(b) <= limit:
+            pieces.append(b)
+            continue
+        carry: list[tuple[str, str]] = []
+        for raw in _raw_chunks(b, room):
+            after = _open_tags(raw, carry)
+            pieces.append("".join(t for _, t in carry) + raw + "".join(f"</{n}>" for n, _ in reversed(after)))
+            carry = after
+    msgs, cur = [], ""
     for b in pieces:
-        if cur and len(cur) + 2 + len(b) > limit:
-            msgs.append(cur); cur = ""  # noqa: E702
+        if cur and tlen(cur) + 2 + tlen(b) > limit:
+            msgs.append(cur)
+            cur = ""
         cur = f"{cur}\n\n{b}" if cur else b
     if cur:
         msgs.append(cur)
@@ -240,12 +290,6 @@ def record_of(d: dict | None) -> str:
     return f"{d['picks']}场 {d['hit_rate']:.0%} {d.get('units', 0):+.2f}u"
 
 
-def verdict(p: dict) -> str:
-    conf = CONF.get(p.get("confidence"), str(p.get("confidence")))
-    odds = f" @{p['odds']}" if p.get("odds") is not None else ""
-    return f"🎯 <b>推荐 {e(_team(p))} {ln(p['line'])}{odds} · {CONF_ICON.get(conf, '')}{e(conf)}</b>"
-
-
 def venue(p: dict) -> str | None:
     v = p.get("venue") or (p.get("fixture") or {}).get("venue")
     if isinstance(v, dict):
@@ -253,11 +297,128 @@ def venue(p: dict) -> str | None:
     return v or None
 
 
-def compact_block(p: dict, stats: dict | None = None, extra: list[str] | None = None) -> str:
+# ---------- TG 对齐规则（v4） ----------
+# 1) 等宽块 <pre> 里只让「数字列」对齐：数字/符号全是 ASCII，放在行首按固定宽度右对齐；
+#    含中文的标签（机构名、联赛名）一律放在行尾。Telegram 手机端等宽字体的中文字宽≈1.6–1.7 个
+#    英文字宽（不是 2），中文放前面会把后面的列推歪；放行尾就不影响任何一列。
+#    表头不进 <pre>，改成块上方的一行说明（同样避免中文表头错位）。
+# 2) 分区标题统一为「emoji + <b>标题</b>」，分区之间空一行；推什么 → 为什么推 → 风险在哪 → 数据来源。
+# 3) 理由/风险用 <blockquote>；长列表（未推原因、实验盘、数据来源）用 <blockquote expandable>。
+# 4) 队名：主客合计显示宽度超过 TEAMS_ONE_LINE 就拆两行（第二行以 vs 开头）；单个队名超过 TEAM_MAX
+#    时优先只保留中文名，否则按显示宽度截断加「…」。手机气泡一行约 42 个半角宽度。
+TEAM_MAX = 28
+TEAMS_ONE_LINE = 34
+LEAGUE_MAX = 22
+
+
+def trunc_w(s: str, w: int) -> str:
+    s = str(s)
+    if wcol(s) <= w:
+        return s
+    out = ""
+    for c in s:
+        if wcol(out + c) > w - 1:
+            break
+        out += c
+    return out.rstrip() + "…"
+
+
+def team_name(name: str) -> str:
+    name = str(name or "").strip()
+    if wcol(name) <= TEAM_MAX:
+        return name
+    head = name.split(" ")[0]
+    if head != name and any(wcol(c) == 2 for c in head):
+        return head  # 「布拉格斯拉维亚 Slavia Praha」过长时只保留中文名
+    return trunc_w(name, TEAM_MAX)
+
+
+def teams_line(home: str, away: str, mid: str = "vs") -> str:
+    h, a = team_name(home), team_name(away)
+    if wcol(h) + wcol(a) + wcol(mid) + 2 <= TEAMS_ONE_LINE:
+        return f"<b>{e(h)}</b> {e(mid)} <b>{e(a)}</b>"
+    return f"<b>{e(h)}</b>\n{e(mid)} <b>{e(a)}</b>"
+
+
+def league_name(k: str | None) -> str:
+    """「UEFA Champions League（欧冠 联赛阶段第4轮）」→「欧冠 联赛阶段第4轮」；没有中文括注就截断原名。"""
+    k = str(k or "")
+    m = re.search(r"（([^（）]+)）", k)
+    return trunc_w(m.group(1) if m else k, LEAGUE_MAX)
+
+
+def sec(icon: str, title: str, note: str | None = None) -> str:
+    """统一分区标题：emoji + 粗体标题 [+ 斜体小注]。"""
+    return f"{icon} <b>{e(title)}</b>" + (f" <i>{e(note)}</i>" if note else "")
+
+
+def quote(lines: list[str], expandable: bool = False) -> str:
+    """lines 需已转义。"""
+    return f"<blockquote{' expandable' if expandable else ''}>" + "\n".join(lines) + "</blockquote>"
+
+
+def num_table(rows: list[list[str]]) -> str:
+    """<pre> 对齐表：除最后一列外都是 ASCII 数值列（右对齐、列间两个空格），最后一列是标签（可含中文）。"""
+    n = len(rows[0]) - 1
+    ws = [max(len(str(r[i])) for r in rows) for i in range(n)]
+    out = ["  ".join(str(r[i]).rjust(ws[i]) for i in range(n)) + "  " + str(r[n]) for r in rows]
+    return "<pre>" + e("\n".join(x.rstrip() for x in out)) + "</pre>"
+
+
+def fl(x) -> str:
+    """盘口统一两位小数（-0.5 → -0.50），保证小数点对齐；平手为 0.00。"""
+    if x is None:
+        return ""
+    v = float(x)
+    return "0.00" if v == 0 else f"{v:+.2f}"
+
+
+def wt(x) -> str:
+    return "" if x is None else f"{float(x):.2f}"
+
+
+def tg_rows(p: dict) -> list[list[str]]:
+    """机构对比（推荐方视角）[盘口, 水位, 机构]：只列有真实数据的行，初盘/即时拆成两行（不在等宽块里用箭头）。"""
+    rows = [[fl(p["line"]), wt(p.get("odds")), "本推荐"]]
+    c = p.get("market_consensus") or {}
+    if c.get("pick_line") is not None:
+        rows.append([fl(c["pick_line"]), wt(c.get("pick_water")), f"共识中位·{c.get('bookmakers', '?')}家"])
+    pin = c.get("pinnacle") or {}
+    if pin.get("pick_line") is not None:
+        rows.append([fl(pin["pick_line"]), wt(pin.get("pick_water")), "Pinnacle"])
+    b = p.get("bet365_movement") or {}
+    if b.get("pick_line") is not None:
+        if b.get("open_pick_line") is not None:
+            rows.append([fl(b["open_pick_line"]), wt(b.get("open_pick_water")), "Bet365 初盘"])
+        rows.append([fl(b["pick_line"]), wt(b.get("pick_water")), "Bet365 即时"])
+    if p.get("line_open") is not None and any("titan007" in str(s) for s in p.get("sources") or []):
+        rows.append([fl(p["line_open"]), "", "球探 初盘"])
+    return rows
+
+
+def verdict(p: dict) -> str:
     conf = CONF.get(p.get("confidence"), str(p.get("confidence")))
-    lines = [f"🏆 {e(p.get('league', ''))} ｜ 🕐 {bj(p.get('kickoff_utc'))}",
-             f"<b>{e(p['home'])} vs {e(p['away'])}</b>", verdict(p), *(extra or []),
-             pre_table(["机构", "盘口", "水位"], comparison_rows(p))]
+    odds = f" @{wt(p['odds'])}" if p.get("odds") is not None else ""
+    return f"🎯 <b>推荐 {e(_team(p))} {ln(p['line'])}{odds}</b> ｜ 信心 {CONF_ICON.get(conf, '')}<b>{e(conf)}</b>"
+
+
+def match_head(p: dict, mid: str = "vs") -> str:
+    k = bj(p.get("kickoff_utc"))
+    meta = f"🏆 {e(league_name(p.get('league')))}" + (f" · 🕐 {k}" if k != "—" else "")
+    return meta + "\n" + teams_line(p["home"], p["away"], mid)
+
+
+def sources_block(urls, title: str = "数据来源") -> list[str]:
+    ls = links(urls)
+    return [sec("🔗", title), quote([ls], expandable=True)] if ls else []
+
+
+def compact_block(p: dict, stats: dict | None = None, extra: list[str] | None = None,
+                  show_sources: bool = True) -> str:
+    """单场卡片：推什么 → 为什么推 → 风险在哪 → 数据来源。空字段整段省略。"""
+    conf = CONF.get(p.get("confidence"), str(p.get("confidence")))
+    lines = [match_head(p), verdict(p), *(extra or []),
+             sec("🏦", "机构对比", "盘口 · 水位 · 机构"), num_table(tg_rows(p))]
     dv = deviation(p)
     if dv:
         lines.append(f"📊 {dv}")
@@ -265,17 +426,17 @@ def compact_block(p: dict, stats: dict | None = None, extra: list[str] | None = 
         lines.append(f"🏟 {e(venue(p))}")
     probs = p.get("model_probs")
     if probs:
-        lines.append("🧮 模型概率 " + " ".join(f"{e(k)} {float(v):.0%}" for k, v in probs.items()))
-    if p.get("reasons"):
-        lines += ["✅ <b>为什么推</b>", *[f"• {e(short(r, 56))}" for r in p["reasons"][:3]]]
-    if p.get("risks"):
-        lines += ["⚠️ <b>风险在哪</b>", *[f"• {e(short(r, 48))}" for r in p["risks"][:2]]]
+        lines.append("🧮 模型概率 " + " · ".join(f"{e(k)} {float(v):.0%}" for k, v in probs.items()))
     s = stats or {}
     lg = (s.get("by_league") or {}).get(p.get("league"))
     cf = (s.get("by_confidence") or {}).get(conf)
     lines.append(f"📈 本联赛 {record_of(lg)} ｜ {e(conf)}信心 {record_of(cf)}")
-    if p.get("sources"):
-        lines.append("🔗 <b>来源</b> " + links(p["sources"][:4]))
+    if p.get("reasons"):
+        lines += ["", sec("✅", "为什么推"), quote([f"• {e(short(r, 80))}" for r in p["reasons"][:3]])]
+    if p.get("risks"):
+        lines += ["", sec("⚠️", "风险在哪"), quote([f"• {e(short(r, 64))}" for r in p["risks"][:2]])]
+    if show_sources and p.get("sources"):
+        lines += ["", *sources_block(p["sources"][:4])]
     return "\n".join(lines)
 
 
@@ -288,18 +449,20 @@ def stats_table(stats: dict | None, top: int = 3) -> str:
     s = stats or {}
     o = s.get("overall") or {}
     if not o.get("decided"):
-        return "📈 <b>历史战绩</b>：暂无已结算推荐"
+        return sec("📈", "历史战绩") + "：暂无已结算推荐"
 
     def row(name, d):
-        return [name[:10], d.get("picks", 0), f"{d.get('win', 0)}+{d.get('half_win', 0)}" if d.get("half_win") else d.get("win", 0),
-                d.get("push", 0), d.get("loss", 0) + d.get("half_loss", 0), f"{d.get('hit_rate', 0):.0%}", f"{d.get('units', 0):+.1f}"]
+        w = f"{d.get('win', 0)}+{d['half_win']}" if d.get("half_win") else str(d.get("win", 0))
+        l_ = f"{d.get('loss', 0)}+{d['half_loss']}" if d.get("half_loss") else str(d.get("loss", 0))
+        return [str(d.get("picks", 0)), f"{w}-{d.get('push', 0)}-{l_}", f"{d.get('hit_rate', 0):.0%}" if d.get("decided") else "-",
+                f"{d.get('units', 0):+.2f}u", trunc_w(name, 12)]
     rows = [row("总体", o)]
     hi = (s.get("by_confidence") or {}).get("高")
     if hi and hi.get("picks"):
         rows.append(row("高信心", hi))
     bl = sorted((s.get("by_league") or {}).items(), key=lambda kv: -kv[1].get("picks", 0))[:top]
     rows += [row(league_short(k), v) for k, v in bl]
-    return "📈 <b>历史战绩</b>\n" + pre_table(["", "场次", "赢", "走", "输", "命中", "盈亏"], rows)
+    return sec("📈", "历史战绩", "场 · 赢-走-输 · 命中 · 盈亏") + "\n" + num_table(rows)
 
 
 def tail(stats: dict | None, site_url: str = SITE_URL) -> str:
@@ -333,8 +496,10 @@ def no_pick_lines(rep: dict) -> list[str]:
         lines.append(f"👀 观察 {n} 场：" + " · ".join(f"{CONF_ICON.get(c, '▫️')}{c} {conf[c]}"
                                                      for c in ("高", "中", "低", "未定") if conf.get(c)))
     if cat:
-        top = sorted(cat.items(), key=lambda kv: -kv[1])[:4]
-        lines.append("📌 未推原因：" + " · ".join(f"{e(k)} {v}" for k, v in top))
+        rows = sorted(cat.items(), key=lambda kv: -kv[1])
+        w = max(len(str(v)) for _, v in rows)
+        lines += [sec("📌", "未推原因", "场数 · 类别"),
+                  quote([f"<code>{str(v).rjust(w)}</code>  {e(k)}" for k, v in rows], expandable=len(rows) > 3)]
     return lines
 
 
@@ -342,23 +507,24 @@ ANNOUNCE = "🆕\ufe0f 看板已升级"
 
 
 def lab_block(rows: list[dict] | None) -> str | None:
-    """日报末尾的模型实验盘（不计入正式命中率）。按 亚盘/1X2/大小球 分组，空组省略；全空返回 None。"""
+    """日报末尾的模型实验盘（不计入正式命中率）。按 亚盘/1X2/大小球 分组，空组省略；全空返回 None。
+    整段放进 <blockquote expandable>，默认折叠，不抢正式推荐的视线。"""
     from . import model_lab as ml
     groups = ml.by_market(rows or [])
     if not groups:
         return None
-    out = ["🧪 <b>模型实验盘</b>（不计入正式命中率）"]
+    body = []
     lg = ml.legend(rows or [])
     if lg:
-        out.append(f"<i>{e(lg)}</i>")
+        body.append(f"<i>{e(lg)}</i>")
     for m, rs in groups:
-        out.append(f"<b>{ml.MARKET_CN[m]}</b>")
+        body.append(f"<b>{ml.MARKET_CN[m]}</b>")
         for r in rs:
             pick = " ".join(x for x in (ml.selection_text(r), ml.line_text(r)) if x)
             odds = f" @{ml.odds_text(r)}" if ml.odds_text(r) else ""
-            out.append(f"<code>{e(ml.model_code(r['model_id']))}</code> {e(ml.short_team(r['home']))}-{e(ml.short_team(r['away']))}"
-                       f"｜<b>{e(pick)}</b>{odds}")
-    return "\n".join(out)
+            body.append(f"<code>{e(ml.model_code(r['model_id']))}</code> {e(ml.short_team(r['home']))}-{e(ml.short_team(r['away']))}"
+                        f"｜<b>{e(pick)}</b>{odds}")
+    return sec("🧪", "模型实验盘", "（不计入正式命中率）") + "\n" + quote(body, expandable=True)
 
 
 def daily(rep: dict, stats: dict | None = None, site_url: str = SITE_URL, lab: list[dict] | None = None,
@@ -375,8 +541,9 @@ def daily(rep: dict, stats: dict | None = None, site_url: str = SITE_URL, lab: l
     gone = [p for p in rep.get("picks") or [] if p not in picks
             and (p.get("cancelled") or p.get("confidence") == "cancelled")]
     if gone:
-        blocks.append("↩️ <b>赛前已撤销</b>（不计入命中率）\n" + "\n".join(
-            f"• <s>{e(p['home'])} vs {e(p['away'])} {e(_team(p))} {ln(p['line'])}</s>" for p in gone))
+        blocks.append(sec("↩️", "赛前已撤销", "（不计入命中率）") + "\n" + "\n".join(
+            "• " + teams_line(p["home"], p["away"]).replace("<b>", "<s>").replace("</b>", "</s>").replace("\nvs", "\n   vs")
+            + f"\n   原推荐 <s>{e(_team(p))} {ln(p['line'])}</s>" for p in gone))
     lb = lab_block(lab)
     if lb:
         blocks.append(DIV + "\n" + lb)
@@ -428,19 +595,21 @@ def prematch(p: dict, pm: dict | None = None, stats: dict | None = None) -> list
         q["line"], q["odds"] = pm["new_line"], pm.get("new_odds")
     if pm.get("confidence"):
         q["confidence"] = pm["confidence"]
-    when = f" · {bj(pm['checked_at'])} 北京时间" if pm.get("checked_at") else ""
+    when = f"\n🕐 复核 {bj(pm['checked_at'])} 北京时间" if pm.get("checked_at") else ""
     head = f"<b>【先知】🔎 赛前确认</b>\n决定：<b>{dec}</b>{when}"
     info = [f"📊 临场：{e(pm['current_line'])}"] if pm.get("current_line") else []
     if pm.get("reason"):
         info.append(f"📌 {e(pm['reason'])}")
     if "撤销" in dec:
-        body = (f"🏆 {e(p.get('league', ''))} ｜ 🕐 {bj(p.get('kickoff_utc'))}\n<b>{e(p['home'])} vs {e(p['away'])}</b>\n"
-                f"🎯 原推荐 <s>{e(_team(p))} {ln(p['line'])}" + (f" @{p['odds']}" if p.get('odds') is not None else "")
-                + "</s>\n🔥 已撤销，不计入命中率\n" + "\n".join(info))
+        odds = f" @{wt(p['odds'])}" if p.get("odds") is not None else ""
+        body = (match_head(p) + f"\n🎯 原推荐 <s>{e(_team(p))} {ln(p['line'])}{odds}</s>\n⛔ 已撤销，不计入命中率")
     else:
-        body = compact_block({**q, "reasons": [], "risks": []}, stats, extra=None) + "\n" + "\n".join(info)
-    if pm.get("sources"):
-        body += "\n🔗 " + links(pm["sources"])
+        body = compact_block({**q, "reasons": [], "risks": []}, stats, show_sources=False)
+    if info:
+        body += "\n\n" + sec("🔎", "临场复核") + "\n" + quote(info)
+    srcs = pm.get("sources") or ([] if "撤销" in dec else p.get("sources"))
+    if srcs:
+        body += "\n\n" + "\n".join(sources_block(srcs[:4]))
     return split([head, DIV + "\n" + body, DIV + "\n" + "\n".join(footer())])
 
 
@@ -449,18 +618,16 @@ def backtest(p: dict, res: dict | None = None, stats: dict | None = None) -> lis
     s = res.get("settlement", "")
     cn = SETTLE_CN.get(s, res.get("settlement_cn") or s)
     units = res.get("units")
-    u = f"{float(units):+.2f}u" if units is not None else "—"
     line = res.get("line", p["line"]); odds = res.get("odds", p.get("odds"))  # noqa: E702
-    body = [f"🏆 {e(p.get('league', ''))} ｜ 🕐 {bj(p.get('kickoff_utc'))}",
-            f"<b>{e(p['home'])} {e(res.get('score') or '—')} {e(p['away'])}</b>",
-            f"🎯 推荐 {e(_team(p))} {ln(line)}" + (f" @{odds}" if odds is not None else ""),
-            (f"{SETTLE_ICON.get(s, '')} 结算 <b>{e(cn)}</b>" + (f" · {u}" if units is not None else "")) if s else "⏳ 结算：暂无（赛果未出）"]
-    if not res.get("score"):
-        body[1] = f"<b>{e(p['home'])} vs {e(p['away'])}</b>"
+    score = res.get("score")
+    body = [match_head(p, mid=score or "vs"),
+            f"🎯 推荐 <b>{e(_team(p))} {ln(line)}" + (f" @{wt(odds)}" if odds is not None else "") + "</b>",
+            (f"{SETTLE_ICON.get(s, '')} 结算 <b>{e(cn)}</b>" + (f" · <code>{float(units):+.2f}u</code>" if units is not None else ""))
+            if s else "⏳ 结算：暂无（赛果未出）"]
     if res.get("review"):
-        body.append(f"📌 {e(res['review'])}")
+        body += ["", sec("📝", "复盘"), quote([e(res["review"])], expandable=len(str(res["review"])) > 60)]
     if res.get("sources"):
-        body.append("🔗 " + links(res["sources"]))
+        body += ["", *sources_block(res["sources"])]
     return split(["<b>【先知】🏁 赛后回测</b>", DIV + "\n" + "\n".join(body), DIV + "\n" + tail(stats)])
 
 
