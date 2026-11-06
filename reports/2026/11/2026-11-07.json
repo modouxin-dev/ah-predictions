@@ -1,6 +1,6 @@
 {
   "date": "2026-11-07",
-  "generated_at": "2026-11-06T22:50:12Z",
+  "generated_at": "2026-11-06T23:42:49Z",
   "edition": "automatic",
   "odds_format": "HK",
   "picks": [
@@ -14,7 +14,7 @@
       "line": -1.0,
       "line_open": -0.75,
       "odds": 1.07,
-      "confidence": "low",
+      "confidence": "high",
       "score": 4.05,
       "reasons": [
         "同机构初盘 -0.75 → 当前 -1，盘口跨来源核验未完全通过（advisory），仅作参考",
@@ -22,7 +22,8 @@
       ],
       "risks": [
         "尚未自动核实伤停及首发；规则评分未经独立回测，赛前应再次核查",
-        "盘口跨来源核验未完全通过（advisory），结论仅作分析参考"
+        "盘口跨来源核验未完全通过（advisory），结论仅作分析参考",
+        "核验未完全通过：该场仅作分析参考，规则档位不代表已校准概率"
       ],
       "sources": [
         "https://www.football-data.org/",
@@ -47,7 +48,7 @@
         "line_open": -0.75,
         "odds": 1.07,
         "score": 4.05,
-        "model_confidence": "medium",
+        "model_confidence": "high",
         "home_form": "LLDLL",
         "away_form": "DWWDW",
         "form_source": "football-data.org",
@@ -67,15 +68,16 @@
       "line": -0.0,
       "line_open": 0.25,
       "odds": 0.877,
-      "confidence": "low",
+      "confidence": "medium",
       "score": 3.55,
       "reasons": [
-        "同机构初盘 +0.25 → 当前 -0，盘口已通过多源核验",
+        "同机构初盘 +0.25 → 当前 -0，盘口跨来源核验未完全通过（advisory），仅作参考",
         "近期赛果（最近在前）：Leeds United FC LDDLD；Tottenham Hotspur FC WWWDL"
       ],
       "risks": [
         "尚未自动核实伤停及首发；规则评分未经独立回测，赛前应再次核查",
-        "盘口报价超过新鲜度阈值，信心已降一级"
+        "盘口跨来源核验未完全通过（advisory），结论仅作分析参考",
+        "核验未完全通过：该场仅作分析参考，规则档位不代表已校准概率"
       ],
       "sources": [
         "https://www.football-data.org/",
@@ -84,6 +86,7 @@
         "https://infersports.dev/",
         "https://5dollarfootballapi.com/"
       ],
+      "verification_advisory": true,
       "pick_team": "Tottenham Hotspur FC",
       "market_consensus": {
         "source": "多源盘口快照",
@@ -107,7 +110,7 @@
         "bookmaker": "pinnacle",
         "source": "oddspapi",
         "price_ts": "2026-11-06T21:08:13Z",
-        "freshness": "stale_downgrade"
+        "freshness": "stale_withdraw"
       },
       "bet365_movement": {
         "bookmaker": "Bet 365",
@@ -132,12 +135,12 @@
       "confidence": "low",
       "score": 3.33,
       "reasons": [
-        "同机构初盘 +0 → 当前 -0.5，盘口跨来源核验未完全通过（advisory），仅作参考",
+        "同机构初盘 +0 → 当前 -0.5，盘口已通过多源核验",
         "近期赛果（最近在前）：Fulham FC DWWLD；Newcastle United FC LWLLW"
       ],
       "risks": [
         "尚未自动核实伤停及首发；规则评分未经独立回测，赛前应再次核查",
-        "盘口跨来源核验未完全通过（advisory），结论仅作分析参考"
+        "盘口报价超过新鲜度阈值，信心已降一级"
       ],
       "sources": [
         "https://www.football-data.org/",
@@ -146,7 +149,6 @@
         "https://infersports.dev/",
         "https://5dollarfootballapi.com/"
       ],
-      "verification_advisory": true,
       "pick_team": "Fulham FC",
       "market_consensus": {
         "source": "多源盘口快照",
@@ -163,14 +165,14 @@
         "line_open": 0.0,
         "odds": 1.04,
         "score": 3.33,
-        "model_confidence": "low",
+        "model_confidence": "medium",
         "home_form": "DWWLD",
         "away_form": "LWLLW",
         "form_source": "football-data.org",
         "bookmaker": "pinnacle",
         "source": "oddspapi",
-        "price_ts": "2026-11-06T19:56:18Z",
-        "freshness": "stale_withdraw"
+        "price_ts": "2026-11-06T22:47:15Z",
+        "freshness": "stale_downgrade"
       },
       "bet365_movement": {
         "bookmaker": "Bet 365",
@@ -191,23 +193,22 @@
       "pick_side": "home",
       "line": -0.5,
       "line_open": -0.25,
-      "odds": 1.08,
+      "odds": 1.07,
       "confidence": "low",
       "score": 3.0,
       "reasons": [
-        "同机构初盘 -0.25 → 当前 -0.5，盘口跨来源核验未完全通过（advisory），仅作参考",
+        "同机构初盘 -0.25 → 当前 -0.5，盘口已通过多源核验",
         "近期赛果（最近在前）：West Bromwich Albion FC DWDWW；Millwall FC LWLDL"
       ],
       "risks": [
         "尚未自动核实伤停及首发；规则评分未经独立回测，赛前应再次核查",
-        "盘口跨来源核验未完全通过（advisory），结论仅作分析参考"
+        "盘口报价超过新鲜度阈值，信心已降一级"
       ],
       "sources": [
         "https://www.football-data.org/",
         "https://oddspapi.io/",
         "https://the-odds-api.com/"
       ],
-      "verification_advisory": true,
       "pick_team": "West Bromwich Albion FC",
       "market_consensus": {
         "source": "多源盘口快照",
@@ -215,23 +216,23 @@
         "agree": 4,
         "home_line": -0.5,
         "pick_line": -0.5,
-        "pick_water": 1.07
+        "pick_water": 1.065
       },
       "observation": {
         "pick_side": "home",
         "pick_team": "West Bromwich Albion FC",
         "line": -0.5,
         "line_open": -0.25,
-        "odds": 1.08,
+        "odds": 1.07,
         "score": 3.0,
-        "model_confidence": "low",
+        "model_confidence": "medium",
         "home_form": "DWDWW",
         "away_form": "LWLDL",
         "form_source": "football-data.org",
         "bookmaker": "pinnacle",
         "source": "oddspapi",
-        "price_ts": "2026-11-06T20:08:42Z",
-        "freshness": "stale_withdraw"
+        "price_ts": "2026-11-06T23:10:39Z",
+        "freshness": "stale_downgrade"
       }
     },
     {
@@ -252,7 +253,8 @@
       ],
       "risks": [
         "尚未自动核实伤停及首发；规则评分未经独立回测，赛前应再次核查",
-        "盘口跨来源核验未完全通过（advisory），结论仅作分析参考"
+        "盘口跨来源核验未完全通过（advisory），结论仅作分析参考",
+        "核验未完全通过：该场仅作分析参考，规则档位不代表已校准概率"
       ],
       "sources": [
         "https://www.football-data.org/",
@@ -305,7 +307,8 @@
       ],
       "risks": [
         "尚未自动核实伤停及首发；规则评分未经独立回测，赛前应再次核查",
-        "盘口跨来源核验未完全通过（advisory），结论仅作分析参考"
+        "盘口跨来源核验未完全通过（advisory），结论仅作分析参考",
+        "核验未完全通过：该场仅作分析参考，规则档位不代表已校准概率"
       ],
       "sources": [
         "https://www.football-data.org/",
@@ -368,7 +371,8 @@
       ],
       "risks": [
         "尚未自动核实伤停及首发；规则评分未经独立回测，赛前应再次核查",
-        "盘口跨来源核验未完全通过（advisory），结论仅作分析参考"
+        "盘口跨来源核验未完全通过（advisory），结论仅作分析参考",
+        "核验未完全通过：该场仅作分析参考，规则档位不代表已校准概率"
       ],
       "sources": [
         "https://www.football-data.org/",
@@ -774,7 +778,7 @@
     }
   ],
   "odds_source_note": "赛程、盘口与近期状态自动采集；推荐只用真实盘口，核验未完全通过的场次强制低信心并显式标注。",
-  "not_covered": "筛查上限 32 场；窗口内共发现 78 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）；盘口采集：oddspapi:no_fixture_match 1场；近期状态不足：Shimizu S-Pulse vs T.Verdy（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Auckland FC vs Wellington Phoenix（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Jeju Utd vs Gwangju FC（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Nagoya Grampus Eight vs K.P.Sanga（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Yokohama F Marinos vs Fagiano Okayama（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Sagan Tosu vs Kataller Toyama（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：A.Niigata vs Imabari（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Iwaki vs Montedio Yamagata（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：B.Akita vs Oita Trinita（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Yokohama Fc vs Fujieda MYFC（API-Football 与 InferSports 赛果库均不足 3 场）；盘口核验：sources:1<2 1场；stale>7200s 24场；verified:0<1 1场。",
+  "not_covered": "筛查上限 32 场；窗口内共发现 79 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）；盘口采集：oddspapi:no_fixture_match 1场；近期状态不足：Shimizu S-Pulse vs T.Verdy（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Auckland FC vs Wellington Phoenix（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Jeju Utd vs Gwangju FC（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Nagoya Grampus Eight vs K.P.Sanga（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Yokohama F Marinos vs Fagiano Okayama（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Sagan Tosu vs Kataller Toyama（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：A.Niigata vs Imabari（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Iwaki vs Montedio Yamagata（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：B.Akita vs Oita Trinita（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Yokohama Fc vs Fujieda MYFC（API-Football 与 InferSports 赛果库均不足 3 场）；盘口核验：sources:1<2 1场；stale>7200s 23场；verified:0<1 1场。",
   "collection_errors": [],
   "collection_notes": [
     "API-Football 未启用",
@@ -790,6 +794,6 @@
     "近期状态不足：Iwaki vs Montedio Yamagata（API-Football 与 InferSports 赛果库均不足 3 场）",
     "近期状态不足：B.Akita vs Oita Trinita（API-Football 与 InferSports 赛果库均不足 3 场）",
     "近期状态不足：Yokohama Fc vs Fujieda MYFC（API-Football 与 InferSports 赛果库均不足 3 场）",
-    "盘口核验：sources:1<2 1场；stale>7200s 24场；verified:0<1 1场"
+    "盘口核验：sources:1<2 1场；stale>7200s 23场；verified:0<1 1场"
   ]
 }
