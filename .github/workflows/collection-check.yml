@@ -1,6 +1,9 @@
 name: Check live collection
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/collection-check.yml']
 permissions:
   contents: read
 jobs:
