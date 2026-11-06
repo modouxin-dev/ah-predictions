@@ -135,5 +135,56 @@
   "oddspapi": "id1000003572513292",
   "infersports": "evt_B60E68VP",
   "odds_api": "3ef62ef56758041178c5280225fe5db7"
+ },
+ "infs-evt_T9PDJG68": {
+  "oddspapi": "id1000019672149866",
+  "infersports": "evt_T9PDJG68",
+  "odds_api": "035a39053fc35e152dee0d9ce77dcbfe"
+ },
+ "infs-evt_VE4A33S2": {
+  "oddspapi": "id1000019672149862",
+  "infersports": "evt_VE4A33S2",
+  "odds_api": "119d76b1e1352db6dcdd502373978ab4"
+ },
+ "infs-evt_CG861VP3": {
+  "oddspapi": "id1000040272151344",
+  "infersports": "evt_CG861VP3"
+ },
+ "infs-evt_DJTPHH8P": {
+  "oddspapi": "id1000040272151338",
+  "infersports": "evt_DJTPHH8P"
+ },
+ "infs-evt_G53HP7Y6": {
+  "oddspapi": "id1000040272151332",
+  "infersports": "evt_G53HP7Y6"
+ },
+ "fd-565851": {
+  "oddspapi": "id1000003572513302",
+  "infersports": "evt_4RXNR9QV",
+  "odds_api": "fe97f5adf397dd6b0a8a9e0a5272f307"
+ },
+ "fd-565853": {
+  "oddspapi": "id1000003572513308",
+  "infersports": "evt_G53T5DY6",
+  "odds_api": "4ca4c7a2a1c15e9121f9a7eaa7f42ddb"
+ },
+ "fd-560633": {
+  "oddspapi": "id1000001772221380",
+  "infersports": "evt_QNDR0QCS",
+  "odds_api": "3903e98a54db0f2cc23095407fe9dad8"
+ },
+ "fd-560640": {
+  "oddspapi": "id1000001772221372",
+  "infersports": "evt_836JXDM7",
+  "odds_api": "842fcc5b9feb8c63054a661ad1fc8926"
+ },
+ "fd-561929": {
+  "oddspapi": "id1000001872340024",
+  "odds_api": "611adbd4bc3a3e1b8b03def9d8a29e54"
+ },
+ "fd-561930": {
+  "oddspapi": "id1000001872340014",
+  "infersports": "evt_QNDSQHCS",
+  "odds_api": "463c2870517b0ad28afcbd8775287064"
  }
 }
