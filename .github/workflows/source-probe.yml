@@ -23,12 +23,15 @@ jobs:
         with: {python-version: "3.12"}
       - run: pip install -r requirements.txt
       - name: Record observable facts only
+        continue-on-error: true
         run: |
-          python -m ah source-probe | tee source_probe_facts.txt
+          python -m ah source-probe --json source_probe_facts.json | tee source_probe_facts.txt
       - name: Upload facts as artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: source-probe-facts
-          path: source_probe_facts.txt
+          path: |
+            source_probe_facts.txt
+            source_probe_facts.json
           if-no-files-found: ignore

@@ -29,7 +29,9 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Data source runtime selfcheck (facts only)
         continue-on-error: true
-        run: python -m ah source-probe
+        run: |
+          # 把运行时代理自检的结构化事实写入仓库，供事后复核；失败也保留事实，不推断原因
+          python -m ah source-probe --json data/source_probe_facts.json
       - name: Collect and regenerate daily report
         run: |
           D=$(date -u +%F)
@@ -43,7 +45,7 @@ jobs:
         run: |
           D=$(date -u +%F)
           [ -f var/source_status.json ] && cp var/source_status.json data/source_status.json || true
-          paths=(reports data/predictions.csv data/snapshots/odds data/source_status.json)
+          paths=(reports data/predictions.csv data/snapshots/odds data/source_status.json data/source_probe_facts.json)
           if [ -d data/history ]; then paths+=(data/history); fi
           scripts/safe_commit.sh --skip-tests -m "daily report $D" "${paths[@]}"
 
