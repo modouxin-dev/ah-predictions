@@ -1,6 +1,6 @@
 {
   "probe": "data-source-runtime-selfcheck",
-  "checked_at": "2026-11-06T15:08:47Z",
+  "checked_at": "2026-11-06T22:38:16Z",
   "evidence_grade": "【运行时代理自检】",
   "sources": [
     {
