@@ -1,0 +1,41 @@
+name: Telegram connection test
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/telegram-connectivity-test.yml']
+permissions:
+  contents: read
+jobs:
+  test:
+    if: github.event.head_commit.message == 'Test Telegram connection once 2026-11-06'
+    runs-on: ubuntu-latest
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+      - name: Send one test message
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+          import urllib.error
+          import urllib.request
+
+          token = os.environ.get('TELEGRAM_BOT_TOKEN')
+          chat = os.environ.get('TELEGRAM_CHAT_ID')
+          if not token or not chat:
+              sys.exit('Telegram secret configuration is missing')
+          payload = json.dumps({'chat_id': chat, 'text': '【先知】推送测试：Telegram 通道连接正常。今日正式日报尚未生成。'}).encode()
+          request = urllib.request.Request('https://api.telegram.org/bot' + token + '/sendMessage', data=payload, headers={'Content-Type': 'application/json'})
+          try:
+              with urllib.request.urlopen(request, timeout=20) as response:
+                  result = json.load(response)
+          except urllib.error.HTTPError as exc:
+              sys.exit('Telegram returned HTTP ' + str(exc.code))
+          except Exception:
+              sys.exit('Telegram request failed')
+          if not result.get('ok'):
+              sys.exit('Telegram did not accept the message')
+          print('Telegram accepted test message')
+          PY
