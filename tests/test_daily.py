@@ -75,6 +75,33 @@ def test_fixtures_are_deduplicated_and_limited_to_upcoming_window():
     assert len(rows) == 1 and rows[0]['match_id'] == 'fd-123'
 
 
+def test_collection_limit_preserves_matches_with_available_form_data():
+    class FD:
+        enabled = True
+        def matches(self, *args):
+            return [{'id': 123, 'competition': {'code': 'PL'}, 'status': 'TIMED',
+                     'utcDate': '2026-11-06T20:00:00Z',
+                     'homeTeam': {'name': 'Everton'}, 'awayTeam': {'name': 'Coventry'}}]
+    class Infer:
+        enabled = True
+        def events(self, day):
+            if day != '2026-11-06':
+                return []
+            return [{'id': 'earlier', 'status': 'scheduled', 'league': {'name': 'QatarSL'},
+                     'scheduled_at': '2026-11-06T14:00:00Z',
+                     'home_team': {'name': 'Team A'}, 'away_team': {'name': 'Team B'}}]
+    rows, errors, total = daily.collect_fixtures(Infer(), FD(), NOW, limit=1)
+    assert not errors and total == 2
+    assert rows[0]['match_id'] == 'fd-123'
+
+
+def test_provider_errors_show_status_without_leaking_request_details():
+    assert daily._collection_error('OddsPapi 赛程', daily.oddspapi.OddsPapiError(
+        'OddsPapi fixtures HTTP 403')) == 'OddsPapi 赛程: OddsPapi fixtures HTTP 403'
+    assert daily._collection_error('OddsPapi 赛程', RuntimeError(
+        'https://example.invalid/?apiKey=SECRET')) == 'OddsPapi 赛程: RuntimeError'
+
+
 def test_does_not_replace_existing_report(tmp_path, monkeypatch):
     report = tmp_path / 'existing.json'
     report.write_text('existing', encoding='utf-8')

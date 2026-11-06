@@ -30,6 +30,8 @@ site/        静态站点输出（GitHub Pages）
 ## 每日流程
 GitHub Actions 每天北京时间 10:00 运行 `daily.yml`。`python -m ah.daily --date YYYY-MM-DD` 自动采集未来 36 小时的赛程、盘口和可用基本面（默认最多初筛 8 场），生成日报 JSON。赛程可用 API-Football、football-data.org、InferSports 和 OddsPapi；盘口由现有快照流程交叉核对，球探数据仅作补充观察。API-Football 停用开关仍然生效。
 
+初筛名额有限时，优先选择当前可通过 football-data 获取球队状态的赛事；其他赛事在仍有名额时进入观察。盘口采集失败或无法匹配赛程的原因会记录在日报的数据源状态中。
+
 推荐需要真实赔率、已验证的同机构多源主盘、近期状态和同机构初盘；已有评分框架只作规则评分，并未证明预测准确率。缺失条件的比赛进入观察名单，不编造推荐；所有赛程源不可用则工作流失败，不发送空白日报。调用方应遵守各数据源配额及服务条款，未配置的可选密钥会跳过。
 
 已有同日期 JSON 时不会覆盖。定时任务不会重复推送；在 GitHub Actions 手动运行 `daily-report` 时，可重新发送当天已有日报。`python -m ah.daily --date YYYY-MM-DD --max-fixtures 1 --preview` 只做采集预览，不写入日报；预览仍会消耗接口额度，并可能写入本地缓存/盘口快照。

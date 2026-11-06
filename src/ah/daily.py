@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 import sys
 from collections import Counter
 from datetime import date, datetime, timedelta, timezone
@@ -25,6 +26,15 @@ SOURCE_URLS = {
     'oddspapi': 'https://oddspapi.io/',
     'infersports': 'https://infersports.dev/',
 }
+
+
+def _collection_error(source, exc):
+    """Expose provider HTTP status without ever logging request URLs or keys."""
+    if isinstance(exc, oddspapi.OddsPapiError):
+        message = str(exc)
+        if re.fullmatch(r'OddsPapi /?[a-z-]+ HTTP [0-9]{3}', message):
+            return f'{source}: {message}'
+    return f'{source}: {type(exc).__name__}'
 
 
 def _settings():
@@ -116,11 +126,18 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None):
                         add('oddspapi-' + str(game['fixtureId']), lid, game.get('participant1Name'),
                             game.get('participant2Name'), game.get('startTime'))
             except Exception as exc:
-                errors.append('OddsPapi 赛程: ' + type(exc).__name__)
+                errors.append(_collection_error('OddsPapi 赛程', exc))
     if not succeeded:
         raise RuntimeError('没有可用的赛程数据源')
-    rows.sort(key=lambda row: (row['kickoff_utc'], row['tier'], row['match_id']))
-    return rows[:limit], errors, len(rows)
+    # The current recommendation pipeline obtains form exclusively from
+    # football-data. Prefer fixtures it can actually evaluate before spending
+    # the bounded snapshot/API budget on observation-only competitions.
+    can_get_form = bool(fd and fd.enabled)
+    chronological = lambda row: (row['kickoff_utc'], row['tier'], row['match_id'])
+    rows.sort(key=lambda row: (not (can_get_form and row['league_id'] in football_data.CODE_BY_LEAGUE),
+                               *chronological(row)))
+    selected = sorted(rows[:limit], key=chronological)
+    return selected, errors, len(rows)
 
 
 def assess(match, rows, fundamentals, cfg, now):
@@ -274,7 +291,18 @@ def build_report(report_date, now=None, max_fixtures=8):
     for match in matches:
         if match['match_id'].startswith('oddspapi-'):
             snapshotter.map.setdefault(match['match_id'], {})['oddspapi'] = match['match_id'].split('-', 1)[1]
-    snapshotter.run(matches, ['open', 'report'])
+    snapshot_result = snapshotter.run(matches, ['open', 'report'])
+    # Keep the structured, credential-free source failure codes. Previously
+    # snapshot errors were discarded even when a second odds source failed.
+    snapshot_issues = Counter(
+        reason for phase, reasons in snapshot_result.get('reasons', {}).items()
+        if phase.endswith('|report') for reason in set(reasons)
+        if ':fixtures_error(' in reason or ':historical_error(' in reason
+        or ':no_fixture_match' in reason or ':odds_error(' in reason
+    )
+    if snapshot_issues:
+        notes.append('盘口采集：' + '；'.join(f'{reason} {count}场'
+                                          for reason, count in sorted(snapshot_issues.items())))
     rows = odds_snapshots.load_rows(snapshotter.p['csv'])
     cfg = odds_snapshots.load_cross_verification()
     report = {'date': report_date, 'generated_at': datetime.now(UTC).strftime('%Y-%m-%dT%H:%M:%SZ'),
