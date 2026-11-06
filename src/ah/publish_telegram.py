@@ -507,6 +507,29 @@ def no_pick_lines(rep: dict, pol: dict | None = None) -> list[str]:
     return lines
 
 
+def observation_blocks(rep: dict) -> list[str]:
+    """Show real, scored watchlist observations without calling them picks."""
+    candidates = [w for w in rep.get('watchlist') or [] if isinstance(w.get('observation'), dict)]
+    candidates.sort(key=lambda w: -float(w['observation'].get('score', 0)))
+    blocks = []
+    for w in candidates[:5]:
+        o = w['observation']
+        reason = w.get('withheld_reason') or w.get('withheld_category') or '未达到正式发布门槛'
+        age = '；报价超过30分钟' if o.get('freshness') == 'stale_downgrade' else ''
+        blocks.append('\n'.join([
+            f"⚽ <b>{e(w['home'])} vs {e(w['away'])}</b>",
+            f"{e(w.get('league', ''))} · {bj(w.get('kickoff_utc'))} 北京时间",
+            f"模型观察：{e(o['pick_team'])} {ln(o['line'])} · 评分 {e(o['score'])}（非正式推荐）",
+            f"{e(o['bookmaker'])} 初盘 {ln(o['line_open'])} → 当前 {ln(o['line'])} @ {e(o['odds'])} 港盘",
+            f"近况（最新在前，W胜/D平/L负）：{e(o['home_form'])} / {e(o['away_form'])}",
+            f"报价：{e(o['source'])} · {bj(o['price_ts'])} 北京时间{age}",
+            f"未正式推荐：{e(reason)}",
+        ]))
+    if not blocks:
+        return []
+    return [sec('🔎', '比赛观察分析', '非正式推荐，不计战绩') + '\n' + '\n\n'.join(blocks)]
+
+
 ANNOUNCE = "🆕\ufe0f 看板已升级"
 
 
@@ -537,12 +560,17 @@ def daily(rep: dict, stats: dict | None = None, site_url: str = SITE_URL, lab: l
           announce: bool = False) -> list[str]:
     picks = policy.published(rep)
     head = f"<b>【先知】⚽ 亚盘日报 {e(rep['date'])}</b>\n{date_line(rep, len(picks))}"
+    if rep.get('edition') == 'recheck':
+        head += f"\n🔄 实时复核：{bj(rep.get('generated_at'))} 北京时间"
+        if rep.get('revision_url'):
+            head += f' · <a href="{html.escape(rep["revision_url"], quote=True)}">本次复核记录</a>'
     if announce:
         head = (f'<b>{ANNOUNCE}</b> 👉 <a href="{html.escape(SITE_URL, quote=True)}">'
                 f'{e(SITE_URL.removeprefix("https://").rstrip("/"))}</a>\n\n' + head)
     blocks = [head]
     if not picks:
         blocks.append("\n".join(no_pick_lines(rep)))
+    blocks += observation_blocks(rep)
     blocks += [DIV + "\n" + compact_block(p, stats) for p in picks]
     gone = [p for p in rep.get("picks") or [] if p not in picks
             and (p.get("cancelled") or p.get("confidence") == "cancelled")]

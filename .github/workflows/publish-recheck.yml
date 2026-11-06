@@ -1,0 +1,63 @@
+name: Publish live recheck
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-recheck.yml']
+permissions:
+  contents: write
+concurrency:
+  group: daily-report
+  cancel-in-progress: false
+jobs:
+  recheck:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.head_commit.message == 'Send one live prediction analysis report' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: src
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+      ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+      ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}
+      FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
+      FIVEDOLLAR_KEY: ${{ secrets.FIVEDOLLAR_KEY }}
+      SITE_URL: ${{ vars.SITE_URL }}
+      GITHUB_AH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install -r requirements.txt
+      - name: Check bot and destination
+        run: |
+          python - <<'PY'
+          import os, requests
+          token, chat = os.environ.get('TELEGRAM_BOT_TOKEN'), os.environ.get('TELEGRAM_CHAT_ID')
+          if not token or not chat:
+              raise SystemExit('Telegram 配置不完整')
+          try:
+              base = 'https://api.telegram.org/bot' + token + '/'
+              who = requests.get(base + 'getMe', timeout=20)
+              who.raise_for_status()
+              bot = who.json()['result']
+              group = requests.post(base + 'getChat', json={'chat_id': chat}, timeout=20)
+              group.raise_for_status()
+              print('已确认机器人 @' + bot['username'] + ' 与目标会话可访问')
+          except Exception as exc:
+              raise SystemExit('Telegram 连接检查失败：' + type(exc).__name__) from None
+          PY
+      - name: Build live report
+        run: |
+          D=$(date -u +%F)
+          F="reports/rechecks/${D:0:4}/${D:5:2}/${D}-${GITHUB_RUN_ID}.json"
+          echo "RECHECK_FILE=$F" >> "$GITHUB_ENV"
+          python -u -m ah.recheck collect --path "$F"
+      - name: Save report and official records
+        run: scripts/safe_commit.sh --skip-tests -m "record live recheck $GITHUB_RUN_ID" reports/rechecks data/predictions.csv data/snapshots/odds
+      - name: Send report to Telegram
+        run: python -m ah.recheck send --path "$RECHECK_FILE"

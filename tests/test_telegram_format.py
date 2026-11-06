@@ -48,6 +48,21 @@ def test_no_picks_and_escape():
     assert "A&lt;b&gt;&amp;" in m and "x &lt; y" in m
 
 
+def test_scored_observation_is_explicitly_not_a_formal_recommendation():
+    rep = {'date': '2026-11-06', 'picks': [], 'watched': [], 'watchlist': [{
+        'home': 'Everton & Co', 'away': 'Coventry', 'league': '英超',
+        'kickoff_utc': '2026-11-06T20:00:00Z', 'withheld_reason': '评分不足',
+        'observation': {'pick_team': 'Everton & Co', 'line': -0.75, 'line_open': -0.5,
+                        'odds': 0.91, 'score': 3.9, 'home_form': 'WWWWW', 'away_form': 'DDDDD',
+                        'bookmaker': 'pinnacle', 'source': 'oddspapi',
+                        'price_ts': '2026-11-06T08:00:00Z', 'freshness': 'stale_downgrade'}}]}
+    msg = '\n'.join(tg.daily(rep))
+    assert '推荐 0 场' in msg and '比赛观察分析' in msg and '非正式推荐，不计战绩' in msg
+    assert 'Everton &amp; Co' in msg and '评分 3.9' in msg and '报价超过30分钟' in msg
+    assert '未正式推荐：评分不足' in msg
+    _balanced(msg)
+
+
 def test_split_under_limit():
     p = {**PORTO, "match_id": "x"}
     msgs = tg.split(["长" * 3000, "短", "长" * 5000])

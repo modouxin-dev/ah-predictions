@@ -49,6 +49,25 @@ def test_unverified_stale_or_missing_fundamentals_are_not_recommended():
     assert daily.assess(fixture(), quotes()[:-1], FORM, CFG, NOW)[0] is None
 
 
+def test_low_score_is_observation_not_official_pick():
+    rows = quotes()
+    rows[-1]['ah_home_line'] = '-0.5'
+    observation = {}
+    pick, why = daily.assess(fixture(), rows,
+                             {'form': {'home': 'WWWWW', 'away': 'DDDDD'}},
+                             CFG, NOW, observation=observation)
+    assert pick is None and why == '基本面与盘口评分不足'
+    assert observation['pick_team'] == 'Everton'
+    assert observation['model_confidence'] == 'low'
+    assert observation['score'] == pytest.approx(3.9)
+    assert observation['home_form'] == 'WWWWW' and observation['line_open'] == -0.5
+    for row in rows:
+        row['verification'] = 'single'
+    blocked = {}
+    assert daily.assess(fixture(), rows, FORM, CFG, NOW, observation=blocked)[0] is None
+    assert not blocked
+
+
 def test_age_downgrades_confidence_without_bypassing_other_checks():
     aged = NOW + timedelta(minutes=31)
     pick, reason = daily.assess(fixture(), quotes(), FORM, CFG, aged)

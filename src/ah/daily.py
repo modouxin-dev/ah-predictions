@@ -149,7 +149,7 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None):
     return selected, errors, len(rows)
 
 
-def assess(match, rows, fundamentals, cfg, now):
+def assess(match, rows, fundamentals, cfg, now, observation=None):
     """Return a supported pick, or a reason for withholding the match."""
     mid = match['match_id']
     if parse_dt(match['kickoff_utc']) <= now:
@@ -207,7 +207,23 @@ def assess(match, rows, fundamentals, cfg, now):
             risks=['尚未自动核实伤停及首发；规则评分未经独立回测，赛前应再次核查'],
             sources=list(dict.fromkeys(['https://www.football-data.org/'] +
                                       [SOURCE_URLS[r['source']] for r in mains if r.get('source') in SOURCE_URLS]))))
-    picks = analyze.select(candidates, _settings())
+    settings = _settings()
+    picks = analyze.select(candidates, settings)
+    # Preserve a separately labelled low-confidence model observation for the
+    # report. This does not alter official picks, publish rules, or the ledger.
+    if observation is not None:
+        low_settings = {**settings, 'min_confidence_to_publish': 'low'}
+        observed = analyze.select(candidates, low_settings)
+        if observed:
+            best = observed[0]
+            observation.update({
+                'pick_side': best['pick_side'], 'pick_team': match[best['pick_side']],
+                'line': best['line'], 'line_open': best['line_open'], 'odds': best['odds'],
+                'score': best['score'], 'model_confidence': best['confidence'],
+                'home_form': forms['home'], 'away_form': forms['away'],
+                'bookmaker': quote['bookmaker'], 'source': quote['source'],
+                'price_ts': quote['price_ts'], 'freshness': verification.get('freshness'),
+            })
     if not picks:
         return None, '基本面与盘口评分不足'
     picked = picks[0]
@@ -340,11 +356,16 @@ def build_report(report_date, now=None, max_fixtures=8):
                 fundamental = football_data.fundamentals(fd, code, match['home'], match['away'], match['kickoff_utc'], 'home')
             except Exception as exc:
                 errors.append('基本面: ' + type(exc).__name__)
-        pick, why = assess(match, rows, fundamental, cfg, datetime.now(UTC))
+        observation = {}
+        pick, why = assess(match, rows, fundamental, cfg, datetime.now(UTC), observation=observation)
         if pick:
+            if observation:
+                pick['observation'] = observation
             report['picks'].append(pick)
         else:
             item = {**match, 'confidence': None, 'withheld_category': why, 'withheld_reason': why}
+            if observation:
+                item['observation'] = observation
             if mid in titan:
                 item['titan007_observation'] = titan[mid]
             report['watchlist'].append(item)
