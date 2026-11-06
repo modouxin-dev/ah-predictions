@@ -1,0 +1,47 @@
+name: Check Telegram push readiness
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/telegram-preflight.yml']
+permissions:
+  contents: read
+jobs:
+  check:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.head_commit.message == 'Check Telegram push readiness' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+      - name: Check configured bot and destination
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.error, urllib.request
+
+          token, chat = os.environ.get('TELEGRAM_BOT_TOKEN'), os.environ.get('TELEGRAM_CHAT_ID')
+          if not token or not chat:
+              raise SystemExit('Telegram token or chat ID missing')
+          def call(method, args=None):
+              req = urllib.request.Request('https://api.telegram.org/bot' + token + '/' + method,
+                                           data=json.dumps(args or {}).encode(),
+                                           headers={'Content-Type': 'application/json'})
+              try:
+                  with urllib.request.urlopen(req, timeout=15) as response:
+                      return json.load(response)['result']
+              except urllib.error.HTTPError as exc:
+                  raise SystemExit(method + ' HTTP ' + str(exc.code)) from None
+              except Exception as exc:
+                  raise SystemExit(method + ' ' + type(exc).__name__) from None
+          bot = call('getMe')
+          print('TOKEN_OK bot=@' + bot['username'], flush=True)
+          target = call('getChat', {'chat_id': chat})
+          print('CHAT_OK type=' + str(target.get('type')), flush=True)
+          member = call('getChatMember', {'chat_id': chat, 'user_id': bot['id']})
+          status = member.get('status')
+          print('MEMBER_STATUS ' + str(status), flush=True)
+          if status in ('left', 'kicked') or (status == 'restricted' and not member.get('can_send_messages')):
+              raise SystemExit('Bot has no access to send in this chat')
+          print('CHECK_COMPLETE Actual delivery still needs sendMessage', flush=True)
+          PY
