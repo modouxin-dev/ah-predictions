@@ -12,7 +12,7 @@ roles:
   standings:   [football_data, titan007_live_fixtures, websearch_previews]       # bfdata 带排名
   asian_handicap_line: [titan007_odds, api_football_odds, the_odds_api, oddspapi, fivedollar]  # 多公司盘口交叉核对：api_football 优先，其次 the_odds_api，titan007 备用
 api_football:
-  enabled: true         # 2026-11-06 用户更换新账号/密钥后恢复；若再次 suspended 会自动写熔断 flag，状态由 InferSports 赛果库兜底（见 form_history.py）
+  enabled: false        # 2026-11-06 /status 实测账号 suspended；暂停自动请求，恢复后再启用
   kill_env: AH_API_FOOTBALL_DISABLED
   disabled_flag: data/cache/api_football_disabled.json
   suspended_at: "2026-11-05T09:00:00Z"
