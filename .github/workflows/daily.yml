@@ -37,9 +37,19 @@ jobs:
           git add reports data && git commit -m "daily report $(date -u +%F)" || echo "nothing to commit"
           git push
       - name: Publish Telegram
-        if: ${{ env.TELEGRAM_BOT_TOKEN != '' }}
+        if: ${{ env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHAT_ID != '' }}
         env:
           SITE_URL: ${{ vars.SITE_URL }}
         run: |
-          D=$(date -u +%F); F=reports/${D:0:4}/${D:5:2}/$D.json
-          [ -f "$F" ] && python -m ah telegram $D || echo "skip"
+          D=$(date -u +%F)
+          F=reports/${D:0:4}/${D:5:2}/$D.json
+          echo "=== Telegram push check ==="
+          echo "Date: $D"
+          echo "Report file: $F"
+          if [ ! -f "$F" ]; then
+            echo "❌ 没有找到今日报告 JSON，跳过推送"
+            exit 0
+          fi
+          echo "✅ 找到报告，开始推送..."
+          python -m ah telegram $D
+          echo "✅ 推送完成"
