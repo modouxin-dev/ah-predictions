@@ -49,6 +49,12 @@ def test_unverified_stale_or_missing_fundamentals_are_not_recommended():
     assert daily.assess(fixture(), quotes()[:-1], FORM, CFG, NOW)[0] is None
 
 
+def test_match_started_during_collection_is_not_recommended():
+    after_kickoff = datetime(2026, 11, 6, 20, 1, tzinfo=UTC)
+    pick, reason = daily.assess(fixture(), quotes(after_kickoff), FORM, CFG, after_kickoff)
+    assert pick is None and reason == '比赛已开始'
+
+
 def test_fixtures_are_deduplicated_and_limited_to_upcoming_window():
     class FD:
         enabled = True
@@ -99,3 +105,21 @@ def test_snapshot_network_error_does_not_store_credentials(tmp_path):
     snap.map['m1'] = {'oddspapi': 'fixture-id'}
     _, reasons = snap._rows_oddspapi(fixture(), ['report'], NOW, NOW, False)
     assert reasons and all(reason == 'oddspapi:historical_error(RuntimeError)' for reason in reasons)
+
+
+def test_odds_papi_maps_premier_league_for_cross_check(tmp_path):
+    class Papi:
+        def __init__(self):
+            self.calls = []
+        def remaining(self):
+            return 100
+        def fixtures(self, tournament, _start, _end):
+            self.calls.append(tournament)
+            return [{'fixtureId': 'id123', 'participant1Name': 'Everton', 'participant2Name': 'Coventry',
+                     'startTime': '2026-11-06T20:00:00Z'}]
+    papi = Papi()
+    snap = daily.odds_snapshots.Snapshotter('2026-11-06', papi=papi, snap_dir=tmp_path,
+                                           ah_markets={}, now=lambda: NOW)
+    snap._map_oddspapi([fixture()])
+    assert papi.calls == [17]
+    assert snap.map['m1']['oddspapi'] == 'id123'

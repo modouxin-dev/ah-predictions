@@ -41,7 +41,8 @@ BACKOFF_MAX_S = 60.0
 RETRIES = 3
 # leagues.yaml id -> OddsPapi tournamentId（GET /v4/tournaments?sportId=10，2026-11-04 实测）
 TOURNAMENTS = {"acl_elite": 463, "acl_two": 668, "qsl": 825, "spl": 955, "j1": 196, "j2": 402,
-               "k1": 410, "csl": 649, "aleague": 136, "ucl": 7, "championship": 18}
+               "k1": 410, "csl": 649, "aleague": 136, "ucl": 7, "championship": 18,
+               "epl": 17, "laliga": 8, "seriea": 23, "bundesliga": 35, "ligue1": 34, "uel": 679}
 ASIAN_BOOKS = ("pinnacle", "sbobet", "singbet", "dafabet", "3et", "sabasports", "ps3838", "198bet")
 TTL = {"fixtures": 12 * 3600, "odds": 1800, "historical-odds": 1800}
 

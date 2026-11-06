@@ -122,6 +122,12 @@ oddspapi:
     aleague: 136
     ucl: 7
     championship: 18
+    epl: 17
+    laliga: 8
+    seriea: 23
+    bundesliga: 35
+    ligue1: 34
+    uel: 679
   ah_markets: "config/oddspapi_ah_markets.json（marketId 1060..1084 'Asian Handicap h'，outcome '1'=主 '2'=客；h=主队让球数，负=主让）"
   bookmakers_on_free: 366   # 订阅包含 366 家（含 pinnacle/sbobet/singbet/dafabet/ps3838/sabasports）
   tested_2026-11-04: "亚冠精英 Buriram-Kashima（id1000046373835744）242 家有赔率；主盘 Pinnacle 主+0.25 @2.07/1.80、SBOBet 主+0.25 @2.00/1.84、Singbet 主+0.5 @1.81/2.031"

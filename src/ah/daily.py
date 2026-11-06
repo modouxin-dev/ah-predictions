@@ -126,6 +126,8 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None):
 def assess(match, rows, fundamentals, cfg, now):
     """Return a supported pick, or a reason for withholding the match."""
     mid = match['match_id']
+    if parse_dt(match['kickoff_utc']) <= now:
+        return None, '比赛已开始'
     verification = odds_snapshots.evaluate_cross_verification(rows, mid, 'report', cfg, now=now)
     mains = [r for r in rows if r.get('match_id') == mid and r.get('stage') == 'report'
              and str(r.get('is_main')) == '1' and r.get('verification') == 'verified']
