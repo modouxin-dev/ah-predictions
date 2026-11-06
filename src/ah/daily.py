@@ -16,7 +16,7 @@ from datetime import date, datetime, timedelta, timezone
 import yaml
 
 from . import CONFIG
-from . import analyze, api_football, consensus, enrich, fetch_fixtures, fetch_odds, fivedollar, football_data, infersports, odds_api, odds_snapshots, oddspapi, policy
+from . import analyze, api_football, consensus, enrich, fetch_fixtures, form_history, fetch_odds, fivedollar, football_data, infersports, odds_api, odds_snapshots, oddspapi, policy
 from .match import BJT, parse_dt, titan_kickoff_utc
 from .render_report import report_paths, validate
 
@@ -375,6 +375,7 @@ def build_report(report_date, now=None, max_fixtures=None):
               'not_covered': f'筛查上限 {max_fixtures} 场；窗口内共发现 {total} 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。',
               'collection_errors': errors, 'collection_notes': notes}
     verification_failures = Counter()
+    history, apif_done = None, set()
     for match in matches:
         mid = match['match_id']
         check = odds_snapshots.evaluate_cross_verification(rows, mid, 'report', cfg, now=datetime.now(UTC))
@@ -389,6 +390,30 @@ def build_report(report_date, now=None, max_fixtures=None):
                 fundamental = football_data.fundamentals(fd, code, match['home'], match['away'], match['kickoff_utc'], 'home')
             except Exception as exc:
                 errors.append('基本面: ' + type(exc).__name__)
+        if (fundamental is None and not code and _usable_verification(check) and has_verified):
+            # football-data 不覆盖的联赛（亚洲等）：API-Football → InferSports 赛果库，逐级兜底。
+            if history is None:
+                history = form_history.load()
+                added, hist_notes = form_history.refresh_infersports(
+                    infs, now, {str(v).casefold(): k for k, v in
+                                ((yaml.safe_load((CONFIG / 'sources.yaml').read_text(encoding='utf-8')) or {})
+                                 .get('infersports') or {}).get('leagues', {}).items()}, history)
+                history += added
+                notes += hist_notes
+                if added:
+                    form_history.save(history)
+            league_cfg = next((x for x in _leagues() if x['id'] == match['league_id']), None)
+            if league_cfg and match['league_id'] not in apif_done:
+                apif_done.add(match['league_id'])
+                added, hist_notes = form_history.refresh_api_football(apif, league_cfg, history)
+                history += added
+                notes += hist_notes
+                if added:
+                    form_history.save(history)
+            fundamental = form_history.fundamentals(history, match['league_id'], match['home'], match['away'],
+                                                    match['kickoff_utc'])
+            if fundamental is None:
+                notes.append(f"近期状态不足：{match['home']} vs {match['away']}（API-Football 与 InferSports 赛果库均不足 3 场）")
         forms = (fundamental or {}).get('form') or {}
         if (_usable_verification(check) and has_verified and fd5.enabled
                 and match['league_id'] in fd5_leagues

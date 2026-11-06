@@ -242,3 +242,54 @@ def test_observation_fill_respects_daily_cap_and_never_invents():
     assert tg.observation_blocks(rep, 5)[0].count('⚽') == 2
     assert tg.observation_blocks(rep, 7) == []
     assert tg.observation_blocks({'picks': [], 'watchlist': [w(0)]})[0].count('⚽') == 1
+
+
+def _hist(source, league, home, away, day, hg, ag, eid):
+    return {'source': source, 'event_id': eid, 'league_id': league, 'kickoff_utc': f'2026-10-{day:02d}T12:00:00Z',
+            'home': home, 'away': away, 'home_goals': hg, 'away_goals': ag}
+
+
+def test_form_history_prefers_api_football_and_falls_back_to_infersports():
+    from ah import form_history as fh
+    rows = []
+    for i, (h, a, hg, ag) in enumerate([('Al Wakrah', 'X1', 2, 0), ('X2', 'Al Wakrah', 1, 1), ('Al Wakrah', 'X3', 0, 1),
+                                        ('Al Shahaniya', 'X4', 3, 0), ('X5', 'Al Shahaniya', 2, 2),
+                                        ('Al Shahaniya', 'X6', 1, 0)]):
+        rows.append(_hist('infersports', 'qsl', h, a, 10 + i, hg, ag, f'i{i}'))
+    out = fh.fundamentals(rows, 'qsl', 'Al Wakrah', 'Al Shahaniya', '2026-11-06T16:30:00Z')
+    assert out['source'] == 'infersports'
+    assert out['form'] == {'home': 'LDW', 'away': 'WDW'}
+    # 更高优先级来源足够时优先使用，且不与低优先级来源混算
+    better = [_hist('api_football', 'qsl', 'Al Wakrah', f'Y{i}', 20 + i, 1, 0, f'a{i}') for i in range(3)] + \
+             [_hist('api_football', 'qsl', 'Al Shahaniya', f'Z{i}', 20 + i, 0, 1, f'b{i}') for i in range(3)]
+    out = fh.fundamentals(rows + better, 'qsl', 'Al Wakrah', 'Al Shahaniya', '2026-11-06T16:30:00Z')
+    assert out['source'] == 'api_football' and out['form'] == {'home': 'WWW', 'away': 'LLL'}
+
+
+def test_form_history_returns_none_when_not_enough_games_and_ignores_future():
+    from ah import form_history as fh
+    rows = [_hist('infersports', 'qsl', 'Al Wakrah', 'X', 10, 1, 0, 'a'), _hist('infersports', 'qsl', 'Al Wakrah', 'Y', 11, 1, 0, 'b'),
+            _hist('infersports', 'qsl', 'Al Wakrah', 'Z', 12, 1, 0, 'c')]
+    assert fh.fundamentals(rows, 'qsl', 'Al Wakrah', 'Al Shahaniya', '2026-11-06T16:30:00Z') is None
+    assert fh.team_form(rows, 'Al Wakrah', '2026-10-11T12:00:00Z') == 'W'   # 开球时间之后的比赛不计入
+
+
+def test_infersports_score_extraction_never_guesses():
+    from ah import form_history as fh
+    assert fh.extract_score({'score': {'home': 2, 'away': 1}}) == (2, 1)
+    assert fh.extract_score({'home_score': '0', 'away_score': '0'}) == (0, 0)
+    assert fh.extract_score({'status': 'finished'}) is None
+    assert fh.extract_score({'score': {'home': None, 'away': 1}}) is None
+    assert fh.is_finished({'status': 'Finished'}) and not fh.is_finished({'status': 'scheduled'})
+
+
+def test_infersports_backfill_reports_missing_score_fields(tmp_path):
+    from ah import form_history as fh
+    class Infer:
+        enabled = True
+        def events(self, day):
+            return [{'id': 'e1', 'status': 'finished', 'league': {'name': 'QatarSL'},
+                     'scheduled_at': '2026-11-01T12:00:00Z', 'home_team': {'name': 'A'}, 'away_team': {'name': 'B'}}]
+    added, notes = fh.refresh_infersports(Infer(), NOW, {'qatarsl': 'qsl'}, [], max_dates=1,
+                                          covered_path=tmp_path / 'covered.json')
+    assert added == [] and any('没有可识别的比分字段' in n for n in notes)
