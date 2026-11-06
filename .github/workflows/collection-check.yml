@@ -23,4 +23,34 @@ jobs:
         with: {python-version: '3.12'}
       - run: pip install -r requirements.txt
       - name: Preview current fixtures and recommendations
-        run: python -u -m ah.daily --max-fixtures 8 --preview
+        run: |
+          python -u - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          from ah import analyze, daily, odds_snapshots
+
+          now = datetime.now(timezone.utc)
+          date = now.date().isoformat()
+          original = analyze.select
+          def inspect(candidates, cfg):
+              for candidate in candidates:
+                  print('SCORE', json.dumps({'match': candidate.match_id, 'side': candidate.pick_side,
+                        'score': analyze.score(candidate), 'features': candidate.features,
+                        'line_open': candidate.line_open, 'line': candidate.line}, ensure_ascii=False), flush=True)
+              return original(candidates, cfg)
+          analyze.select = inspect
+          report = daily.build_report(date, max_fixtures=12)
+          rows = odds_snapshots.load_rows(odds_snapshots.paths(date)['csv'])
+          cfg = odds_snapshots.load_cross_verification()
+          print('REPORT', json.dumps(report, ensure_ascii=False), flush=True)
+          for item in report['watchlist']:
+              mid = item['match_id']
+              check = odds_snapshots.evaluate_cross_verification(rows, mid, 'report', cfg,
+                                                                  now=datetime.now(timezone.utc))
+              selected = [{k: r.get(k) for k in ('source', 'bookmaker', 'verification', 'price_ts',
+                          'ah_home_line', 'odds_home', 'odds_away')}
+                          for r in rows if r.get('match_id') == mid and r.get('stage') == 'report'
+                          and str(r.get('is_main')) == '1' and (r.get('verification') == 'verified'
+                          or r.get('bookmaker') == 'pinnacle')]
+              print('ODDS', json.dumps({'match': mid, 'check': check, 'quotes': selected}, ensure_ascii=False), flush=True)
+          PY
