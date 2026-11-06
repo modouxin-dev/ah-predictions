@@ -80,7 +80,7 @@
 | 两者是否与 `settings.yaml` 一致 | 【未验证】 | 同上；由 `resolve_chat()` 在运行时自检 |
 | 目标群是否真的收到消息 | 【未验证】 | 需 Telegram 端收件记录或 `message_id` 入账 |
 | 定时任务是否被 GitHub 自动禁用、`02:00Z` 的实际启动延迟 | 【未验证】 | 需仓库管理员在 Actions 页面确认 |
-| 所持令牌能否修改 `.github/workflows/**` | 实测后记录 | fine-grained PAT 的 Workflows 权限接口不可读 |
+| 所持令牌能否修改 `.github/workflows/**` | 【已验证】能 | 权限接口读不到，但 REST Git Data API 原子提交实测成功，workflow 文件已同步到 `main` |
 
 ## 7. 本地复现
 
