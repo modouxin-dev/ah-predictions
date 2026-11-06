@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   check:
-    if: github.event.head_commit.message == 'Check football sources once 2026-11-06'
+    if: github.event.head_commit.message == 'Inspect odds sources once 2026-11-06'
     runs-on: ubuntu-latest
     env:
       API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
@@ -50,7 +50,8 @@ jobs:
               status, data = get('https://api.the-odds-api.com/v4/sports?' + urllib.parse.urlencode({'apiKey':key}))
               print('The Odds API sports HTTP:', status)
               active = {s['key'] for s in data if s.get('active')} if isinstance(data, list) else set()
-              sports = sorted({competitions[f['competition']] for f in fixtures} & active)
+              requested = {'soccer_japan_j_league', 'soccer_australia_aleague', 'soccer_efl_champ', 'soccer_france_ligue_one', 'soccer_germany_bundesliga', 'soccer_spain_la_liga'}
+              sports = sorted(({competitions[f['competition']] for f in fixtures} or requested) & active)
               for sport in sports[:6]:
                   params = urllib.parse.urlencode({'apiKey':key, 'regions':'eu', 'markets':'spreads', 'oddsFormat':'decimal'})
                   status, events = get('https://api.the-odds-api.com/v4/sports/' + sport + '/odds?' + params)
