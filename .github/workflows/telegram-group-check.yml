@@ -39,6 +39,7 @@ jobs:
           webhook = get('getWebhookInfo')['result']
           if webhook.get('url'):
               raise SystemExit('Active webhook: updates cannot be inspected with getUpdates')
+          # Do not set an offset: inspecting must not acknowledge pending updates.
           result = get('getUpdates', {'timeout': 0, 'limit': 100})['result']
           chats = {}
           for update in result:
