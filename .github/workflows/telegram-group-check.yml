@@ -1,0 +1,60 @@
+name: Check Telegram group IDs
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/telegram-group-check.yml']
+permissions:
+  contents: read
+jobs:
+  check:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.head_commit.message == 'Inspect Telegram group IDs' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+    steps:
+      - name: Inspect without publishing group details
+        run: |
+          python3 - <<'PY'
+          import base64, json, os, subprocess, urllib.error, urllib.parse, urllib.request
+          from pathlib import Path
+
+          token = os.environ.get('TELEGRAM_BOT_TOKEN')
+          if not token:
+              raise SystemExit('Telegram bot token is missing')
+          base = 'https://api.telegram.org/bot' + token + '/'
+          def get(method, params=None):
+              try:
+                  url = base + method + ('?' + urllib.parse.urlencode(params) if params else '')
+                  with urllib.request.urlopen(url, timeout=15) as response:
+                      return json.load(response)
+              except urllib.error.HTTPError as exc:
+                  raise SystemExit(method + ' HTTP ' + str(exc.code)) from None
+              except Exception as exc:
+                  raise SystemExit(method + ' ' + type(exc).__name__) from None
+
+          me = get('getMe')['result']
+          print('Bot @' + me['username'], flush=True)
+          webhook = get('getWebhookInfo')['result']
+          if webhook.get('url'):
+              raise SystemExit('Active webhook: updates cannot be inspected with getUpdates')
+          result = get('getUpdates', {'timeout': 0, 'limit': 100})['result']
+          chats = {}
+          for update in result:
+              for name in ('message', 'edited_message', 'channel_post', 'edited_channel_post',
+                           'my_chat_member', 'chat_member'):
+                  chat = (update.get(name) or {}).get('chat') or {}
+                  if chat.get('type') in ('group', 'supergroup', 'channel') and chat.get('id'):
+                      chats[str(chat['id'])] = {'id': chat['id'], 'type': chat['type'],
+                                                'title': str(chat.get('title') or '')[:25]}
+          key = Path('/tmp/group-id-public.pem')
+          key.write_text('''-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAy2xKSWxrH+khsLJivXtV\nzoDGAMFNJ1ooLdU5DyW0/kSSyL0jloe1Cp15yE2dVi25i11EJDoCF0aIN5M3zDzb\nDOQy/KD8SOd/b39wAs4BSR5FWD5FLH2yvsZ3LWnG3NszF5ZtkR5y4AKhA/VPhopp\n0G+89qd8lvyHO3ZtZfqQeeB3qoIg1wStxMJagsFT4wiXOL6VoLtEUHzblFx+5Xh9\nUrBWUN77dMIiGUshr3vFZRGWXiidKPKa4d0QXcwnDORsNKkRuS1ukj4CjKl3P8Ex\nOri2MtK6wDqkzLsMIIfHvgMBuOL9sEEodPq2H6o0D26xMCV4b7fNkEAosUeAZi3R\nCQIDAQAB\n-----END PUBLIC KEY-----\n''')
+          for chat in chats.values():
+              raw = json.dumps(chat, ensure_ascii=False, separators=(',', ':')).encode()
+              encrypted = subprocess.run(['openssl', 'pkeyutl', '-encrypt', '-pubin', '-inkey', str(key),
+                                          '-pkeyopt', 'rsa_padding_mode:oaep', '-pkeyopt', 'rsa_oaep_md:sha256'],
+                                         input=raw, capture_output=True, check=True).stdout
+              print('ENCRYPTED_GROUP ' + base64.b64encode(encrypted).decode(), flush=True)
+          print('GROUP_COUNT', len(chats), flush=True)
+          PY
