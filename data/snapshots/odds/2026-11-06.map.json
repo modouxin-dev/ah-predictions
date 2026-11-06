@@ -57,5 +57,21 @@
   "oddspapi": "id1000002371945402",
   "infersports": "evt_836QTBM7",
   "odds_api": "0d53a5dbd9d4f4716e923b97e92dfb0d"
+ },
+ "infs-evt_G5390RY6": {
+  "oddspapi": "id1000082573374566",
+  "infersports": "evt_G5390RY6"
+ },
+ "infs-evt_YT19Y8BW": {
+  "oddspapi": "id1000095573215844",
+  "infersports": "evt_YT19Y8BW"
+ },
+ "infs-evt_CG8SAWP3": {
+  "oddspapi": null,
+  "infersports": "evt_CG8SAWP3"
+ },
+ "infs-evt_H8B1SG26": {
+  "oddspapi": "id1000082575913806",
+  "infersports": "evt_H8B1SG26"
  }
 }
