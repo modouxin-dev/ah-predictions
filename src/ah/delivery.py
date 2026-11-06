@@ -61,18 +61,38 @@ def report_fingerprint(report: dict) -> str:
     ).hexdigest()[:16]
 
 
-def should_send(date: str, sha: str, chat: str, path: Path | None = None) -> tuple[bool, str]:
-    for row in load_ledger(path)["deliveries"]:
-        if (row.get("date") == date and row.get("report_sha") == sha
-                and str(row.get("chat_id")) == str(chat)
-                and row.get("status") == "sent" and row.get("message_ids")):
-            return False, "ledger_hit"
-    return True, "no_delivery_record"
+def _force() -> bool:
+    """手动触发允许重发；定时触发严格一天一次，避免 GitHub 补跑刷屏。"""
+    return os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
+
+
+def should_send(date: str, sha: str, chat: str, path: Path | None = None,
+                picks_count: int = 0, force: bool | None = None) -> tuple[bool, str]:
+    """幂等键 = (date, chat_id)，一天只正式推送一次。
+
+    例外（防「又不出现比赛」）：
+    - 手动 workflow_dispatch 允许强制重发；
+    - 已送达的版本是 0 场、本次重采有正式推荐时，允许补发一条升级版。
+    report_sha 仍记录在台账中用于审计，但不再作为幂等键。
+    """
+    if force is None:
+        force = _force()
+    if force:
+        return True, "forced_by_manual_dispatch"
+    rows = [r for r in load_ledger(path)["deliveries"]
+            if r.get("date") == date and str(r.get("chat_id")) == str(chat)
+            and r.get("status") == "sent" and r.get("message_ids")]
+    if not rows:
+        return True, "no_delivery_record"
+    last_picks = rows[-1].get("picks_count")
+    if last_picks is not None and int(last_picks) == 0 and picks_count > 0:
+        return True, "upgrade_zero_pick_report"
+    return False, "already_delivered_today"
 
 
 def record_sent(date: str, sha: str, chat: str, message_ids: list,
                 run_id: str | None = None, report_path: str | None = None,
-                path: Path | None = None) -> dict:
+                picks_count: int = 0, path: Path | None = None) -> dict:
     """仅在 message_ids 非空时调用；否则属于伪造送达证据。"""
     if not message_ids:
         raise RuntimeError("拒绝写入空 message_ids 的送达记录")
@@ -83,6 +103,7 @@ def record_sent(date: str, sha: str, chat: str, message_ids: list,
         "chat_id": str(chat),
         "status": "sent",
         "message_ids": [int(x) for x in message_ids],
+        "picks_count": int(picks_count),
         "sent_at": _now(),
         "run_id": run_id or None,
         "report_path": report_path,
@@ -195,9 +216,12 @@ def cmd_check() -> None:
         return
     report = json.loads(p.read_text(encoding="utf-8"))
     sha = report_fingerprint(report)
-    ok, reason = should_send(date, sha, chat)
+    from . import policy
+    picks_count = len(policy.published(report))
+    ok, reason = should_send(date, sha, chat, picks_count=picks_count)
     print(f"should_send={'true' if ok else 'false'}", flush=True)
-    print(f"[check] date={date} report_sha={sha} chat_source={source} "
+    print(f"[check] date={date} report_sha={sha} picks={picks_count} chat_source={source} "
+          f"event={os.environ.get('GITHUB_EVENT_NAME', 'local')} "
           f"facts={json.dumps(facts, ensure_ascii=False)} reason={reason}", file=sys.stderr)
 
 
@@ -209,13 +233,14 @@ def cmd_send() -> None:
         raise RuntimeError("TELEGRAM_BOT_TOKEN 未配置，拒绝静默跳过")
     p, report = _report(date)
     sha = report_fingerprint(report)
-    ok, reason = should_send(date, sha, chat)
+    from . import grounding, policy, publish_telegram as pt
+    picks_count = len(policy.published(report))
+    ok, reason = should_send(date, sha, chat, picks_count=picks_count)
     if not ok:
-        print(f"[send] 台账已有送达记录，跳过重复发送：{reason}")
+        print(f"[send] 今日已送达或无需补发，跳过：{reason}")
         return
 
     # 发送前 fail-closed 事实闸门
-    from . import grounding, publish_telegram as pt
     gate = grounding.check_all(report)
     if not gate["ok"]:
         raise RuntimeError("事实闸门未通过，拒绝发送：" + "；".join(gate["errors"][:5]))
@@ -225,7 +250,8 @@ def cmd_send() -> None:
     messages = pt.daily(report, stats, os.environ.get("SITE_URL") or pt.SITE_URL)
     ids = pt.send(messages)  # 缺配置 / 失败一律非零退出；返回 message_id 列表
     row = record_sent(date, sha, chat, ids,
-                      run_id=os.environ.get("GITHUB_RUN_ID"), report_path=str(p))
+                      run_id=os.environ.get("GITHUB_RUN_ID"), report_path=str(p),
+                      picks_count=picks_count)
     print(f"DELIVERED date={date} message_ids={row['message_ids']} chat={chat} "
           f"chat_source={source} sha={sha} evidence=sendMessage")
 

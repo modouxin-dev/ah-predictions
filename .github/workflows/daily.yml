@@ -1,7 +1,8 @@
 name: daily-report
 on:
   schedule:
-    - cron: "0 2 * * *"   # 02:00 UTC = 10:00 北京时间；GitHub 定时任务实际启动可能延迟
+    # 09:30 北京开始采集（历史实跑约 10–18 分钟），publish job 等到 10:00 整点再发送。
+    - cron: "30 1 * * *"
   workflow_dispatch:
 permissions:
   contents: write
@@ -12,7 +13,7 @@ jobs:
   collect:
     name: 采集并生成日报（不负责推送）
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     env:
       PYTHONPATH: src
       API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
@@ -27,21 +28,81 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: pip install -r requirements.txt
+
       - name: Data source runtime selfcheck (facts only)
         continue-on-error: true
         run: |
-          # 把运行时代理自检的结构化事实写入仓库，供事后复核；失败也保留事实，不推断原因
+          # 把运行时代理自检的结构化事实写入仓库；失败也保留事实，不推断原因
           python -m ah source-probe --json data/source_probe_facts.json
+
+      - name: Skip collection when today already delivered with picks (schedule only)
+        id: skip
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "[skip] 手动触发，完整重采以验证链路"
+            exit 0
+          fi
+          D="$(date -u +%F)"
+          if D="$D" python - <<'PY'
+          import json, os, sys
+          p = 'data/telegram_delivery.json'
+          d = json.load(open(p, encoding='utf-8')) if os.path.exists(p) else {'deliveries': []}
+          today = os.environ['D']
+          rows = [r for r in d.get('deliveries', [])
+                  if r.get('date') == today and r.get('status') == 'sent' and r.get('message_ids')]
+          sys.exit(0 if any(int(r.get('picks_count') or 0) > 0 for r in rows) else 1)
+          PY
+          then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "[skip] 今日已推送带推荐的日报，跳过重复采集"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Collect and regenerate daily report
+        if: ${{ steps.skip.outputs.skip != 'true' }}
         run: |
           D=$(date -u +%F)
           F="reports/${D:0:4}/${D:5:2}/${D}.json"
-          # 显式 --refresh：每次定时/手动运行都用当前数据源重新采集，不再复用旧报告。
-          # 这是编排层开关，不改变评分、核验或阈值算法（见 AGENTS.md）。
-          python -m ah.daily --date "$D" --refresh
+          # 显式 --refresh：每次运行都用当前数据源重新采集，不复用旧报告（编排层开关）。
+          # 初筛上限 40（窗口内常有 60+ 场），扩大候选池以提高产出真实推荐的概率；不改评分/核验/阈值。
+          python -m ah.daily --date "$D" --refresh --max-fixtures 40
           python -m ah render "$D"
+          # 0 场兜底：若采集无错误但规则筛完 0 场，再扩到 60 场重采一次。
+          # 只扩大候选池，不改模型算法；仍 0 场则如实推送赛程事实清单，绝不编造预测。
+          if D="$D" F="$F" python - <<'PY'
+          import json, os, sys
+          r = json.load(open(os.environ['F'], encoding='utf-8'))
+          sys.exit(0 if (not r.get('picks') and not r.get('collection_errors')) else 1)
+          PY
+          then
+            echo "ZERO_PICK_FALLBACK 采集无错误但 0 场推荐：扩大初筛到 60 场再采一次"
+            python -m ah.daily --date "$D" --refresh --max-fixtures 60
+            python -m ah render "$D"
+          fi
           test -f "$F"
+          python -m ah grounding --report "$F"
+
+      - name: Stage report for this run
+        if: ${{ steps.skip.outputs.skip != 'true' }}
+        run: |
+          D=$(date -u +%F)
+          mkdir -p _stage
+          cp "reports/${D:0:4}/${D:5:2}/${D}.json" _stage/report.json
+          cp "reports/${D:0:4}/${D:5:2}/${D}.md" _stage/report.md 2>/dev/null || true
+
+      - name: Upload report artifact
+        if: ${{ steps.skip.outputs.skip != 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-report-${{ github.run_id }}
+          path: _stage/
+          retention-days: 1
+          if-no-files-found: error
+
       - name: Commit report
+        if: ${{ steps.skip.outputs.skip != 'true' }}
         run: |
           D=$(date -u +%F)
           [ -f var/source_status.json ] && cp var/source_status.json data/source_status.json || true
@@ -54,7 +115,7 @@ jobs:
     needs: collect
     if: ${{ always() && needs.collect.result != 'cancelled' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 75
     env:
       PYTHONPATH: src
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -67,6 +128,29 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: pip install -r requirements.txt
+
+      # 关键根因修复：publish 原本只靠 main 上已提交的报告；collect 的 git push 一旦失败，
+      # 这里就会拿到旧报告甚至 0 场版本。改为优先使用本次运行采集的 artifact。
+      - name: Download this run's report
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: daily-report-${{ github.run_id }}
+          path: _artifact
+
+      - name: Use artifact report (not stale main checkout)
+        run: |
+          D=$(date -u +%F)
+          F="reports/${D:0:4}/${D:5:2}/${D}.json"
+          if [ -f "_artifact/report.json" ]; then
+            mkdir -p "$(dirname "$F")"
+            cp _artifact/report.json "$F"
+            if [ -f "_artifact/report.md" ]; then cp _artifact/report.md "${F%.json}.md"; fi
+            echo "ARTIFACT_REPORT_USED=true 本次采集产物已覆盖 checkout 报告：$F"
+          else
+            echo "ARTIFACT_REPORT_USED=false 本次未上传 artifact（collect 已跳过），沿用 main 上已送达的报告"
+          fi
+
       - name: Fail closed if report missing
         run: |
           D=$(date -u +%F)
@@ -76,7 +160,26 @@ jobs:
             exit 1
           fi
           echo "报告存在：$F"
-      - name: Delivery decision (ledger is the only idempotency key)
+
+      - name: Wait until 10:00 Beijing (02:00 UTC) before publishing
+        run: |
+          python - <<'PY'
+          import time
+          from datetime import datetime, timezone
+          now = datetime.now(timezone.utc)
+          target = now.replace(hour=2, minute=0, second=0, microsecond=0)
+          diff = (target - now).total_seconds()
+          if 0 < diff <= 3600:
+              print(f"等待到 10:00 北京时间，剩余 {int(diff)} 秒")
+              time.sleep(diff)
+          elif diff > 3600:
+              print("启动时间早于等待窗口，按采集完成时间推送")
+          else:
+              print("已过 10:00 北京时间（GitHub 定时延迟），立即推送")
+          print(f"PUBLISH_AT_UTC {datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}")
+          PY
+
+      - name: Delivery decision (one delivery per day, force on manual dispatch)
         id: gate
         run: python -m ah delivery check >> "$GITHUB_OUTPUT"
       - name: Facts-only destination preflight

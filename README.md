@@ -146,6 +146,26 @@ scripts/publish_source_status.sh            # var/ -> data/ 快照，内容有�
 - advisory 场次的盘口跨来源核验未完全通过，结论仅作分析参考，已在消息里标低信心并列为风险。
 - 每次 `--refresh` 的真实近期状态不同，实际推荐场数以当日 `reports/**.json` 为准；规则评分未核实伤停与首发。
 
+## ORCHESTRATION（2026-11-06）：10:00 准时推送 + 不再复发「0 场」
+
+**根因（【已验证】）**
+1. GitHub `schedule` 不保证准点：配置 `02:00 UTC`（10:00 北京）的定时运行，历史实际 `08:54 UTC` 才启动，延迟约 6 小时 54 分。单靠一条 cron 无法承诺 10:00。
+2. `publish` job 原本重新 `checkout main` 读报告；若 `collect` 的 `safe_commit.sh` 推送失败或冲突，publish 拿到的是**旧报告**（可能是 0 场版本），这就是「链路通了但没有比赛」的隐藏路径。
+3. 每次 `--refresh` 都生成新 `report_sha`，原幂等键按 sha 去重 → 一天内重复推送（11-06 已有 3 条送达记录）。
+4. `screening_max_fixtures: 24` 把窗口内 60+ 场裁到 24，可能把有真实盘口的比赛挡在门外。
+
+**改动**
+- `.github/workflows/daily.yml`：cron 提前到 `01:30 UTC`（09:30 北京）先采集；`publish` job 等到 `02:00 UTC`（10:00 整点）再发送；`timeout-minutes` 调到 60 / 75。
+- `collect` 产出的日报经 `actions/upload-artifact` 传给 `publish`，publish 优先用**本次采集产物**覆盖 checkout 报告；即使 git 提交失败也不会推旧报告。
+- `src/ah/delivery.py`：幂等键改为 `(date, chat_id)`，一天只正式推送一次；手动 `workflow_dispatch` 允许强制重发；**已推送 0 场而本次重采出正式推荐时允许补发一条升级版**。台账新增 `picks_count` 便于审计。
+- `config/settings.yaml`：默认初筛上限 24 → 40；collect 显式 `--max-fixtures 40`，若采集无错误但 0 场，再扩到 60 场重采一次。**只扩候选池，不改评分/核验/阈值**；仍 0 场则如实推赛程事实清单，绝不编造预测。
+- schedule 补跑时若当天已送达带推荐日报，collect 直接跳过，避免重复采集与刷屏。
+
+**未验证 / 风险（不得写成「保证准点」）**
+- GitHub 仍可能把定时任务排到 10:00 之后；此时工作流会「已过点立即推送」，时间会晚。已另设 **每天凌晨 5:00 仓库体检任务** 与 **当天 09:55 一次性兜底核验任务**，由调度侧触发 `workflow_dispatch` 保障 10:00 推送。
+- 兜底任务到点能否访问仓库取决于会话上下文与凭据有效期（当前 GitHub PAT 为 7 天有效期）；令牌到期后需续期，或改用自托管 runner / 外部 cron。
+- 规则筛完仍可能 0 场；此时消息只含真实采集的赛程事实，不生成任何预测。
+
 ## 发布对账与真实数据原则（2026-11-06 编排层修复）
 
 **本次修复不改动模型算法框架**：`analyze.py` / `policy.py` / `daily.py` / `odds_snapshots.py` / `config/settings.yaml` / `config/sources.yaml` 的评分、核验、阈值与策略逻辑保持原样。改动仅在编排层、展示层与对账层，冻结清单见 `AGENTS.md`。
