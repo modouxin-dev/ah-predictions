@@ -14,10 +14,11 @@ jobs:
     env:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
     steps:
+      - uses: actions/checkout@v4
       - name: Inspect without publishing group details
         run: |
           python3 - <<'PY'
-          import base64, json, os, subprocess, urllib.error, urllib.parse, urllib.request
+          import base64, json, os, re, subprocess, urllib.error, urllib.parse, urllib.request
           from pathlib import Path
 
           token = os.environ.get('TELEGRAM_BOT_TOKEN')
@@ -36,12 +37,25 @@ jobs:
 
           me = get('getMe')['result']
           print('Bot @' + me['username'], flush=True)
+          chats = {}
+          settings = Path('config/settings.yaml').read_text(encoding='utf-8')
+          match = re.search(r'^\s+chat_id:\s*["\'](-?\d+)["\']', settings, re.M)
+          if match:
+              try:
+                  chat = get('getChat', {'chat_id': match.group(1)})['result']
+                  if chat.get('type') in ('group', 'supergroup', 'channel'):
+                      chats[str(chat['id'])] = {'id': chat['id'], 'type': chat['type'],
+                                                'title': str(chat.get('title') or '')[:25]}
+                      print('Repository group reference is accessible', flush=True)
+              except SystemExit:
+                  print('Repository group reference is not accessible', flush=True)
           webhook = get('getWebhookInfo')['result']
           if webhook.get('url'):
-              raise SystemExit('Active webhook: updates cannot be inspected with getUpdates')
-          # Do not set an offset: inspecting must not acknowledge pending updates.
-          result = get('getUpdates', {'timeout': 0, 'limit': 100})['result']
-          chats = {}
+              print('Active webhook: pending updates were not inspected', flush=True)
+              result = []
+          else:
+              # Do not set an offset: inspecting must not acknowledge pending updates.
+              result = get('getUpdates', {'timeout': 0, 'limit': 100})['result']
           for update in result:
               for name in ('message', 'edited_message', 'channel_post', 'edited_channel_post',
                            'my_chat_member', 'chat_member'):
