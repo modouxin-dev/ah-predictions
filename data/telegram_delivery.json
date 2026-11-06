@@ -1,4 +1,18 @@
 {
   "schema": 1,
-  "deliveries": []
+  "deliveries": [
+    {
+      "date": "2026-11-06",
+      "report_sha": "84e06eae17acfc39",
+      "chat_id": "-1004312560482",
+      "status": "sent",
+      "message_ids": [
+        527
+      ],
+      "sent_at": "2026-11-06T13:13:03Z",
+      "run_id": "42223521469",
+      "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-06.json",
+      "evidence": "Telegram sendMessage HTTP 200 / ok=true / message_id"
+    }
+  ]
 }
