@@ -1,0 +1,25 @@
+name: Publish updated daily report
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-rescreen-once.yml']
+permissions:
+  contents: read
+jobs:
+  publish:
+    if: github.event.head_commit.message == 'Publish rescreened report 2026-11-06'
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: src
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests PyYAML Jinja2 jsonschema
+      - name: Send updated report
+        run: |
+          test -n "$TELEGRAM_BOT_TOKEN" && test -n "$TELEGRAM_CHAT_ID"
+          python -m ah telegram 2026-11-06
