@@ -1,7 +1,7 @@
 {
   "date": "2026-11-06",
-  "generated_at": "2026-11-06T09:18:09Z",
-  "edition": "rescreen-after-oddspapi",
+  "generated_at": "2026-11-06T13:38:22Z",
+  "edition": "automatic",
   "odds_format": "HK",
   "picks": [],
   "watched": [],
@@ -17,8 +17,8 @@
       "tier": 2,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
+      "withheld_category": "近期状态数据不足",
+      "withheld_reason": "近期状态数据不足"
     },
     {
       "match_id": "infs-evt_YT19Y8BW",
@@ -59,8 +59,8 @@
       "tier": 2,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
+      "withheld_category": "近期状态数据不足",
+      "withheld_reason": "近期状态数据不足"
     },
     {
       "match_id": "infs-evt_PYM5D8WS",
@@ -87,8 +87,8 @@
       "tier": 2,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
+      "withheld_category": "基本面与盘口评分不足",
+      "withheld_reason": "基本面与盘口评分不足"
     },
     {
       "match_id": "fd-558537",
@@ -101,8 +101,8 @@
       "tier": 2,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
+      "withheld_category": "基本面与盘口评分不足",
+      "withheld_reason": "基本面与盘口评分不足"
     },
     {
       "match_id": "fd-559638",
@@ -129,8 +129,8 @@
       "tier": 1,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
+      "withheld_category": "基本面与盘口评分不足",
+      "withheld_reason": "基本面与盘口评分不足"
     },
     {
       "match_id": "fd-564740",
@@ -143,8 +143,8 @@
       "tier": 2,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
+      "withheld_category": "基本面与盘口评分不足",
+      "withheld_reason": "基本面与盘口评分不足"
     },
     {
       "match_id": "fd-561932",
@@ -157,8 +157,8 @@
       "tier": 3,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
+      "withheld_category": "基本面与盘口评分不足",
+      "withheld_reason": "基本面与盘口评分不足"
     },
     {
       "match_id": "infs-evt_NSJK7FGJ",
@@ -173,16 +173,203 @@
       "confidence": null,
       "withheld_category": "盘口跨来源核验未通过",
       "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_PYMBNVWS",
+      "fixture_id": null,
+      "league_id": "aleague",
+      "league": "澳超",
+      "home": "Auckland FC",
+      "away": "Wellington Phoenix",
+      "kickoff_utc": "2026-11-07T04:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_DJTCS58P",
+      "fixture_id": null,
+      "league_id": "k1",
+      "league": "韩K联",
+      "home": "Jeju Utd",
+      "away": "Gwangju FC",
+      "kickoff_utc": "2026-11-07T05:00:00Z",
+      "tier": 1,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "fd-560632",
+      "fixture_id": null,
+      "league_id": "epl",
+      "league": "英超",
+      "home": "Leeds United FC",
+      "away": "Tottenham Hotspur FC",
+      "kickoff_utc": "2026-11-07T12:30:00Z",
+      "tier": 1,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "基本面与盘口评分不足",
+      "withheld_reason": "基本面与盘口评分不足",
+      "observation": {
+        "pick_side": "away",
+        "pick_team": "Tottenham Hotspur FC",
+        "line": -0.0,
+        "line_open": 0.25,
+        "odds": 0.877,
+        "score": 3.55,
+        "model_confidence": "low",
+        "home_form": "LDDLD",
+        "away_form": "WWWDL",
+        "form_source": "football-data.org",
+        "bookmaker": "pinnacle",
+        "source": "oddspapi",
+        "price_ts": "2026-11-06T12:33:10Z",
+        "freshness": "stale_downgrade"
+      }
+    },
+    {
+      "match_id": "fd-561933",
+      "fixture_id": null,
+      "league_id": "championship",
+      "league": "英冠",
+      "home": "Wrexham AFC",
+      "away": "Wolverhampton Wanderers FC",
+      "kickoff_utc": "2026-11-07T12:30:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "基本面与盘口评分不足",
+      "withheld_reason": "基本面与盘口评分不足"
+    },
+    {
+      "match_id": "fd-561938",
+      "fixture_id": null,
+      "league_id": "championship",
+      "league": "英冠",
+      "home": "Portsmouth FC",
+      "away": "Stoke City FC",
+      "kickoff_utc": "2026-11-07T12:30:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "fd-561939",
+      "fixture_id": null,
+      "league_id": "championship",
+      "league": "英冠",
+      "home": "Bristol City FC",
+      "away": "Norwich City FC",
+      "kickoff_utc": "2026-11-07T12:30:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_836CD9M7",
+      "fixture_id": null,
+      "league_id": "championship",
+      "league": "英冠",
+      "home": "Wrexham",
+      "away": "Wolves",
+      "kickoff_utc": "2026-11-07T12:30:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "fd-564744",
+      "fixture_id": null,
+      "league_id": "laliga",
+      "league": "西甲",
+      "home": "Málaga CF",
+      "away": "Real Racing Club de Santander",
+      "kickoff_utc": "2026-11-07T13:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "fd-558532",
+      "fixture_id": null,
+      "league_id": "seriea",
+      "league": "意甲",
+      "home": "Torino FC",
+      "away": "US Lecce",
+      "kickoff_utc": "2026-11-07T14:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "fd-558534",
+      "fixture_id": null,
+      "league_id": "seriea",
+      "league": "意甲",
+      "home": "Cagliari Calcio",
+      "away": "Frosinone Calcio",
+      "kickoff_utc": "2026-11-07T14:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "fd-565848",
+      "fixture_id": null,
+      "league_id": "bundesliga",
+      "league": "德甲",
+      "home": "RB Leipzig",
+      "away": "FC Augsburg",
+      "kickoff_utc": "2026-11-07T14:30:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "fd-565850",
+      "fixture_id": null,
+      "league_id": "bundesliga",
+      "league": "德甲",
+      "home": "Borussia Dortmund",
+      "away": "SV 07 Elversberg",
+      "kickoff_utc": "2026-11-07T14:30:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
     }
   ],
   "odds_source_note": "赛程、盘口与近期状态自动采集；推荐需经盘口多源核验。",
-  "not_covered": "筛查上限 12 场；窗口内共发现 62 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；OddsPapi 赛程: OddsPapiError；OddsPapi 赛程: OddsPapiError。",
-  "collection_errors": [
-    "OddsPapi 赛程: OddsPapiError",
-    "OddsPapi 赛程: OddsPapiError"
-  ],
+  "not_covered": "筛查上限 24 场；窗口内共发现 67 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）；OddsPapi 赛程 csl: 未取得赛程（HTTP 404）；盘口采集：oddspapi:no_fixture_match 2场；InferSports 已完赛事件没有可识别的比分字段，赛果兜底不可用；近期状态不足：Al Arabi Doha vs Ahli Doha（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Al Wakrah vs Al Shahaniya（API-Football 与 InferSports 赛果库均不足 3 场）；盘口核验：no_quotes 3场；sources:1<2 1场；stale>7200s 11场；verified:0<1 1场。",
+  "collection_errors": [],
   "collection_notes": [
-    "API-Football 未启用"
-  ],
-  "edition_note": "补齐 OddsPapi 后再次采集并复核；12 场候选，11 场盘口跨来源核验未通过，1 场评分不足。"
+    "API-Football 未启用",
+    "OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）",
+    "OddsPapi 赛程 csl: 未取得赛程（HTTP 404）",
+    "盘口采集：oddspapi:no_fixture_match 2场",
+    "InferSports 已完赛事件没有可识别的比分字段，赛果兜底不可用",
+    "近期状态不足：Al Arabi Doha vs Ahli Doha（API-Football 与 InferSports 赛果库均不足 3 场）",
+    "近期状态不足：Al Wakrah vs Al Shahaniya（API-Football 与 InferSports 赛果库均不足 3 场）",
+    "盘口核验：no_quotes 3场；sources:1<2 1场；stale>7200s 11场；verified:0<1 1场"
+  ]
 }
