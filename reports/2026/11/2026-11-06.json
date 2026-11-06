@@ -1,0 +1,91 @@
+{
+ "date": "2026-11-06",
+ "generated_at": "2026-11-06T08:35:06.100855Z",
+ "edition": "partial-screening",
+ "odds_format": "HK",
+ "odds_source_note": "football-data.org 赛程；The Odds API 盘口快照；初步检查 InferSports。多源及基本面核验未完成。",
+ "not_covered": "本期仅初筛已获取的六场欧洲联赛；亚洲联赛及其他场次尚未完成核验。",
+ "no_pick_reason": "盘口独立来源和球队基本面尚未完成核验，暂不发布推荐",
+ "picks": [],
+ "watched": [],
+ "watchlist": [
+  {
+   "league": "德甲",
+   "home": "Hamburger SV",
+   "away": "Borussia Mönchengladbach",
+   "kickoff_utc": "2026-11-06T19:30:00Z",
+   "confidence": null,
+   "withheld_category": "盘口及基本面未完成核验",
+   "withheld_reason": "盘口独立来源和球队基本面尚未完成核验，暂不发布推荐",
+   "sources": [
+    "https://www.football-data.org/",
+    "https://the-odds-api.com/"
+   ]
+  },
+  {
+   "league": "法甲",
+   "home": "Toulouse FC",
+   "away": "RC Strasbourg Alsace",
+   "kickoff_utc": "2026-11-06T19:45:00Z",
+   "confidence": null,
+   "withheld_category": "盘口及基本面未完成核验",
+   "withheld_reason": "盘口独立来源和球队基本面尚未完成核验，暂不发布推荐",
+   "sources": [
+    "https://www.football-data.org/",
+    "https://the-odds-api.com/"
+   ]
+  },
+  {
+   "league": "意甲",
+   "home": "Venezia FC",
+   "away": "Udinese Calcio",
+   "kickoff_utc": "2026-11-06T19:45:00Z",
+   "confidence": null,
+   "withheld_category": "盘口及基本面未完成核验",
+   "withheld_reason": "盘口独立来源和球队基本面尚未完成核验，暂不发布推荐",
+   "sources": [
+    "https://www.football-data.org/",
+    "https://the-odds-api.com/"
+   ]
+  },
+  {
+   "league": "英超",
+   "home": "Everton FC",
+   "away": "Coventry City FC",
+   "kickoff_utc": "2026-11-06T20:00:00Z",
+   "confidence": null,
+   "withheld_category": "盘口及基本面未完成核验",
+   "withheld_reason": "盘口独立来源和球队基本面尚未完成核验，暂不发布推荐",
+   "sources": [
+    "https://www.football-data.org/",
+    "https://the-odds-api.com/"
+   ]
+  },
+  {
+   "league": "英冠",
+   "home": "Derby County FC",
+   "away": "Bolton Wanderers FC",
+   "kickoff_utc": "2026-11-06T20:00:00Z",
+   "confidence": null,
+   "withheld_category": "盘口及基本面未完成核验",
+   "withheld_reason": "盘口独立来源和球队基本面尚未完成核验，暂不发布推荐",
+   "sources": [
+    "https://www.football-data.org/",
+    "https://the-odds-api.com/"
+   ]
+  },
+  {
+   "league": "西甲",
+   "home": "Sevilla FC",
+   "away": "Deportivo Alavés",
+   "kickoff_utc": "2026-11-06T20:00:00Z",
+   "confidence": null,
+   "withheld_category": "盘口及基本面未完成核验",
+   "withheld_reason": "盘口独立来源和球队基本面尚未完成核验，暂不发布推荐",
+   "sources": [
+    "https://www.football-data.org/",
+    "https://the-odds-api.com/"
+   ]
+  }
+ ]
+}
