@@ -14,6 +14,7 @@ jobs:
     env:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
     steps:
       - name: Check configured bot and destination
         run: |
@@ -44,4 +45,28 @@ jobs:
           if status in ('left', 'kicked') or (status == 'restricted' and not member.get('can_send_messages')):
               raise SystemExit('Bot has no access to send in this chat')
           print('CHECK_COMPLETE Actual delivery still needs sendMessage', flush=True)
+          PY
+      - name: Check fixture provider account
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.error, urllib.request
+          key = os.environ.get('API_FOOTBALL_KEY')
+          if not key:
+              print('API_FOOTBALL_KEY missing')
+          else:
+              request = urllib.request.Request('https://v3.football.api-sports.io/status',
+                                               headers={'x-apisports-key': key})
+              try:
+                  with urllib.request.urlopen(request, timeout=20) as response:
+                      data = json.load(response)
+                  errors = data.get('errors') or {}
+                  if errors:
+                      print('API_FOOTBALL_ERROR', 'suspended' if 'suspend' in str(errors).lower() else 'provider_error')
+                  else:
+                      sub = (data.get('response') or {}).get('subscription') or {}
+                      print('API_FOOTBALL_STATUS_OK active=' + str(sub.get('active', 'unknown')))
+              except urllib.error.HTTPError as exc:
+                  print('API_FOOTBALL_HTTP', exc.code)
+              except Exception as exc:
+                  print('API_FOOTBALL_CHECK_ERROR', type(exc).__name__)
           PY
