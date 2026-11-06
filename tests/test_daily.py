@@ -183,3 +183,52 @@ def test_odds_papi_maps_premier_league_for_cross_check(tmp_path):
     snap._map_oddspapi([fixture()])
     assert papi.calls == [17]
     assert snap.map['m1']['oddspapi'] == 'id123'
+
+
+def test_asian_leagues_keep_reserved_slots_against_european_crowding():
+    H = ['Arsenal', 'Chelsea', 'Everton', 'Fulham', 'Brentford', 'Wolves']
+    A = ['Liverpool', 'Newcastle', 'Burnley', 'Brighton', 'Southampton', 'Leicester']
+    class FD:
+        enabled = True
+        def matches(self, *args):
+            return [{'id': i, 'competition': {'code': 'PL'}, 'status': 'TIMED',
+                     'utcDate': f'2026-11-06T{18 + i % 4}:00:00Z',
+                     'homeTeam': {'name': H[i]}, 'awayTeam': {'name': A[i]}}
+                    for i in range(6)]
+    class Infer:
+        enabled = True
+        def events(self, day):
+            if day != '2026-11-06':
+                return []
+            return [{'id': 'q1', 'status': 'scheduled', 'league': {'name': 'QatarSL'},
+                     'scheduled_at': '2026-11-06T14:00:00Z',
+                     'home_team': {'name': 'Team A'}, 'away_team': {'name': 'Team B'}}]
+    rows, errors, total = daily.collect_fixtures(Infer(), FD(), NOW, limit=3)
+    assert not errors and total == 7 and len(rows) == 3
+    assert any(r['league_id'] == 'qsl' for r in rows)
+
+
+def test_oddspapi_404_is_empty_window_not_collection_error():
+    class Papi:
+        enabled = True
+        def fixtures(self, tid, start, end):
+            raise daily.oddspapi.OddsPapiError('OddsPapi fixtures HTTP 404')
+    class Down:
+        enabled = False
+    rows, errors, total = daily.collect_fixtures(Down(), Down(), NOW, papi=Papi())
+    assert rows == [] and errors == [] and total == 0
+    assert any('窗口内无赛程' in n for n in daily.collect_fixtures.notes)
+
+
+def test_observation_fill_respects_daily_cap_and_never_invents():
+    from ah import publish_telegram as tg
+    def w(i):
+        return {'home': f'H{i}', 'away': f'A{i}', 'league': 'X', 'kickoff_utc': '2026-11-06T12:00:00Z',
+                'observation': {'pick_team': f'H{i}', 'line': -0.25, 'line_open': -0.25, 'score': 3.0 + i / 10,
+                                'odds': 0.9, 'bookmaker': 'pinnacle', 'source': 'oddspapi',
+                                'home_form': 'WWDLL', 'away_form': 'LLDWW', 'price_ts': '2026-11-06T10:00:00Z'}}
+    rep = {'picks': [], 'watchlist': [w(i) for i in range(10)]}
+    assert tg.observation_blocks(rep)[0].count('⚽') == 7
+    assert tg.observation_blocks(rep, 5)[0].count('⚽') == 2
+    assert tg.observation_blocks(rep, 7) == []
+    assert tg.observation_blocks({'picks': [], 'watchlist': [w(0)]})[0].count('⚽') == 1

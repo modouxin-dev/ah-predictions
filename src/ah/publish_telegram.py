@@ -507,12 +507,20 @@ def no_pick_lines(rep: dict, pol: dict | None = None) -> list[str]:
     return lines
 
 
-def observation_blocks(rep: dict) -> list[str]:
-    """Show real, scored watchlist observations without calling them picks."""
+DAILY_ITEMS_MAX = 7   # 正式推荐 + 观察分析 每日合计上限；观察只补位，不降低正式推荐门槛
+
+
+def observation_blocks(rep: dict, n_picks: int | None = None) -> list[str]:
+    """Show real, scored watchlist observations without calling them picks.
+
+    Fills the daily 4-7 item target only with genuinely scored observations; if fewer
+    qualify, fewer are shown. Nothing is invented to reach the target."""
+    if n_picks is None:
+        n_picks = len(rep.get('picks') or [])
     candidates = [w for w in rep.get('watchlist') or [] if isinstance(w.get('observation'), dict)]
     candidates.sort(key=lambda w: -float(w['observation'].get('score', 0)))
     blocks = []
-    for w in candidates[:5]:
+    for w in candidates[:max(0, DAILY_ITEMS_MAX - n_picks)]:
         o = w['observation']
         reason = w.get('withheld_reason') or w.get('withheld_category') or '未达到正式发布门槛'
         age = '；报价超过30分钟' if o.get('freshness') == 'stale_downgrade' else ''
@@ -570,7 +578,7 @@ def daily(rep: dict, stats: dict | None = None, site_url: str = SITE_URL, lab: l
     blocks = [head]
     if not picks:
         blocks.append("\n".join(no_pick_lines(rep)))
-    blocks += observation_blocks(rep)
+    blocks += observation_blocks(rep, len(picks))
     blocks += [DIV + "\n" + compact_block(p, stats) for p in picks]
     gone = [p for p in rep.get("picks") or [] if p not in picks
             and (p.get("cancelled") or p.get("confidence") == "cancelled")]

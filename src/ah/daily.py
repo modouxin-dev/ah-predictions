@@ -64,6 +64,7 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None):
     fd_ids = {value: key for key, value in football_data.CODE_BY_LEAGUE.items() if key in by_id}
     end = now + timedelta(hours=hours)
     rows, errors, succeeded = [], [], 0
+    notes = []
 
     def add(mid, lid, home, away, kickoff):
         if not all((mid, lid, home, away, kickoff)):
@@ -135,6 +136,12 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None):
                         add('oddspapi-' + str(game['fixtureId']), lid, game.get('participant1Name'),
                             game.get('participant2Name'), game.get('startTime'))
             except Exception as exc:
+                if 'HTTP 404' in str(exc):
+                    # OddsPapi answers 404 when the tournament has no fixtures in the window;
+                    # count it as a successful empty answer instead of a collection error.
+                    succeeded += 1
+                    notes.append(f'OddsPapi 赛程 {lid}: 窗口内无赛程（HTTP 404）')
+                    continue
                 errors.append(_collection_error(f'OddsPapi 赛程 {lid}', exc))
     if not succeeded:
         raise RuntimeError('没有可用的赛程数据源')
@@ -145,7 +152,15 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None):
     chronological = lambda row: (row['kickoff_utc'], row['tier'], row['match_id'])
     rows.sort(key=lambda row: (not (can_get_form and row['league_id'] in football_data.CODE_BY_LEAGUE),
                                *chronological(row)))
-    selected = sorted(rows[:limit], key=chronological)
+    # Reserve slots for Asian tier-1/2 leagues that football-data cannot evaluate, so the
+    # European leagues cannot crowd them out of the bounded screening limit.
+    asian_ids = {'acl_elite', 'acl_two', 'j1', 'j2', 'k1', 'csl', 'aleague', 'spl', 'qsl'}
+    reserved = [r for r in sorted(rows, key=chronological)
+                if r['league_id'] in asian_ids and r['tier'] <= 2][:limit // 3]
+    taken = {r['match_id'] for r in reserved}
+    rest = [r for r in rows if r['match_id'] not in taken][:max(0, limit - len(reserved))]
+    selected = sorted(reserved + rest, key=chronological)
+    collect_fixtures.notes = notes
     return selected, errors, len(rows)
 
 
