@@ -530,6 +530,8 @@ def observation_blocks(rep: dict, n_picks: int | None = None) -> list[str]:
             f"模型观察：{e(o['pick_team'])} {ln(o['line'])} · 评分 {e(o['score'])}（非正式推荐）",
             f"{e(o['bookmaker'])} 初盘 {ln(o['line_open'])} → 当前 {ln(o['line'])} @ {e(o['odds'])} 港盘",
             f"近况（最新在前，W胜/D平/L负）：{e(o['home_form'])} / {e(o['away_form'])}",
+            *(['Football data by 5DollarFootballAPI'] if o.get('form_source') == '5DollarFootballAPI'
+              else ([f"近况来源：{e(o['form_source'])}"] if o.get('form_source') else [])),
             f"报价：{e(o['source'])} · {bj(o['price_ts'])} 北京时间{age}",
             f"未正式推荐：{e(reason)}",
         ]))

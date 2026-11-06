@@ -10,7 +10,7 @@ from pathlib import Path
 from . import DATA, daily, policy, publish_telegram, render_report, settle
 
 
-def collect(path: Path, max_fixtures: int = 12) -> dict:
+def collect(path: Path, max_fixtures: int | None = None) -> dict:
     now = datetime.now(timezone.utc)
     report = daily.build_report(now.date().isoformat(), max_fixtures=max_fixtures)
     official = policy.published(report)
@@ -41,7 +41,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=['collect', 'send', 'record'])
     parser.add_argument('--path', required=True, type=Path)
-    parser.add_argument('--max-fixtures', type=int, default=12, choices=range(1, 13))
+    parser.add_argument('--max-fixtures', type=int, choices=range(1, 61))
     args = parser.parse_args()
     if args.action == 'collect':
         collect(args.path, args.max_fixtures)

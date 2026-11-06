@@ -54,7 +54,7 @@ def _leagues():
     return yaml.safe_load((CONFIG / 'leagues.yaml').read_text(encoding='utf-8'))['leagues']
 
 
-def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None):
+def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None, fd5=None):
     """Return upcoming configured fixtures and source errors, without inventing data."""
     leagues = _leagues()
     by_id = {entry['id']: entry for entry in leagues}
@@ -137,20 +137,21 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None):
                             game.get('participant2Name'), game.get('startTime'))
             except Exception as exc:
                 if 'HTTP 404' in str(exc):
-                    # OddsPapi answers 404 when the tournament has no fixtures in the window;
-                    # count it as a successful empty answer instead of a collection error.
+                    # A 404 can mean no matching fixtures; the response body was not
+                    # retained, so report only that no fixtures were obtained.
                     succeeded += 1
-                    notes.append(f'OddsPapi 赛程 {lid}: 窗口内无赛程（HTTP 404）')
+                    notes.append(f'OddsPapi 赛程 {lid}: 未取得赛程（HTTP 404）')
                     continue
                 errors.append(_collection_error(f'OddsPapi 赛程 {lid}', exc))
     if not succeeded:
         raise RuntimeError('没有可用的赛程数据源')
-    # The current recommendation pipeline obtains form exclusively from
-    # football-data. Prefer fixtures it can actually evaluate before spending
-    # the bounded snapshot/API budget on observation-only competitions.
-    can_get_form = bool(fd and fd.enabled)
+    # Prefer fixtures for which an enabled provider can supply team form.
+    # Asian priority slots below still preserve coverage for observation.
+    supported_form_leagues = set(football_data.CODE_BY_LEAGUE) if fd and fd.enabled else set()
+    if fd5 and fd5.enabled:
+        supported_form_leagues.update(fivedollar.LEAGUE_IDS)
     chronological = lambda row: (row['kickoff_utc'], row['tier'], row['match_id'])
-    rows.sort(key=lambda row: (not (can_get_form and row['league_id'] in football_data.CODE_BY_LEAGUE),
+    rows.sort(key=lambda row: (row['league_id'] not in supported_form_leagues,
                                *chronological(row)))
     # Reserve slots for Asian tier-1/2 leagues that football-data cannot evaluate, so the
     # European leagues cannot crowd them out of the bounded screening limit.
@@ -201,6 +202,8 @@ def assess(match, rows, fundamentals, cfg, now, observation=None):
     line, line_open = float(quote['ah_home_line']), float(opened[0]['ah_home_line'])
     if not math.isfinite(line_open) or abs(line_open * 4 - round(line_open * 4)) > 1e-8:
         return None, '初盘数据无效'
+    form_source = (fundamentals or {}).get('source') or 'football-data.org'
+    form_url = 'https://5dollarfootballapi.com/' if form_source == '5DollarFootballAPI' else 'https://www.football-data.org/'
     candidates = []
     for side in ('home', 'away'):
         sign = 1 if side == 'home' else -1
@@ -218,9 +221,10 @@ def assess(match, rows, fundamentals, cfg, now, observation=None):
             kickoff_utc=match['kickoff_utc'], pick_side=side, line=sign * line,
             line_open=sign * line_open, odds=round(decimal - 1, 3), features=features,
             reasons=[f"同机构初盘 {sign * line_open:+g} → 当前 {sign * line:+g}，盘口已通过多源核验",
-                     f"近期赛果（最近在前）：{match['home']} {forms['home']}；{match['away']} {forms['away']}"],
+                     f"近期赛果（最近在前）：{match['home']} {forms['home']}；{match['away']} {forms['away']}"]
+                    + (['Football data by 5DollarFootballAPI'] if form_source == '5DollarFootballAPI' else []),
             risks=['尚未自动核实伤停及首发；规则评分未经独立回测，赛前应再次核查'],
-            sources=list(dict.fromkeys(['https://www.football-data.org/'] +
+            sources=list(dict.fromkeys([form_url] +
                                       [SOURCE_URLS[r['source']] for r in mains if r.get('source') in SOURCE_URLS]))))
     settings = _settings()
     picks = analyze.select(candidates, settings)
@@ -235,7 +239,7 @@ def assess(match, rows, fundamentals, cfg, now, observation=None):
                 'pick_side': best['pick_side'], 'pick_team': match[best['pick_side']],
                 'line': best['line'], 'line_open': best['line_open'], 'odds': best['odds'],
                 'score': best['score'], 'model_confidence': best['confidence'],
-                'home_form': forms['home'], 'away_form': forms['away'],
+                'home_form': forms['home'], 'away_form': forms['away'], 'form_source': form_source,
                 'bookmaker': quote['bookmaker'], 'source': quote['source'],
                 'price_ts': quote['price_ts'], 'freshness': verification.get('freshness'),
             })
@@ -297,9 +301,13 @@ def collect_titan(matches):
     return out
 
 
-def build_report(report_date, now=None, max_fixtures=8):
+def build_report(report_date, now=None, max_fixtures=None):
     now = now or datetime.now(UTC)
-    infs, fd, oa, papi, apif = infersports.Client(), football_data.Client(), odds_api.OddsAPI(regions='eu'), oddspapi.Client(), api_football.Client()
+    max_fixtures = max_fixtures if max_fixtures is not None else int(_settings().get('screening_max_fixtures', 24))
+    if not 1 <= max_fixtures <= 60:
+        raise ValueError('初筛上限必须在 1–60 场之间')
+    infs, fd, oa, papi, apif, fd5 = (infersports.Client(), football_data.Client(), odds_api.OddsAPI(regions='eu'),
+                                     oddspapi.Client(), api_football.Client(), fivedollar.Client())
     errors = []
     notes = []
     if not apif.enabled:
@@ -323,8 +331,18 @@ def build_report(report_date, now=None, max_fixtures=8):
             errors.append('OddsPapi: ' + type(exc).__name__)
             papi = None
     matches, fixture_errors, total = collect_fixtures(infs, fd, now, hours=_settings().get('report_window_hours', 36),
-                                                       limit=max_fixtures, apif=apif, papi=papi)
+                                                       limit=max_fixtures, apif=apif, papi=papi, fd5=fd5)
     errors.extend(fixture_errors)
+    notes.extend(getattr(collect_fixtures, 'notes', []))
+    fd5_leagues = dict(fivedollar.LEAGUE_IDS)
+    if fd5.enabled and any(m['league_id'] in fivedollar.OPTIONAL_ASIAN_IDS for m in matches):
+        try:
+            fd5_leagues = fd5.available_leagues()
+            added = sorted(set(fd5_leagues) & set(fivedollar.OPTIONAL_ASIAN_IDS))
+            if added:
+                notes.append('5DollarFootballAPI 亚洲联赛覆盖：' + ', '.join(added))
+        except Exception as exc:
+            errors.append('5Dollar 联赛覆盖: ' + type(exc).__name__)
     try:
         titan = collect_titan(matches) if matches else {}
     except Exception as exc:
@@ -371,6 +389,20 @@ def build_report(report_date, now=None, max_fixtures=8):
                 fundamental = football_data.fundamentals(fd, code, match['home'], match['away'], match['kickoff_utc'], 'home')
             except Exception as exc:
                 errors.append('基本面: ' + type(exc).__name__)
+        forms = (fundamental or {}).get('form') or {}
+        if (_usable_verification(check) and has_verified and fd5.enabled
+                and match['league_id'] in fd5_leagues
+                and min(len(forms.get('home', '')), len(forms.get('away', ''))) < 3):
+            try:
+                fallback = fivedollar.fundamentals(fd5, match['league_id'], match['home'], match['away'],
+                                                  match['kickoff_utc'], datetime.now(UTC),
+                                                  league_id=fd5_leagues[match['league_id']])
+                fforms = fallback.get('form') or {}
+                if min(len(fforms.get('home', '')), len(fforms.get('away', ''))) >= 3:
+                    fundamental = fallback
+                    notes.append('5DollarFootballAPI 近期赛果补充：' + mid)
+            except Exception as exc:
+                errors.append('5Dollar 近期赛果: ' + type(exc).__name__)
         observation = {}
         pick, why = assess(match, rows, fundamental, cfg, datetime.now(UTC), observation=observation)
         if pick:
@@ -390,7 +422,7 @@ def build_report(report_date, now=None, max_fixtures=8):
     policy.apply(report)
     if report['picks']:
         # 5Dollar is supplementary only; lack of data never creates a pick.
-        consensus.attach(report, fetch=lambda _sport: {}, fd5=fivedollar.Client())
+        consensus.attach(report, fetch=lambda _sport: {}, fd5=fd5)
         policy.apply(report)
     if notes or errors:
         report['not_covered'] += ' 数据源状态：' + '；'.join(notes + errors) + '。'
@@ -401,7 +433,7 @@ def build_report(report_date, now=None, max_fixtures=8):
 def main(argv=None):
     parser = argparse.ArgumentParser(description='采集赛程和盘口，生成日报（不会覆盖现有报告）')
     parser.add_argument('--date', default=datetime.now(UTC).strftime('%Y-%m-%d'))
-    parser.add_argument('--max-fixtures', type=int, default=8, choices=range(1, 13))
+    parser.add_argument('--max-fixtures', type=int, choices=range(1, 61))
     parser.add_argument('--preview', action='store_true', help='采集并验证，但不写入日报')
     args = parser.parse_args(argv)
     date.fromisoformat(args.date)

@@ -39,6 +39,16 @@ def test_verified_quote_with_form_can_produce_pick():
     assert '未经独立回测' in pick['risks'][0]
 
 
+def test_backup_form_is_attributed_to_actual_provider():
+    observation = {}
+    fallback = {**FORM, 'source': '5DollarFootballAPI'}
+    pick, why = daily.assess(fixture(), quotes(), fallback, CFG, NOW, observation=observation)
+    assert not why and 'https://5dollarfootballapi.com/' in pick['sources']
+    assert 'https://www.football-data.org/' not in pick['sources']
+    assert 'Football data by 5DollarFootballAPI' in pick['reasons']
+    assert observation['form_source'] == '5DollarFootballAPI'
+
+
 def test_unverified_stale_or_missing_fundamentals_are_not_recommended():
     rows = quotes()
     for row in rows:
@@ -217,7 +227,7 @@ def test_oddspapi_404_is_empty_window_not_collection_error():
         enabled = False
     rows, errors, total = daily.collect_fixtures(Down(), Down(), NOW, papi=Papi())
     assert rows == [] and errors == [] and total == 0
-    assert any('窗口内无赛程' in n for n in daily.collect_fixtures.notes)
+    assert any('未取得赛程' in n for n in daily.collect_fixtures.notes)
 
 
 def test_observation_fill_respects_daily_cap_and_never_invents():

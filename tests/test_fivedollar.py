@@ -73,6 +73,35 @@ def test_normalize_and_movement():
     assert f5.normalize_ah({"bookmakers": []}) is None
 
 
+def test_fallback_form_uses_only_confirmed_past_results_for_correct_teams():
+    cutoff = datetime(2026, 11, 6, 8, tzinfo=timezone.utc)
+    def game(day, home, away, hg, ag, status='finished', code='full'):
+        return {'kickoff_utc': f'2026-11-{day:02d}T12:00:00Z', 'status': status, 'status_code': code,
+                'teams': {'home': {'id': home}, 'away': {'id': away}}, 'goals': {'home': hg, 'away': ag}}
+    games = [game(5, 1, 3, 2, 0), game(4, 3, 1, 1, 1), game(3, 1, 3, 0, 1),
+             game(7, 1, 3, 9, 0), game(2, 4, 5, 1, 0), game(1, 1, 3, 4, 0, code='abandoned')]
+    assert f5.team_form(games, 1, cutoff) == 'WDL'
+
+    class Client:
+        def fixtures(self, *_args, **_kwargs):
+            return FX
+        def team_fixtures(self, team_id, before):
+            assert before == cutoff
+            return games if team_id == 1 else [game(5, 2, 3, 0, 1), game(4, 3, 2, 1, 1), game(3, 2, 3, 2, 0)]
+    f = f5.fundamentals(Client(), 'epl', 'Leeds', 'Tottenham', '2026-11-07T12:30:00Z', cutoff)
+    assert f == {'source': '5DollarFootballAPI', 'form': {'home': 'WDL', 'away': 'LDW'}}
+    assert f5.fundamentals(Client(), 'j1', 'Leeds', 'Tottenham', '2026-11-07T12:30:00Z', cutoff) == {}
+
+
+def test_asian_coverage_requires_a_single_account_visible_league_id(tmp_path, monkeypatch):
+    c = mk(tmp_path)
+    entries = [{'id': 3836571083}, {'id': 2270596712}, {'id': 3492701972}, {'id': 3594495926}]
+    monkeypatch.setattr(c, 'get', lambda *_args, **_kwargs: entries)
+    available = c.available_leagues()
+    assert available['j1'] == 3836571083 and available['k1'] == 2270596712
+    assert 'spl' not in available and 'j2' not in available
+
+
 def test_attach_bet365_movement(tmp_path):
     leagues = [{"id": "epl", "name": "Premier League", "cn": "英超"}]
     r = {"date": "2026-11-07", "generated_at": "2026-11-07T00:00:00Z", "watched": [], "picks": [

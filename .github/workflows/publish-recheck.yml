@@ -13,7 +13,7 @@ jobs:
   recheck:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.head_commit.message == 'Send one live prediction analysis report' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     env:
       PYTHONPATH: src
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}

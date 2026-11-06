@@ -29,7 +29,12 @@ RESERVE = 5
 # leagues.yaml id -> 5DollarFootballAPI league id（GET /leagues 2026-11-04 实测，免费档仅这 5 个）
 LEAGUE_IDS = {"epl": 4160026622, "ligue1": 3614399544, "bundesliga": 686337048,
               "seriea": 3405541143, "laliga": 4212821298}
-TTL = {"leagues": 7 * 86400, "fixtures": 1800, "fixture": 600, "odds": 600, "standings": 6 * 3600}
+# Official coverage IDs; only use IDs actually returned for this account.
+OPTIONAL_ASIAN_IDS = {'j1': (3836571083,), 'j2': (3492701972, 3594495926),
+                      'k1': (2270596712,), 'csl': (627772670,), 'spl': (1796782054,),
+                      'qsl': (2049158096,), 'aleague': (813011793,)}
+TTL = {"leagues": 7 * 86400, "fixtures": 1800, "fixture": 600, "odds": 600, "standings": 6 * 3600,
+       "team_fixtures": 3 * 3600}
 
 
 class FiveDollarError(RuntimeError):
@@ -120,6 +125,79 @@ class Client:
 
     def standings(self, league: int) -> dict:
         return self.get("standings", {"league": league}, ttl=TTL["standings"])
+
+    def available_leagues(self) -> dict[str, int]:
+        """Only add optional leagues explicitly returned to this account."""
+        ids = set()
+        for page in range(1, 4):
+            entries = self.get('leagues', {'per_page': 100, 'page': page}, ttl=TTL['leagues']) or []
+            if not isinstance(entries, list):
+                raise FiveDollarError('5DollarFootballAPI leagues response invalid')
+            ids.update(str(item.get('id')) for item in entries if isinstance(item, dict) and item.get('id'))
+            if len(entries) < 100:
+                break
+        result = dict(LEAGUE_IDS)
+        for key, candidates in OPTIONAL_ASIAN_IDS.items():
+            allowed = [item for item in candidates if str(item) in ids]
+            if len(allowed) == 1:
+                result[key] = allowed[0]
+        return result
+
+    def team_fixtures(self, team_id: int, before: datetime) -> list:
+        return self.get(f"teams/{team_id}/fixtures", {"status": "finished", "end_time": int(before.timestamp()),
+                                                     "order": "desc", "per_page": 20},
+                        ttl=TTL["team_fixtures"]) or []
+
+
+def team_form(matches: list, team_id: int, before: datetime, n: int = 5) -> str:
+    """Most recent confirmed results for this team, strictly before the cutoff."""
+    from .match import parse_dt
+    eligible = []
+    for game in matches:
+        try:
+            if game.get('status') != 'finished' or game.get('status_code') != 'full':
+                continue
+            kickoff = parse_dt(game['kickoff_utc'])
+            if kickoff >= before:
+                continue
+            teams, goals = game['teams'], game['goals']
+            home, away = teams['home']['id'], teams['away']['id']
+            if str(team_id) not in (str(home), str(away)):
+                continue
+            hg, ag = goals['home'], goals['away']
+            if isinstance(hg, bool) or isinstance(ag, bool) or not isinstance(hg, int) or not isinstance(ag, int):
+                continue
+            if hg < 0 or ag < 0:
+                continue
+            mine, other = (hg, ag) if str(team_id) == str(home) else (ag, hg)
+            eligible.append((kickoff, 'W' if mine > other else 'D' if mine == other else 'L'))
+        except (KeyError, TypeError, ValueError):
+            continue
+    eligible.sort(key=lambda item: item[0], reverse=True)
+    return ''.join(result for _, result in eligible[:n])
+
+
+def fundamentals(c: Client, league_key: str, home: str, away: str, kickoff, now: datetime,
+                 aliases=None, league_id: int | None = None) -> dict:
+    """Use only a matched fixture and confirmed, pre-collection team results."""
+    from .match import parse_dt
+    lid = league_id if league_id is not None else LEAGUE_IDS.get(league_key)
+    if not lid:
+        return {}
+    ko = parse_dt(kickoff)
+    game = find_fixture(c.fixtures(ko - timedelta(hours=3), hours=6, league=lid), home, away, ko, aliases)
+    if not game:
+        return {}
+    try:
+        hid, aid = game['teams']['home']['id'], game['teams']['away']['id']
+        if hid is None or aid is None or str(hid) == str(aid):
+            return {}
+    except (KeyError, TypeError):
+        return {}
+    cutoff = min(now, ko)
+    home_form = team_form(c.team_fixtures(hid, cutoff), hid, cutoff)
+    away_form = team_form(c.team_fixtures(aid, cutoff), aid, cutoff)
+    return {'source': '5DollarFootballAPI', 'form': {'home': home_form, 'away': away_form}}
 
 
 # ---------- 纯函数 ----------

@@ -8,7 +8,7 @@ permissions:
   contents: read
 jobs:
   check:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.head_commit.message == 'Inspect Telegram group IDs' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.head_commit.message == 'Inspect Telegram group IDs' || github.event.head_commit.message == 'Expand fixture screening and data coverage' }}
     runs-on: ubuntu-latest
     timeout-minutes: 3
     env:

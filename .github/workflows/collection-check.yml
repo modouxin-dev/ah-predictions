@@ -9,7 +9,7 @@ permissions:
 jobs:
   preview:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     env:
       PYTHONPATH: src
       API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
@@ -22,6 +22,34 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - run: pip install -r requirements.txt
+      - name: Check backup form source
+        run: |
+          python -u - <<'PY'
+          from datetime import datetime, timezone
+          from ah import fivedollar
+          from ah.match import parse_dt
+          c = fivedollar.Client()
+          if not c.enabled:
+              print('5Dollar 近期赛果：未配置')
+          else:
+              try:
+                  now = datetime.now(timezone.utc)
+                  ids = {str(value): key for key, value in fivedollar.LEAGUE_IDS.items()}
+                  games = c.fixtures(now, hours=24)
+                  candidates = [g for g in games if str((g.get('league') or {}).get('id')) in ids
+                                and g.get('status') == 'scheduled' and parse_dt(g['kickoff_utc']) > now]
+                  if not candidates:
+                      print('5Dollar 近期赛果：未来24小时无可测试的支持联赛')
+                  else:
+                      g = candidates[0]
+                      f = fivedollar.fundamentals(c, ids[str(g['league']['id'])], g['teams']['home']['name'],
+                                                 g['teams']['away']['name'], g['kickoff_utc'], now)
+                      form = f.get('form') or {}
+                      print('5Dollar 近期赛果：主队', len(form.get('home', '')),
+                            '场，客队', len(form.get('away', '')), '场')
+              except Exception as exc:
+                  print('5Dollar 近期赛果检查失败：', type(exc).__name__)
+          PY
       - name: Preview current fixtures and recommendations
         run: |
           python -u - <<'PY'
@@ -39,7 +67,7 @@ jobs:
                         'line_open': candidate.line_open, 'line': candidate.line}, ensure_ascii=False), flush=True)
               return original(candidates, cfg)
           analyze.select = inspect
-          report = daily.build_report(date, max_fixtures=12)
+          report = daily.build_report(date)
           rows = odds_snapshots.load_rows(odds_snapshots.paths(date)['csv'])
           cfg = odds_snapshots.load_cross_verification()
           print('REPORT', json.dumps(report, ensure_ascii=False), flush=True)
