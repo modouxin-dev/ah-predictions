@@ -463,16 +463,20 @@ def build_report(report_date, now=None, max_fixtures=None, snapshot_dir=None):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='采集赛程和盘口，生成日报（不会覆盖现有报告）')
+    parser = argparse.ArgumentParser(description='采集赛程和盘口，生成日报（默认不覆盖现有报告）')
     parser.add_argument('--date', default=datetime.now(UTC).strftime('%Y-%m-%d'))
     parser.add_argument('--max-fixtures', type=int, choices=range(1, 61))
     parser.add_argument('--preview', action='store_true', help='采集并验证，但不写入日报')
+    parser.add_argument('--refresh', action='store_true',
+                        help='显式重新采集并覆盖当天报告（编排层开关；不改变评分/核验/阈值算法）')
     args = parser.parse_args(argv)
     date.fromisoformat(args.date)
     path, _ = report_paths(args.date)
-    if path.exists() and not args.preview:
-        print('日报已存在，保持原有内容', file=sys.stderr)
+    if path.exists() and not args.preview and not args.refresh:
+        print('日报已存在，保持原有内容；如需重新采集请显式传 --refresh', file=sys.stderr)
         return
+    if args.refresh and path.exists():
+        print(f'REPORT_REFRESH_OVERWRITE 显式覆盖已存在报告：{path}', file=sys.stderr)
     if date.fromisoformat(args.date) != datetime.now(UTC).date():
         parser.error('只能为当前 UTC 日期采集实时数据')
     report = build_report(args.date, max_fixtures=args.max_fixtures)
@@ -487,10 +491,12 @@ def main(argv=None):
             print(f"采集提示：{note}")
         return
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open('x', encoding='utf-8') as stream:
+    mode = 'w' if args.refresh else 'x'
+    with path.open(mode, encoding='utf-8') as stream:
         json.dump(report, stream, ensure_ascii=False, indent=2)
         stream.write('\n')
-    print(f"日报已生成：观察 {len(report['watchlist'])} 场，推荐 {len(report['picks'])} 场")
+    print(f"日报已生成：观察 {len(report['watchlist'])} 场，推荐 {len(report['picks'])} 场；"
+          f"采集问题 {len(report['collection_errors'])} 项，提示 {len(report['collection_notes'])} 项")
 
 
 if __name__ == '__main__':

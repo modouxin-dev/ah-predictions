@@ -27,16 +27,17 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: pip install -r requirements.txt
-      - name: Generate daily report (only when absent)
+      - name: Data source runtime selfcheck (facts only)
+        continue-on-error: true
+        run: python -m ah source-probe
+      - name: Collect and regenerate daily report
         run: |
           D=$(date -u +%F)
           F="reports/${D:0:4}/${D:5:2}/${D}.json"
-          if [ -f "$F" ]; then
-            echo "报告已存在，不覆盖；是否推送由 publish job 依据发送台账决定"
-          else
-            python -m ah.daily --date "$D"
-            python -m ah render "$D"
-          fi
+          # 显式 --refresh：每次定时/手动运行都用当前数据源重新采集，不再复用旧报告。
+          # 这是编排层开关，不改变评分、核验或阈值算法（见 AGENTS.md）。
+          python -m ah.daily --date "$D" --refresh
+          python -m ah render "$D"
           test -f "$F"
       - name: Commit report
         run: |

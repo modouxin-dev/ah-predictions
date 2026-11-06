@@ -1,0 +1,34 @@
+name: Source runtime selfcheck
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 1 * * *"   # 09:00 北京时间，先于日报；只输出事实，不发消息、不写报告
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTHONPATH: src
+      API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+      ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}
+      ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+      FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
+      FIVEDOLLAR_KEY: ${{ secrets.FIVEDOLLAR_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - name: Record observable facts only
+        run: |
+          python -m ah source-probe | tee source_probe_facts.txt
+      - name: Upload facts as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-probe-facts
+          path: source_probe_facts.txt
+          if-no-files-found: ignore

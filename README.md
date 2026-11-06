@@ -149,6 +149,17 @@ PYTHONPATH=src python -m ah delivery show
 PYTHONPATH=src python -m ah delivery preflight
 ```
 
+### C 阶段：数据源修复（2026-11-06，单独提交 `DATA SOURCE:`）
+
+用户已更换 `API_FOOTBALL_KEY` 并加入运行环境。本阶段**未改模型算法、核验口径或阈值**：
+
+- `config/sources.yaml`：`api_football.enabled` 由 `false` 改回 `true`；保留 `AH_API_FOOTBALL_DISABLED` 与本地熔断 flag 作为紧急停用开关。旧 suspended 记录保留为历史，不代表当前账号状态。
+- `python -m ah source-probe`：运行时代理自检，只输出可观测事实（key 是否存在、开关状态、`/status` 与 `/account` 返回字段、错误类型），**不泄露密钥、不推断「已恢复」、不把「能连通」写成「数据充足」**。另有 `Source runtime selfcheck` 工作流（每日 09:00 + 手动），只产出事实 artifact，不发送 Telegram、不写报告。
+- `daily-report` 的 `collect` 改为每次运行显式 `--refresh` 重新采集：此前「报告已存在就跳过采集」会让任何数据源修复永远不生效。`--refresh` 只改 CLI 编排层，不碰 `build_report` / `assess` 算法。
+- OddsPapi 赛程 HTTP 404 已按「未取得赛程（HTTP 404）」记录，不再当作致命采集错误；具体覆盖仍需运行时代理自检确认。
+
+**C 阶段的【未验证】项（不得写成已完成）**：新 key 的实际有效性、订阅档位与数据覆盖；OddsPapi 赛程端点的真实返回；这些只能在 CI 运行时由 `source-probe` 与日报采集日志给出事实。仓库静态文件与本次对话都无法读取 Secrets 明文。
+
 ### 本次修复仍未验证的项（不得写成已完成）
 
 | 项 | 状态 |

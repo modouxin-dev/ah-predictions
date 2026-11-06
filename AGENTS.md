@@ -66,6 +66,17 @@ data/telegram_delivery.json
 
 > 若确需调整模型阈值或核验口径，必须**单独提出、单独评审、单独提交**，并在提交信息中写明「MODEL CHANGE」及依据；不得混在编排修复里。
 
+### 2026-11-06 用户已授权的例外（按「先 C 后 A」分两次单独提交）
+
+- **C（数据源）**：用户已更换 `API_FOOTBALL_KEY` 并加入运行环境，授权重新启用数据源、排查 OddsPapi 404、并让每日运行显式重新采集。
+  - 允许：`config/sources.yaml` 中 `api_football.enabled` 开关；`src/ah/daily.py` 的 `main()` 增加 `--refresh`（**仅 CLI 编排层，禁止改 `build_report` / `assess` 的算法**）；新增 `source-probe` 自检与工作流；`.github/workflows/**` 编排。
+  - 禁止：改 `cross_verification_draft`、改 `confidence_thresholds`、改 WEIGHTS、改 policy。这些留给 A。
+  - 提交信息前缀：`DATA SOURCE:`。
+- **A（模型框架）**：用户授权在 C 之后单独执行，提交信息前缀必须为 `MODEL CHANGE:`，且必须写明依据与未回测风险。
+  - 允许范围：`cross_verification_draft.advisory_only` 真正生效（核验失败改为降级标注而非硬拦截）、按现有可用特征重标定 `confidence_thresholds`、移除已恢复数据源的 `exclude_sources` 排除。
+  - 硬底线（防幻觉，不得放宽）：推荐仍必须有**真实采集**的 `line` / `odds` / `price_ts` / 同机构初盘 / ≥3 场近期状态；不得用默认值、推测值或聚合值补全；核验未通过必须如实标注，不得隐藏。
+  - 仍然禁止：编造赛程/盘口/水位/比分/倾向/命中率；把「能连通」写成「数据充足」；把「已推送」写成「已送达」；把未回测的规则写成「准确率提升」。
+
 ## 4. 每次改动必须附的证据
 
 提交信息或 PR 描述中必须包含：

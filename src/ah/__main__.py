@@ -1,4 +1,4 @@
-"""python -m ah <cmd> 便捷入口：render|settle|stats|site|telegram|consensus|prematch-record|backtest-record|sources|tg-bot|delivery|grounding"""
+"""python -m ah <cmd> 便捷入口：render|settle|stats|site|telegram|consensus|prematch-record|backtest-record|sources|tg-bot|delivery|grounding|source-probe"""
 import sys
 
 cmd, sys.argv = (sys.argv[1] if len(sys.argv) > 1 else "help"), [sys.argv[0]] + sys.argv[2:]
@@ -26,5 +26,7 @@ elif cmd == "delivery":
     from .delivery import main; main()
 elif cmd == "grounding":
     from .grounding import main; main()
+elif cmd == "source-probe":
+    from .source_probe import main; main()
 else:
     print(__doc__)
