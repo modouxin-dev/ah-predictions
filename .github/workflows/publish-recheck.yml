@@ -43,11 +43,16 @@ jobs:
           try:
               base = 'https://api.telegram.org/bot' + token + '/'
               who = requests.get(base + 'getMe', timeout=20)
-              who.raise_for_status()
+              print('机器人令牌检查 HTTP', who.status_code, flush=True)
+              if who.status_code != 200:
+                  raise SystemExit('机器人令牌检查未通过')
               bot = who.json()['result']
+              print('当前机器人 @' + bot['username'], flush=True)
               group = requests.post(base + 'getChat', json={'chat_id': chat}, timeout=20)
-              group.raise_for_status()
-              print('已确认机器人 @' + bot['username'] + ' 与目标会话可访问')
+              print('目标会话检查 HTTP', group.status_code, flush=True)
+              if group.status_code != 200:
+                  raise SystemExit('机器人无法访问目标会话')
+              print('已确认目标会话可访问')
           except Exception as exc:
               raise SystemExit('Telegram 连接检查失败：' + type(exc).__name__) from None
           PY
