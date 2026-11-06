@@ -12,7 +12,8 @@ from . import DATA, daily, policy, publish_telegram, render_report, settle
 
 def collect(path: Path, max_fixtures: int | None = None) -> dict:
     now = datetime.now(timezone.utc)
-    report = daily.build_report(now.date().isoformat(), max_fixtures=max_fixtures)
+    snapshot_dir = DATA / 'snapshots' / 'odds' / 'rechecks' / path.stem
+    report = daily.build_report(now.date().isoformat(), max_fixtures=max_fixtures, snapshot_dir=snapshot_dir)
     official = policy.published(report)
     observations = publish_telegram.observation_blocks(report)
     if not official and not observations:

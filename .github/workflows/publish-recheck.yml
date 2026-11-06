@@ -53,12 +53,14 @@ jobs:
       - name: Build live report
         run: |
           D=$(date -u +%F)
-          F="reports/rechecks/${D:0:4}/${D:5:2}/${D}-${GITHUB_RUN_ID}.json"
+          STEM="${D}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          F="reports/rechecks/${D:0:4}/${D:5:2}/${STEM}.json"
           echo "RECHECK_FILE=$F" >> "$GITHUB_ENV"
+          echo "RECHECK_SNAPSHOT_DIR=data/snapshots/odds/rechecks/$STEM" >> "$GITHUB_ENV"
           python -u -m ah.recheck collect --path "$F"
       - name: Save report and odds evidence
         run: |
-          paths=(reports/rechecks data/snapshots/odds)
+          paths=("$RECHECK_FILE" "$RECHECK_SNAPSHOT_DIR")
           if [ -d data/history ]; then paths+=(data/history); fi
           scripts/safe_commit.sh --skip-tests -m "save live recheck $GITHUB_RUN_ID" "${paths[@]}"
       - name: Check bot and destination

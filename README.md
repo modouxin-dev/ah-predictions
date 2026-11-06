@@ -33,7 +33,7 @@ GitHub Actions 提供运行环境，以上任务不要求用户另行购买服�
 
 日报保存在 `reports/YYYY/MM/YYYY-MM-DD.json` 和对应 Markdown 中，推荐记录写入 `data/predictions.csv`。日报同一 UTC 日期的 JSON 已存在时不会覆盖：定时运行不会重复推送，手动运行 `daily-report` 会重新发送已有日报，**不会重新采集并覆盖它**。
 
-实时复核另存于 `reports/rechecks/YYYY/MM/`，不会覆盖当天已有日报；符合条件的正式推荐记入账本，观察不记入账本。如果没有正式推荐且没有符合条件的观察，复核任务会停止，不发送空分析报告。
+实时复核另存于 `reports/rechecks/YYYY/MM/`，盘口快照按运行次数单独保存在 `data/snapshots/odds/rechecks/`，不会覆盖当天已有日报或其他复核的快照；符合条件且已发送的正式推荐记入账本，观察不记入账本。如果没有正式推荐且没有符合条件的观察，复核任务会停止，不发送空分析报告。
 
 ## 数据源与密钥
 

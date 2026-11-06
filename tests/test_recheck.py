@@ -18,13 +18,18 @@ def report():
 
 def test_recheck_stores_real_observation_separately_without_creating_pick(tmp_path, monkeypatch):
     monkeypatch.setattr(recheck, 'DATA', tmp_path)
-    monkeypatch.setattr(recheck.daily, 'build_report', lambda *_args, **_kwargs: report())
+    captured = []
+    def build(*_args, **kwargs):
+        captured.append(kwargs['snapshot_dir'])
+        return report()
+    monkeypatch.setattr(recheck.daily, 'build_report', build)
     path = tmp_path / 'reports' / 'recheck.json'
     recheck.collect(path)
     saved = json.loads(path.read_text())
     assert saved['edition'] == 'recheck' and not saved['picks']
     assert saved['watchlist'][0]['observation']['score'] == 3.9
     assert not recheck.settle.read_ledger(tmp_path / 'predictions.csv')
+    assert captured == [tmp_path / 'snapshots' / 'odds' / 'rechecks' / 'recheck']
 
 
 def test_recheck_does_not_save_or_publish_empty_analysis(tmp_path, monkeypatch):

@@ -307,7 +307,7 @@ def collect_titan(matches):
     return out
 
 
-def build_report(report_date, now=None, max_fixtures=None):
+def build_report(report_date, now=None, max_fixtures=None, snapshot_dir=None):
     now = now or datetime.now(UTC)
     max_fixtures = max_fixtures if max_fixtures is not None else int(_settings().get('screening_max_fixtures', 24))
     if not 1 <= max_fixtures <= 60:
@@ -357,7 +357,8 @@ def build_report(report_date, now=None, max_fixtures=None):
     snapshotter = odds_snapshots.Snapshotter(report_date, papi=papi, oddsapi=oa, apif=apif, infs=infs,
                                              sources=('oddspapi', 'odds_api', 'infersports', 'api_football'),
                                              papi_groups=(('pinnacle', 'sbobet', 'singbet'),),
-                                             now=lambda: datetime.now(UTC), log=lambda _message: None)
+                                             now=lambda: datetime.now(UTC), snap_dir=snapshot_dir,
+                                             log=lambda _message: None)
     for match in matches:
         if match['match_id'].startswith('oddspapi-'):
             snapshotter.map.setdefault(match['match_id'], {})['oddspapi'] = match['match_id'].split('-', 1)[1]
