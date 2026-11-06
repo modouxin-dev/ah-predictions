@@ -1,0 +1,61 @@
+{
+ "fd-565852": {
+  "oddspapi": "id1000003572513304",
+  "infersports": "evt_VE4FE8S2",
+  "odds_api": "295076c39e49863cb54db085ac3cd340"
+ },
+ "fd-558537": {
+  "oddspapi": "id1000002371945404",
+  "infersports": "evt_QNDVXHCS",
+  "odds_api": "fa069801a5c9b49143447a1a1d173fd1"
+ },
+ "fd-559638": {
+  "oddspapi": "id1000003472036290",
+  "infersports": "evt_5KC9KHTH",
+  "odds_api": "5e7d141f719835de18877ed95bedcb32"
+ },
+ "fd-560634": {
+  "oddspapi": "id1000001772221378",
+  "infersports": "evt_H8BD9A26",
+  "odds_api": "586bec023ee8ac2f0645d963bd2c9d25"
+ },
+ "fd-564740": {
+  "oddspapi": "id1000000872478700",
+  "infersports": "evt_M1E01K7T",
+  "odds_api": "9dd0014685fd62d9b2890d7c33a8c9ab"
+ },
+ "fd-561932": {
+  "oddspapi": "id1000001872340018",
+  "infersports": "evt_4RXV4BQV",
+  "odds_api": "af665449ac9e2c4e1f183376e85fc936"
+ },
+ "infs-evt_G535BGY6": {
+  "oddspapi": "id1000001772221384",
+  "infersports": "evt_G535BGY6",
+  "odds_api": "5c87852253fd11eea5d34ad723356607"
+ },
+ "infs-evt_836CD9M7": {
+  "oddspapi": null,
+  "infersports": "evt_836CD9M7"
+ },
+ "infs-evt_NSJFN3GJ": {
+  "oddspapi": "id1000001872340020",
+  "infersports": "evt_NSJFN3GJ",
+  "odds_api": "e8492593cecfc388af8a4852f06599c6"
+ },
+ "infs-evt_QNDS4JCS": {
+  "oddspapi": "id1000001872340012",
+  "infersports": "evt_QNDS4JCS",
+  "odds_api": "89fe6860f3058526dd227dc27efd902a"
+ },
+ "infs-evt_YT16TQBW": {
+  "oddspapi": "id1000000872478694",
+  "infersports": "evt_YT16TQBW",
+  "odds_api": "de935794b7d93f3607ac9ad54d18f4c7"
+ },
+ "infs-evt_836QTBM7": {
+  "oddspapi": "id1000002371945402",
+  "infersports": "evt_836QTBM7",
+  "odds_api": "0d53a5dbd9d4f4716e923b97e92dfb0d"
+ }
+}
