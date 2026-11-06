@@ -36,8 +36,10 @@ def test_all_pages_disclaimer_nav_beijing(tmp_path):
 def test_kickoff_in_beijing_and_status_badges(tmp_path):
     h = (_build(tmp_path) / "index.html").read_text()
     assert "2026-11-05 04:00 北京时间" in h          # Porto 20:00Z
-    assert "2026-11-04 20:15 北京时间" in h          # Kashima 12:15Z
-    assert "st-已结算" in h and "st-已撤销" in h
+    # 2026-11-07：首页只显示正式推荐，观察名单时间不再出现在首页（后台数据仍保留）。
+    assert "2026-11-04 20:15 北京时间" not in h      # Kashima 12:15Z 属观察名单
+    # 2026-11-07：首页只显示正式推荐，已撤销不再与推荐混排（后台记录仍保留）。
+    assert "st-已结算" in h and "规则档位，未经独立回测" in h
     assert "🔒 VIP 可见，输入密码解锁" in h and "盘口面板" in h
 
 

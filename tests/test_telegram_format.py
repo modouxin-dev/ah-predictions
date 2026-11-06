@@ -16,9 +16,13 @@ def _balanced(m):
 def test_daily_order_and_footer():
     m = tg.summary({**REP, "picks": [PORTO]})
     assert m.startswith("<b>【先知】⚽ 亚盘日报 2026-11-04</b>\n📅 11-04 周三 · 筛选 11 场 · 推荐 1 场")
-    idx = [m.index(k) for k in ("🏆", "<b>波尔图", "🎯 <b>推荐 波尔图 -0.75 @1.06</b> ｜ 信心 🟡<b>中</b>", "<pre>",
-                                "📈 本联赛", "✅ <b>为什么推</b>", "⚠️ <b>风险在哪</b>", "🔗 <b>数据来源</b>", "历史战绩")]
+    # 2026-11-07 契约：只显示推荐卡片；「信心」改称「规则档位」；盘口加中文术语。
+    idx = [m.index(k) for k in ("🏆", "<b>波尔图",
+                                "🎯 <b>推荐 波尔图 -0.75（半一） @1.06</b> ｜ 规则档位 🟡<b>中</b>", "<pre>",
+                                "✅ <b>为什么推</b>", "⚠️ <b>风险在哪</b>", "🔗 <b>数据来源</b>")]
     assert idx == sorted(idx)
+    assert "规则档位，未经独立回测" in m
+    assert "📈 本联赛" not in m and "历史战绩" not in m and "比赛观察分析" not in m
     assert "11-05 04:00" in m and "比共识深 0.25" in m and "共识中位·8家" in m and "Pinnacle" in m
     assert "球探 初盘" in m and "Bet365" not in m and "🏟" not in m and "概率" not in m
     assert f"<i>{policy.DISCLAIMER}</i>" in m and m.rstrip().endswith("—— 先知")
@@ -26,14 +30,19 @@ def test_daily_order_and_footer():
     _balanced(m)
 
 
+
+
 def test_stats_table_and_context():
     st = {"overall": {"picks": 4, "decided": 4, "win": 3, "loss": 1, "hit_rate": .75, "units": 1.5},
           "by_confidence": {"中": {"picks": 2, "decided": 2, "win": 1, "loss": 1, "hit_rate": .5, "units": -0.1}},
           "by_league": {PORTO["league"]: {"picks": 2, "decided": 2, "win": 2, "hit_rate": 1.0, "units": 2.0}}}
     m = tg.summary({**REP, "picks": [PORTO]}, stats=st)
-    assert "本联赛 2场 100% +2.00u ｜ 中信心 2场 50% -0.10u" in m
+    # 2026-11-07：卡片内「本联赛 / 信心战绩」行已移除，避免空历史被误读为战绩。
+    assert "本联赛 2场 100%" not in m
     t = tg.plain(tg.stats_table(st)).splitlines()
     assert "赢-走-输" in t[0] and t[1].startswith("4  3-0-1   75%  +1.50u  总体")
+
+
 
 
 def test_cjk_pad():
@@ -42,10 +51,12 @@ def test_cjk_pad():
 
 def test_no_picks_and_escape():
     m = tg.summary({"date": "2026-11-05", "picks": [], "watched": []})
-    assert policy.no_pick_title() + "（宁缺毋滥）" in m and "📈" in m
+    assert policy.no_pick_title() + "（宁缺毋滥）" in m and "规则档位，未经独立回测" in m
     p = {**PORTO, "home": "A<b>&", "reasons": ["x < y"]}
     m = tg.pick_block(p)
     assert "A&lt;b&gt;&amp;" in m and "x &lt; y" in m
+
+
 
 
 def test_scored_observation_is_explicitly_not_a_formal_recommendation():
@@ -57,10 +68,13 @@ def test_scored_observation_is_explicitly_not_a_formal_recommendation():
                         'bookmaker': 'pinnacle', 'source': 'oddspapi',
                         'price_ts': '2026-11-06T08:00:00Z', 'freshness': 'stale_downgrade'}}]}
     msg = '\n'.join(tg.daily(rep))
-    assert '推荐 0 场' in msg and '比赛观察分析' in msg and '非正式推荐，不计战绩' in msg
-    assert 'Everton &amp; Co' in msg and '评分 3.9' in msg and '报价超过30分钟' in msg
-    assert '未正式推荐：评分不足' in msg
+    # 2026-11-07：观察分析不再进群消息；0 场改列「赛程事实清单」如实兜底，绝不出现推荐倾向。
+    assert '推荐 0 场' in msg and '赛程事实清单' in msg and '状态：未推荐' in msg
+    assert '比赛观察分析' not in msg and '🎯' not in msg and '评分 3.9' not in msg
+    assert 'Everton &amp; Co' in msg and '评分不足' in msg
     _balanced(msg)
+
+
 
 
 def test_split_under_limit():
@@ -93,14 +107,18 @@ def test_pre_tables_ascii_columns_then_label():
           "by_league": {"英超（英超）": {"picks": 1, "decided": 0}}}
     m = "\n".join(tg.daily({**REP, "picks": [PORTO]}, st))
     blocks = _pre_blocks(m)
-    assert len(blocks) == 2 and "→" not in "".join(blocks)
+    # 2026-11-07：历史战绩 <pre> 表从群消息移除，只剩机构对比 1 个 <pre>。
+    assert len(blocks) == 1 and "→" not in "".join(blocks)
     for b in blocks:
         rows = b.splitlines()
         starts = [len(r) - len(re.split(r"\s{2,}", r)[-1]) for r in rows]
         assert len(set(starts)) == 1, rows                          # 标签起始列一致
         assert all(re.fullmatch(r"[ -~]*", r[:starts[0]]) for r in rows), rows  # 数值列全 ASCII
     assert "-0.75  1.06  本推荐" in blocks[0] and "-0.50  0.85  共识中位·8家" in blocks[0]
-    assert "   -  " in blocks[1]                                   # 未决场次命中率不写 0%
+    # 历史战绩表虽不进群消息，单独调用时仍须保持「未决不写 0%」口径。
+    assert "   -  " in tg.stats_table(st)
+
+
 
 
 def test_rich_html_structure():

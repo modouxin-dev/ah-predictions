@@ -126,9 +126,12 @@ def test_lab_block_groups_and_omits():
 
 
 def test_daily_lab_before_disclaimer_and_signature():
+    # 2026-11-07：模型实验盘不再进入群消息（只显示推荐），免责声明与署名顺序仍须成立。
     text = "\n".join(pt.daily(REP, None, lab=[row()]))
-    i = text.index("🧪")
-    assert i < text.index(policy.DISCLAIMER) < text.index("—— 先知")
+    assert "🧪" not in text and "模型实验盘" not in text
+    assert text.index(policy.DISCLAIMER) < text.index("—— 先知")
+
+
 
 
 def test_daily_without_lab_unchanged():
@@ -172,12 +175,15 @@ def test_cli_dry_run_never_posts(monkeypatch, capsys):
     pt.main(["daily", "2026-11-05", "--dry-run", "--announce-upgrade",
              "--lab", str(PICKS), "--lab-stats", str(STATS)])
     out = capsys.readouterr().out
-    assert out.startswith("<b>🆕") and "模型实验盘" in out and "—— 先知" in out
+    assert out.startswith("<b>🆕") and "规则档位，未经独立回测" in out and "—— 先知" in out
+    assert "模型实验盘" not in out
     pt.main(["daily", "2026-11-05", "--dry-run", "--lab", str(PICKS.parent / "missing.csv")])
     out = capsys.readouterr().out
     assert "看板已升级" not in out and "🧪" not in out
     pt.main(["weekly", "2026-11-04", "--dry-run", "--lab", str(PICKS), "--lab-stats", str(STATS)])
     assert "模型周排行" in capsys.readouterr().out
+
+
 
 
 # ---------- 网站 ----------

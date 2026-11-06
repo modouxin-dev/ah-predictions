@@ -279,11 +279,12 @@ def assess(match, rows, fundamentals, cfg, now, observation=None):
         picked['confidence'] = confidence
         picked['risks'].append('盘口报价超过新鲜度阈值，信心已降一级')
     if advisory:
-        # 核验未完全通过：不伪装成高/中信心，强制标低并显式披露。
-        # 不在此再做 low→None 降级，否则低信心场次会全部消失，等于把 advisory 关掉。
+        # 研究报告第六节：advisory 不混入普通「低」档，用独立文本披露；
+        # 规则档位由真实 score 决定（high=7.0 原不可达，已按实测分布重标定）。
+        # 不再强制压成 low，否则核验未过的场次会把全部高/中档吸走，等于伪造档位分布。
         picked['verification_advisory'] = True
-        picked['confidence'] = 'low'
         picked['risks'].append('盘口跨来源核验未完全通过（advisory），结论仅作分析参考')
+        picked['risks'].append('核验未完全通过：该场仅作分析参考，规则档位不代表已校准概率')
     picked['pick_team'] = match[picked['pick_side']]
     excluded = set(cfg.get('exclude_sources') or ['api_football'])
     books = {}
@@ -509,6 +510,13 @@ def main(argv=None):
     if date.fromisoformat(args.date) not in allowed:
         parser.error('只能为当前 UTC 日期或当前北京日期采集实时数据')
     report = build_report(args.date, max_fixtures=args.max_fixtures)
+    # 运行时代理自检：输出因子证据合同覆盖统计（observation 因子不参与评分）。
+    try:
+        from .feature_contract import audit
+        import sys as _sys
+        print(f'FEATURE_COVERAGE {json.dumps(audit(report), ensure_ascii=False)}', file=_sys.stderr)
+    except Exception as exc:
+        print(f'FEATURE_COVERAGE 自检失败：{type(exc).__name__}', file=_sys.stderr)
     if args.preview:
         print(f"预览：观察 {len(report['watchlist'])} 场，推荐 {len(report['picks'])} 场；采集问题 {len(report['collection_errors'])} 项")
         reasons = Counter(item.get('withheld_category', '未定') for item in report['watchlist'])

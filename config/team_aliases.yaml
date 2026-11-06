@@ -29,3 +29,86 @@ aliases:
   "Phnom Penh Crown": [P.P.Crown, PP Crown, 金边皇冠]
   "Machida Zelvia": [Machida.Z, 町田泽维亚]
   "Tai Po": [Wofoo Tai Po, 大埔]
+
+
+# ---------------------------------------------------------------------------
+# display_zh：展示层中文队名（仅用于 TG / Pages 渲染；报告 JSON 始终保留英文原文）
+# 来源（2026-11-07 核对，可逐条回溯）：
+#   [A] 中国体彩网《关于下发8月足彩竞猜球队名全简称的通知》
+#       https://www.lottery.gov.cn/cz/zctz/20190719/2176551.html
+#   [B] 网易体育《球队队名翻译》 https://sports.163.com/special/z/zqclubce.html
+#   [C] 俱乐部官方中文页（如 tottenhamhotspur.com 标注「托特纳姆热刺」）
+#   [D] 公开通用译名对照（索文/维基条目），仅收有稳定中文名者
+# 口径：精确键匹配；未收录保留英文原名，绝不音译/意译造词；
+#       日韩澳球队若无可靠中文官方页，一律保留英文（不自行翻译）。
+# 译名仅为展示映射，不改变对阵；grounding 闸门仍按报告英文原文逐字回溯。
+display_zh:
+  # 英超 / 英冠 [A][B]
+  "Preston North End FC": 普雷斯顿
+  "Southampton FC": 南安普顿
+  "Leeds United FC": 利兹联
+  "Tottenham Hotspur FC": 托特纳姆热刺
+  "Fulham FC": 富勒姆
+  "Newcastle United FC": 纽卡斯尔联
+  "West Bromwich Albion FC": 西布罗姆维奇
+  "Millwall FC": 米尔沃尔
+  "Cardiff City FC": 卡迪夫城
+  "Burnley FC": 伯恩利
+  "Charlton Athletic FC": 查尔顿
+  "Sheffield United FC": 谢菲尔德联
+  "Queens Park Rangers FC": 女王公园巡游者
+  "Lincoln City FC": 林肯城
+  "Wolverhampton Wanderers FC": 狼队
+  "Wrexham AFC": 雷克瑟姆
+  "Portsmouth FC": 朴茨茅斯
+  "Stoke City FC": 斯托克城
+  "Bristol City FC": 布里斯托尔城
+  "Norwich City FC": 诺维奇
+  "Derby County FC": 德比郡
+  "Bolton Wanderers FC": 博尔顿
+  "Everton FC": 埃弗顿
+  "Coventry City FC": 考文垂
+  "Liverpool FC": 利物浦
+  "Arsenal FC": 阿森纳
+  "Manchester City FC": 曼城
+  "Manchester United FC": 曼联
+  "Chelsea FC": 切尔西
+  "Aston Villa FC": 阿斯顿维拉
+  "Brighton & Hove Albion FC": 布莱顿
+  "Crystal Palace FC": 水晶宫
+  "West Ham United FC": 西汉姆联
+  "Nottingham Forest FC": 诺丁汉森林
+  # 意甲 [B][D]
+  "Cagliari Calcio": 卡利亚里
+  "Frosinone Calcio": 弗罗西诺内
+  "Torino FC": 都灵
+  "US Lecce": 莱切
+  "Venezia FC": 威尼斯
+  "Udinese Calcio": 乌迪内斯
+  "Inter Milan": 国际米兰
+  "AC Milan": AC米兰
+  "Juventus FC": 尤文图斯
+  "SSC Napoli": 那不勒斯
+  "AS Roma": 罗马
+  "Atalanta BC": 亚特兰大
+  "Bologna FC": 博洛尼亚
+  "ACF Fiorentina": 佛罗伦萨
+  "SS Lazio": 拉齐奥
+  # 西甲 / 德甲 / 法甲 [A][B]
+  "Sevilla FC": 塞维利亚
+  "Deportivo Alavés": 阿拉维斯
+  "Real Madrid CF": 皇家马德里
+  "FC Barcelona": 巴塞罗那
+  "Atlético de Madrid": 马德里竞技
+  "Real Betis": 皇家贝蒂斯
+  "Villarreal CF": 比利亚雷亚尔
+  "Hamburger SV": 汉堡
+  "Borussia Mönchengladbach": 门兴格拉德巴赫
+  "Borussia Dortmund": 多特蒙德
+  "FC Bayern München": 拜仁慕尼黑
+  "RB Leipzig": 莱比锡红牛
+  "Toulouse FC": 图卢兹
+  "RC Strasbourg Alsace": 斯特拉斯堡
+  "Olympique de Marseille": 马赛
+  "Paris Saint-Germain FC": 巴黎圣日耳曼
+  "RC Lens": 朗斯

@@ -328,7 +328,8 @@ def trunc_w(s: str, w: int) -> str:
 
 
 def team_name(name: str) -> str:
-    name = str(name or "").strip()
+    from . import zh
+    name = zh.team(str(name or "").strip())
     if wcol(name) <= TEAM_MAX:
         return name
     head = name.split(" ")[0]
@@ -401,14 +402,19 @@ def tg_rows(p: dict) -> list[list[str]]:
 
 
 def verdict(p: dict) -> str:
+    from . import zh
     conf = CONF.get(p.get("confidence"), str(p.get("confidence")))
     odds = f" @{wt(p['odds'])}" if p.get("odds") is not None else ""
-    return f"🎯 <b>推荐 {e(_team(p))} {ln(p['line'])}{odds}</b> ｜ 信心 {CONF_ICON.get(conf, '')}<b>{e(conf)}</b>"
+    side = e(zh.team(str(_team(p))))
+    line = e(zh.line_cn(p['line']))
+    # 研究报告：通过独立校准前，不得写成「信心/高胜率」，改称规则档位。
+    return f"🎯 <b>推荐 {side} {line}{odds}</b> ｜ 规则档位 {CONF_ICON.get(conf, '')}<b>{e(conf)}</b>"
 
 
-def match_head(p: dict, mid: str = "vs") -> str:
+def match_head(p: dict, mid: str = "对阵") -> str:
+    from . import zh
     k = bj(p.get("kickoff_utc"))
-    meta = f"🏆 {e(league_name(p.get('league')))}" + (f" · 🕐 {k}" if k != "—" else "")
+    meta = f"🏆 {e(zh.league(league_name(p.get('league'))))}" + (f" · 🕐 {k}" if k != "—" else "")
     return meta + "\n" + teams_line(p["home"], p["away"], mid)
 
 
@@ -420,6 +426,7 @@ def sources_block(urls, title: str = "数据来源") -> list[str]:
 def compact_block(p: dict, stats: dict | None = None, extra: list[str] | None = None,
                   show_sources: bool = True) -> str:
     """单场卡片：推什么 → 为什么推 → 风险在哪 → 数据来源。空字段整段省略。"""
+    from . import zh
     conf = CONF.get(p.get("confidence"), str(p.get("confidence")))
     lines = [match_head(p), verdict(p), *(extra or []),
              sec("🏦", "机构对比", "盘口 · 水位 · 机构"), num_table(tg_rows(p))]
@@ -431,14 +438,13 @@ def compact_block(p: dict, stats: dict | None = None, extra: list[str] | None = 
     probs = p.get("model_probs")
     if probs:
         lines.append("🧮 模型概率 " + " · ".join(f"{e(k)} {float(v):.0%}" for k, v in probs.items()))
-    s = stats or {}
-    lg = (s.get("by_league") or {}).get(p.get("league"))
-    cf = (s.get("by_confidence") or {}).get(conf)
-    lines.append(f"📈 本联赛 {record_of(lg)} ｜ {e(conf)}信心 {record_of(cf)}")
+    # 「本联赛 暂无历史 ｜ 低信心 暂无历史」对读者无信息量，且易被误读为战绩；按「只显示推荐」移除。
     if p.get("reasons"):
-        lines += ["", sec("✅", "为什么推"), quote([f"• {e(short(r, 80))}" for r in p["reasons"][:3]])]
+        lines += ["", sec("✅", "为什么推"),
+                  quote([f"• {e(short(zh.replace_known(r), 80))}" for r in p["reasons"][:3]])]
     if p.get("risks"):
-        lines += ["", sec("⚠️", "风险在哪"), quote([f"• {e(short(r, 64))}" for r in p["risks"][:2]])]
+        lines += ["", sec("⚠️", "风险在哪"),
+                  quote([f"• {e(short(zh.replace_known(r), 64))}" for r in p["risks"][:2]])]
     if show_sources and p.get("sources"):
         lines += ["", *sources_block(p["sources"][:4])]
     return "\n".join(lines)
@@ -471,6 +477,12 @@ def stats_table(stats: dict | None, top: int = 3) -> str:
 
 def tail(stats: dict | None, site_url: str = SITE_URL) -> str:
     return (stats_table(stats) + f'\n🌐 <a href="{html.escape(site_url, quote=True)}">完整看板 · 先知</a>\n\n'
+            + "\n".join(footer()))
+
+
+def simple_tail(site_url: str = SITE_URL) -> str:
+    # 只显示推荐时用的页脚：保留看板入口与免责声明，去掉历史战绩表。
+    return (f'🌐 <a href="{html.escape(site_url, quote=True)}">完整看板 · 先知</a>\n\n'
             + "\n".join(footer()))
 
 
@@ -609,8 +621,12 @@ def lab_block(rows: list[dict] | None) -> str | None:
 
 def daily(rep: dict, stats: dict | None = None, site_url: str = SITE_URL, lab: list[dict] | None = None,
           announce: bool = False) -> list[str]:
+    # 两端统一：只显示正式推荐；0 场时保留如实兜底（不编造赛事补位）。
+    # 观察分析 / 模型实验盘 / 历史战绩 / 已撤销 / 赛程事实清单 从默认群消息移除，
+    # 后台 JSON 与 Pages 次级数据仍完整保留（渲染层过滤，非生成层删除）。
     picks = policy.published(rep)
     head = f"<b>【先知】⚽ 亚盘日报 {e(rep['date'])}</b>\n{date_line(rep, len(picks))}"
+    head += "\n<i>规则档位，未经独立回测；不构成统计预测准确率</i>"
     if rep.get('edition') == 'recheck':
         head += f"\n🔄 实时复核：{bj(rep.get('generated_at'))} 北京时间"
         if rep.get('revision_url'):
@@ -621,21 +637,12 @@ def daily(rep: dict, stats: dict | None = None, site_url: str = SITE_URL, lab: l
     blocks = [head]
     if not picks:
         blocks.append("\n".join(no_pick_lines(rep)))
-    blocks += observation_blocks(rep, len(picks))
-    blocks += [DIV + "\n" + compact_block(p, stats) for p in picks]
-    gone = [p for p in rep.get("picks") or [] if p not in picks
-            and (p.get("cancelled") or p.get("confidence") == "cancelled")]
-    if gone:
-        blocks.append(sec("↩️", "赛前已撤销", "（不计入命中率）") + "\n" + "\n".join(
-            "• " + teams_line(p["home"], p["away"]).replace("<b>", "<s>").replace("</b>", "</s>").replace("\nvs", "\n   vs")
-            + f"\n   原推荐 <s>{e(_team(p))} {ln(p['line'])}</s>" for p in gone))
-    lb = lab_block(lab)
-    if lb:
-        blocks.append(DIV + "\n" + lb)
-    fb = fixture_facts_block(rep)
-    if fb:
-        blocks.append(DIV + "\n" + fb)
-    blocks.append(DIV + "\n" + tail(stats, site_url))
+        fb = fixture_facts_block(rep)
+        if fb:
+            blocks.append(DIV + "\n" + fb)
+    else:
+        blocks += [DIV + "\n" + compact_block(p, stats) for p in picks]
+    blocks.append(DIV + "\n" + simple_tail(site_url))
     return split(blocks)
 
 

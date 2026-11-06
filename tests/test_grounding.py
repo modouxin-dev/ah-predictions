@@ -31,14 +31,20 @@ def test_speculative_reason_is_rejected():
     assert any("推测" in e for e in grounding.check_fixture_lines(rep, [bad]))
 
 
-def test_advisory_pick_must_be_labelled_low_confidence():
+def test_advisory_pick_must_disclose_and_not_claim_verified():
+    # 2026-11-07：advisory 用独立文本披露，不再强制压成低信心；但绝不可假称已核验。
     rep = {"date": "2026-11-06", "picks": [
-        {"verification_advisory": True, "confidence": "medium",
+        {"verification_advisory": True, "confidence": "high",
          "reasons": ["盘口已通过多源核验"], "risks": []}], "watched": [], "watchlist": []}
-    errors = grounding.check_text(rep, "推荐 1 场")
-    assert any("低信心" in e for e in errors)
+    errors = grounding.check_text(rep, "本场为规则档位说明")
     assert any("已通过多源核验" in e for e in errors)
     assert any("披露" in e for e in errors)
+    good = {"date": "2026-11-06", "picks": [
+        {"verification_advisory": True, "confidence": "high",
+         "reasons": ["同机构初盘 -0.75 → 当前 -1"],
+         "risks": ["盘口跨来源核验未完全通过（advisory），结论仅作分析参考"]}],
+        "watched": [], "watchlist": []}
+    assert grounding.check_text(good, "本场为规则档位说明") == []
 
 
 def test_unevidence_assertion_is_rejected():

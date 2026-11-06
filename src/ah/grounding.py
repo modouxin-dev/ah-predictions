@@ -84,12 +84,11 @@ def check_text(report: dict, text: str) -> list[str]:
     for n in claimed:
         if int(n) != len(published):
             errors.append(f"文本声称推荐 {n} 场，报告实际可发布 {len(published)} 场")
-    # 核验未完全通过（advisory）的推荐：不得伪装成已核验/中高信心，必须显式披露风险。
+    # 核验未完全通过（advisory）的推荐：用独立文本披露，不假称已核验。
+    # 研究报告第六节：advisory 不再强制压成低信心，但必须与「已核验」严格区分。
     for p in report.get("picks") or []:
         if not p.get("verification_advisory"):
             continue
-        if p.get("confidence") != "low":
-            errors.append("advisory 推荐未强制标低信心")
         if any("已通过多源核验" in str(r) for r in (p.get("reasons") or [])):
             errors.append("advisory 推荐出现「已通过多源核验」无证据断言")
         if not any("advisory" in str(r).lower() for r in (p.get("risks") or [])):

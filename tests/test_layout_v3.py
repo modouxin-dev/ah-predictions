@@ -35,10 +35,14 @@ def test_tg_prematch_pending_omits_reason():
 
 
 def test_daily_lists_cancelled():
+    # 2026-11-07：群消息只显示正式推荐，已撤销从渲染层移除；报告 JSON 仍保留，不销毁数据。
     rep = {"date": "2026-11-04", "picks": [{"home": "K", "away": "M", "pick_side": "away", "line": -0.75,
-                                             "confidence": "cancelled", "cancelled": True}]}
+                                              "confidence": "cancelled", "cancelled": True}]}
     msg = "\n".join(pt.daily(rep, None))
-    assert "赛前已撤销" in msg and "<s>K</s> vs <s>M</s>" in msg
+    assert "赛前已撤销" not in msg and "🎯" not in msg
+    assert "规则档位，未经独立回测" in msg and policy.DISCLAIMER in msg
+
+
 
 
 def test_web_no_pick_card():

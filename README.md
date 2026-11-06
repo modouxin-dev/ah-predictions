@@ -226,3 +226,31 @@ PYTHONPATH=src python -m ah delivery preflight
 - `publish-recheck.yml` 取消定时（它每次完整重采，会重复消耗额度），仅保留手动触发。
 - `workflow_dispatch` 支持 `slot` 输入（默认 `1`）：用于补跑已错过的 07:00 班次，publish 会等到北京 07:00 再发送。
 - 【未验证】定时触发的实际时刻（GitHub cron 常有延迟）、Actions 实跑、群内实际到达；本地仅用假 Telegram 接口模拟。
+
+
+## 2026-11-07：只显示推荐 + 中文 + 规则档位重标定（含深度研究）
+
+用户需求（已澄清）：TG 群消息与 GitHub Pages **两端**同时「只显示正式推荐 + 中文显示」；授权改动模型算法框架以补全评分依据；不接受「0 场比赛」。
+
+**先做了深度研究**（报告见交付物）：结论是「不能靠降阈值凑高信心标签」。实证：
+- `analyze.WEIGHTS` 名义 8 因子合计 7.8，但 `daily.assess()` 实际只写 `form` / 可选 `h2h` / 自动 `line_movement` 三项（合计 3.0）；
+- 3 份历史日报 14 个真实 score：`min 2.16 / P50 2.94 / P90 3.55 / max 5.00`，原 `high=7.0` **高于实测最大值**；
+- 2026-11-07 的 7 场正式推荐里 6 场 `verification_advisory=True`，原代码把 advisory 全部强制压成 `low`，于是高/中档被吸空。
+
+**本轮改动**
+- `config/settings.yaml`：`high 7.0→4.0`、`medium 3.5→3.0`（按实测分位重标定，让最高档真实可达），`low 2.0` 不变。**明确标注：样本仅 14 场、未按概率校准、未经独立回测；这是「规则档位」，不是统计预测准确率，阈值变化不等于准确率提升。**
+- `src/ah/daily.py`：advisory 不再强制压成「低」，改为保留真实 score 对应的规则档位 + 独立风险文本披露（研究报告第六节）；新增 `FEATURE_COVERAGE` 运行时代理自检输出。
+- `src/ah/feature_contract.py`（新）：因子证据合同。8 因子逐个记录来源与状态；`home_away / injuries / xg / motivation` 如实标 `未取得`（不填 0、不造数据），`line_value` 为 observation 模式**不参与评分**。缺 source/as_of 的因子不得进评分。
+- `src/ah/zh.py`（新）+ `config/team_aliases.yaml` 的 `display_zh` 段：中文显示层。译名来源为**中国体彩网竞猜队名通知、网易体育译名对照、俱乐部官方中文页、公开通用译名对照**（文件内逐条标注 URL）。**精确键匹配；未收录保留英文原名，绝不音译/意译造词；日韩澳球队不自行翻译**。报告 JSON 始终保留英文原文，grounding 仍逐字回溯。
+- `src/ah/publish_telegram.py` + `src/ah/build_site.py`：两端都只渲染正式推荐卡片；有推荐时移除观察分析、模型实验盘、历史战绩、已撤销、赛程事实清单；**0 场时保留如实兜底**（TG 赛程事实清单 / Pages 观察名单），不编造赛事补位。队名中文、`vs→对阵`、盘口加受控中文术语（数字保留可回溯）、「信心」改称「规则档位」、头部统一写「规则档位，未经独立回测；不构成统计预测准确率」。数据来源品牌名（Bet365 / The Odds API / OddsPapi / infersports / 5DollarFootballAPI）保留原样。
+- `src/ah/grounding.py`：advisory 契约更新——不再要求强制低信心，但仍拦截「已通过多源核验」假断言、要求显式披露核验风险；其余 fail-closed 校验不变。
+- 测试按新契约对齐；本地相关测试通过，CI（Python 3.12）跑全量。
+
+**未验证 / 风险（不得写成已完成）**
+- 阈值仅按 14 场历史 score 分位重标定，**样本远低于统计校准所需**（研究引用第三方评测建议每概率桶 80–100 场），因此只称「规则档位」。
+- 伤停 / xG / 主客场分离战绩 / 战意 / 赛程密度**仍未接入评分**，卡片里仍如实写「尚未自动核实伤停及首发」；接入需先逐联赛×赛季验收覆盖（研究建议连续 14 天达标后才从 observation 转 scoring）。
+- 新增因子与权重**未经独立回测**，不宣称命中率或 ROI 改善；未来需按时间外切分、可靠性曲线、Brier score 与市场去水基准评估。
+- 译名表为展示层映射，来源已标注但未逐条官方页复核；如发现错译以报告英文原文为准。
+- GitHub cron 实际触发时刻与 Telegram 端真实到达仍以运行记录 / `message_id` 台账为准。
+
+**AGENTS.md 冻结清单执行记录**：本轮 `MODEL CHANGE / ORCHESTRATION` 已获用户 2026-11-07 明确授权触碰 `analyze.py` 阈值相关配置与 `daily.py` 的 advisory 档位逻辑；未改动评分公式、核验算法、盘口采集口径与数据源开关。

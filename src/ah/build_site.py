@@ -216,8 +216,9 @@ def hit_chips(p: dict, stats: dict | None) -> str:
 
 def pick_card(p: dict, pol: dict, stats: dict | None = None) -> str:
     from . import publish_telegram as pt
+    from . import zh
     st = records.status(p)
-    team = p.get("pick_team") or p.get(p.get("pick_side", ""), "")
+    team = zh.team(str(p.get("pick_team") or p.get(p.get("pick_side", ""), "")))
     conf = CONF.get(p.get("confidence", ""), p.get("confidence", ""))
     odds = f" @{water(p.get('odds'))}" if p.get("odds") is not None else ""
     src = "".join(f"<a class='srcl' href='{e(u)}' rel='noopener'>{e(pt.link_label(u))}</a>"
@@ -227,9 +228,9 @@ def pick_card(p: dict, pol: dict, stats: dict | None = None) -> str:
               "<h3>⚠️ 风险在哪</h3><ul class='risks'>" + "".join(f"<li>{e(x)}</li>" for x in p.get("risks", [])) + "</ul>"
               f"<h3>🔗 数据来源</h3><div class='srcs'>{src or NONE}</div>"
               f"</div><div style='display:grid;gap:10px;align-content:start'>{prematch_panel(p, pol)}{result_panel(p)}</div></div>")
-    return (f"<article class='card pick'><div class='meta'>🏆 {e(p.get('league', ''))} · 🕐 {bjt(p.get('kickoff_utc'))}"
+    return (f"<article class='card pick'><div class='meta'>🏆 {e(zh.league(str(p.get('league', ''))))} · 🕐 {bjt(p.get('kickoff_utc'))}"
             f"<span class='badge st-{st}'>{st}</span></div>"
-            f"<div class='pick-head'><span class='teams'>{e(p['home'])} vs {e(p['away'])}</span></div>"
+            f"<div class='pick-head'><span class='teams'>{e(zh.team(str(p['home'])))} 对阵 {e(zh.team(str(p['away'])))}</span></div>"
             f"<div class='verdict'><span class='v-ico'>🎯</span><span class='v-main'>推荐 {e(str(team))} {fl(p.get('line'))}{odds}</span>"
             f"<span class='conf conf-{e(conf)}'>{pt.CONF_ICON.get(conf, '')} {e(conf)}信心</span></div>"
             + lock(detail) + "</article>")
@@ -310,22 +311,18 @@ def watchlist_html(r: dict) -> str:
 
 
 def report_html(r: dict, pol: dict | None = None, stats: dict | None = None, after_head: str = "") -> str:
+    # 首页只显示正式推荐；0 场时保留如实兜底（观察名单，不含预测结论）。
+    # 观察但不推荐 / 已撤销 / 赛程事实清单 移入后台数据，不在首页混排。
     pol = pol or policy.load()
     live = policy.published(r, pol)
     shown = [p for p in records.published_picks(r, pol)]
     out = [report_head(r, pol, len(live), len(shown)), after_head]
+    out.append("<p class='muted'>规则档位，未经独立回测；不构成统计预测准确率</p>")
     if not live:
         out.append(no_pick_html(r))
-    out.extend(pick_card(p, pol, stats) for p in shown if p in live)
-    gone = [p for p in shown if p not in live]
-    if gone:
-        out.append("<h2>↩️ 已撤销</h2>" + "".join(pick_card(p, pol, stats) for p in gone))
-    out.append(watchlist_html(r))
-    w = r.get("watched") or []
-    if w:
-        rows = [f"<tr><td>{e(x.get('league', ''))}</td><td>{e(x.get('home', ''))} vs {e(x.get('away', ''))}</td>"
-                f"<td class='wrap-text'>{e(x.get('reason_skipped', ''))}</td></tr>" for x in w]
-        out.append("<h2>👀 观察但不推荐</h2>" + lock(tbl(["赛事", "对阵", "原因"], rows, cls="", empty="暂无观察场次")))
+        out.append(watchlist_html(r))
+    else:
+        out.extend(pick_card(p, pol, stats) for p in live)
     return "".join(out)
 
 

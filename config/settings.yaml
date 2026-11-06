@@ -7,9 +7,15 @@ report_window_hours: 36          # 覆盖未来多少小时开球的比赛
 screening_max_fixtures: 32       # 每日报告初筛上限（窗口内常 60+ 场，24 场会漏掉有真实盘口的比赛）；数据源限速与额度仍生效
 max_picks_per_day: 10             # 积累期目标每天 5–10 场，上限 10
 min_confidence_to_publish: low     # 2026-11-06 重标定：见文末 MODEL CHANGE 依据；放行低信心正式推荐
-confidence_thresholds:           # analyze.score 加权分阈值
-  high: 7.0
-  medium: 3.5
+# 2026-11-07 按实测分布重标定（MODEL CHANGE，用户授权；见 README「规则档位重标定」）：
+#   3 份历史日报共 14 个真实 score：min 2.16 / P50 2.94 / P75 3.33 / P90 3.55 / max 5.00。
+#   原 high=7.0 高于实测最大值，数学上不可达；8 因子权重表名义 7.8，但 assess() 实际只写 3 个。
+#   新值：high=4.0（略高于 P90、低于历史 max，让最高一档真实可达）、medium=3.0（≈P50）、low=2.0 不变。
+#   【必须如实标注】样本仅 14 场、未按概率校准、未经独立回测；这是「规则档位」，不是统计预测准确率，
+#   阈值变化不等于准确率提升。伤停/xG/主客场/战意/赛程密度仍标「未取得」，不填 0、不编造。
+confidence_thresholds:           # 规则档位（未经独立回测）
+  high: 4.0
+  medium: 3.0
   low: 2.0
 odds_format: hk
 require_real_line: true          # 没有真实盘口的比赛绝不推荐

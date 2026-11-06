@@ -64,16 +64,19 @@ jobs:
         run: |
           D="$AH_DATE"
           F="reports/${D:0:4}/${D:5:2}/${D}.json"
-          # 外部调度（workflow_dispatch 带 slot）与定时一视同仁：
-          # 第 2/3/4 次复用当日报告，不重复消耗赔率接口额度；报告缺失才兜底重采。
-          if [ "$AH_SLOT" != "1" ] && [ -f "$F" ]; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "[skip] 更新时段 $AH_SLOT：复用当日报告 $F，不重新采集"
-            exit 0
-          fi
+          # 只有明确的刷新时段 2/3/4 复用当日报告，不重复消耗赔率接口额度；
+          # slot=1 与 slot=manual 都完整重采（手动验证用于让新阈值/新展示立即生效）。
+          case "$AH_SLOT" in
+            2|3|4)
+              if [ -f "$F" ]; then
+                echo "skip=true" >> "$GITHUB_OUTPUT"
+                echo "[skip] 更新时段 $AH_SLOT：复用当日报告 $F，不重新采集"
+                exit 0
+              fi ;;
+          esac
           if [ "${{ github.event_name }}" != "schedule" ]; then
             echo "skip=false" >> "$GITHUB_OUTPUT"
-            echo "[skip] 完整采集时段 $AH_SLOT（外部触发或手动）"
+            echo "[skip] 完整采集时段 $AH_SLOT（外部触发或手动验证）"
             exit 0
           fi
           if D="$D" python - <<'PY'

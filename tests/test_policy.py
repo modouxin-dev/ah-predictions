@@ -86,18 +86,22 @@ def test_history_untouched():
 
 
 def test_outputs_show_low_with_label_and_carry_disclaimer(tmp_path):
-    """门槛「低」：低信心推荐照常展示，但必须明确标注「低」；免责声明不丢。"""
+    """门槛「低」：低档推荐照常展示，但必须明确标注档位；免责声明不丢。"""
     r = policy.apply(rep([pk("1", "high"), pk("2", "medium"), pk("3", "low")]), POL)
     t = publish_telegram.summary(r, stats=compute([]))
     assert "H1" in t and "H2" in t and "H3" in t
-    assert "信心 ⚪<b>低</b>" in t               # 低信心必须带等级标注，不得伪装成高/中
-    assert policy.DISCLAIMER in t and "历史战绩" in t
+    assert "规则档位 ⚪<b>低</b>" in t           # 2026-11-07：规则档位必须带等级标注，不得写成已校准概率
+    # 2026-11-07：只显示推荐，历史战绩表从群消息移除；免责声明与规则档位声明不丢。
+    assert policy.DISCLAIMER in t and "历史战绩" not in t
+    assert "规则档位，未经独立回测" in t
     assert policy.DISCLAIMER in publish_telegram.summary(rep([]))
     h = build_site.report_html(r)
     assert "H1" in h and "H2" in h and "H3" in h
     md = render_report.render_md(r)
     assert "H3" in md and "低" in md
     assert policy.DISCLAIMER in md and md.rstrip().endswith("—— 先知")
+
+
 
 
 def test_cancel_on_drop():

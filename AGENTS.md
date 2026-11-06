@@ -93,3 +93,12 @@ data/telegram_delivery.json
 3. 0 场报告的推送**纯文本**中必须出现报告里真实存在的对阵，且不含任何编造队名；
 4. 以「发送台账」为唯一幂等键：报告已存在但无 `message_id` 记录时仍会发送一次；已有记录则跳过；
 5. 真实送达以 `message_id` 入账为准；未取得时如实标注 `【未验证】`。
+
+
+## 2026-11-07 授权与执行记录
+
+- 用户明确授权「补基本面因子 / 重标定阈值」，故本轮 `MODEL CHANGE` 触碰 `config/settings.yaml` 阈值与 `src/ah/daily.py` 的 advisory 档位逻辑；**未改** `analyze.py` 的 WEIGHTS/score 公式、`odds_snapshots.py` 核验算法、盘口采集与数据源开关。
+- 深度研究报告结论已纳入 `docs/grounding-policy.md` 口径：缺 source/as_of 的因子不得进评分；盘口超时不得当价值证据；覆盖声明 True 不代表单场数据存在；阈值变化不得写成准确率变化；0 场不得用任何赛事补位；缺译名不得造词；「未取得」不得改写为「无伤停/无影响」。
+- 新增 `src/ah/feature_contract.py`：新因子默认 `observation`，不参与 score；连续覆盖验收达标前不得转 `scoring`。
+- 展示层中文只做精确键映射，未收录保留英文原文；报告 JSON 原文是唯一可回溯锚点。
+- 界面必须写「规则档位，未经独立回测；不构成统计预测准确率」，禁止把 high/medium/low 写成「高胜率 / 已校准概率」。
