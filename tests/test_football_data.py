@@ -130,3 +130,17 @@ def test_settle_cross_verify(tmp_path):
     log = autofill_results(p, client=AFC(1, 1), now=NOW, fd_client=client(tmp_path / "c2"))
     assert log[0]["action"] == "mismatch"
     assert list(csv.DictReader(p.open()))[0]["result"] == ""
+
+
+def test_settle_falls_back_when_api_football_disabled(tmp_path):
+    from ah.api_football import ApiFootballError
+
+    class Disabled:
+        def fixtures_by_date(self, _date):
+            raise ApiFootballError('disabled')
+
+    p = tmp_path / 'p.csv'
+    _csv(p)
+    log = autofill_results(p, client=Disabled(), now=NOW, fd_client=client(tmp_path / 'cache'))
+    assert log[0]['action'] == 'filled'
+    assert list(csv.DictReader(p.open()))[0]['result'] == '2-1'

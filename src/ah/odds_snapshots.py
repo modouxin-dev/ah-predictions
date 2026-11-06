@@ -702,7 +702,8 @@ class Snapshotter:
                 self.calls["oddspapi_free"] += 1
                 ok = True
             except Exception as e:  # noqa: BLE001
-                why.append(f"oddspapi:historical_error({type(e).__name__}:{str(e)[:60]})")
+                # Requests exceptions can include a URL with apiKey; never persist it.
+                why.append(f"oddspapi:historical_error({type(e).__name__})")
                 continue
             for b, v in (h.get("bookmakers") or {}).items():
                 books[slug(b)] = v

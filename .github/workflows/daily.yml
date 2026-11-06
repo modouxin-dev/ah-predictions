@@ -5,6 +5,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+concurrency:
+  group: daily-report
+  cancel-in-progress: false
 jobs:
   report:
     runs-on: ubuntu-latest
@@ -13,35 +16,52 @@ jobs:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
-      ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}           # 可选；未设置时跳过多家公司共识   # 可选；未设置时 fetch_fixtures 回退 titan007
+      ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+      ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}
+      FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
+      FIVEDOLLAR_KEY: ${{ secrets.FIVEDOLLAR_KEY }}
+      GITHUB_AH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: pip install -r requirements.txt
-      - name: Fetch fixtures & odds
+      - name: Generate daily report
+        id: report
         run: |
-          mkdir -p data/raw
-          python -m ah.fetch_fixtures > data/raw/fixtures_$(date -u +%F).json || echo "fixtures fetch failed"
-          python -m ah.fetch_odds > data/raw/odds_$(date -u +%F).json || echo "odds fetch failed"
-      # TODO: analyze 需要基本面特征；当前由研究代理生成 reports/YYYY/MM/DATE.json 后再进入下一步
-      - name: Render report (if JSON exists)
-        run: |
-          D=$(date -u +%F); F=reports/${D:0:4}/${D:5:2}/$D.json
-          if [ -f "$F" ]; then python -m ah consensus $D || echo "consensus skipped"; python -m ah render $D; else echo "no report json for $D"; fi
+          D=$(date -u +%F)
+          echo "date=$D" >> "$GITHUB_OUTPUT"
+          F=reports/${D:0:4}/${D:5:2}/$D.json
+          if [ -f "$F" ]; then
+            echo "今日报告已存在，避免覆盖及重复推送"
+            echo "created=false" >> "$GITHUB_OUTPUT"
+          else
+            python -m ah.daily --date "$D"
+            python -m ah render "$D"
+            echo "created=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Commit
+        if: ${{ steps.report.outputs.created == 'true' }}
         run: |
-          git config user.name "ah-bot"; git config user.email "ah-bot@users.noreply.github.com"
-          # 数据源运行状态写在 var/（不入库），这里复制为快照 data/source_status.json 一起提交
+          D="${{ steps.report.outputs.date }}"
           [ -f var/source_status.json ] && cp var/source_status.json data/source_status.json || true
-          git add reports data && git commit -m "daily report $(date -u +%F)" || echo "nothing to commit"
-          git push
+          scripts/safe_commit.sh --skip-tests -m "daily report $D" reports data/predictions.csv data/snapshots/odds data/source_status.json
+      - name: Check Telegram configuration
+        if: ${{ steps.report.outputs.created == 'true' || github.event_name == 'workflow_dispatch' }}
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "Telegram 密钥未配置，无法发送日报"
+            exit 1
+          fi
       - name: Publish Telegram
-        if: ${{ env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHAT_ID != '' }}
+        if: ${{ (steps.report.outputs.created == 'true' || github.event_name == 'workflow_dispatch') && env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHAT_ID != '' }}
         env:
           SITE_URL: ${{ vars.SITE_URL }}
         run: |
-          D=$(date -u +%F)
+          D="${{ steps.report.outputs.date }}"
           F=reports/${D:0:4}/${D:5:2}/$D.json
           echo "=== Telegram push check ==="
           echo "Date: $D"

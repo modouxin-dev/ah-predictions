@@ -352,6 +352,13 @@ def autofill_results(path: Path, client=None, now=None, min_after_kickoff_min: i
                 fid = fx["fixture"]["id"]
             res = c.fixture_result(fid)
         except ApiFootballError as e:
+            fs = _fd_score(fd_client, r)
+            if fs:
+                r['result'] = f'{fs[0]}-{fs[1]}'
+                changed = True
+                log.append({'match_id': r.get('match_id'), 'action': 'filled',
+                            'detail': f"football-data.org {r['result']}（API-Football 不可用）"})
+                continue
             log.append({"match_id": r.get("match_id"), "action": "error", "detail": str(e)})
             continue
         if not res or not res["finished"] or res["home_goals"] is None:
@@ -382,12 +389,12 @@ def main() -> None:
     ap.add_argument("--csv", default=str(DATA / "predictions.csv"))
     ap.add_argument("--no-autofill", action="store_true", help="不调用 API-Football，只结算已手动填写比分的行")
     a = ap.parse_args()
-    if not a.no_autofill and os.environ.get("API_FOOTBALL_KEY"):
+    if not a.no_autofill and (os.environ.get("API_FOOTBALL_KEY") or os.environ.get("FOOTBALL_DATA_KEY")):
         from .football_data import Client as FDClient
         for e in autofill_results(Path(a.csv), fd_client=FDClient()):  # 欧洲比赛用 football-data.org 交叉核对
             print(f"[autofill] {e['match_id']}: {e['action']} {e['detail']}")
     elif not a.no_autofill:
-        print("[autofill] 未设置 API_FOOTBALL_KEY，跳过自动回填比分")
+        print("[autofill] 未设置比分数据源密钥，跳过自动回填比分")
     print(f"settled {settle_csv(Path(a.csv))} rows")
     from .records import sync_from_csv
     for x in sync_from_csv(Path(a.csv)):
