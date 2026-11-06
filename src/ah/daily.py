@@ -203,7 +203,13 @@ def assess(match, rows, fundamentals, cfg, now, observation=None):
     if not math.isfinite(line_open) or abs(line_open * 4 - round(line_open * 4)) > 1e-8:
         return None, '初盘数据无效'
     form_source = (fundamentals or {}).get('source') or 'football-data.org'
-    form_url = 'https://5dollarfootballapi.com/' if form_source == '5DollarFootballAPI' else 'https://www.football-data.org/'
+    form_urls = {'football-data.org': 'https://www.football-data.org/',
+                 '5DollarFootballAPI': 'https://5dollarfootballapi.com/',
+                 'api_football': 'https://www.api-football.com/',
+                 'infersports': 'https://infersports.dev/'}
+    form_url = form_urls.get(form_source)
+    if not form_url:
+        return None, '近期状态来源未识别'
     candidates = []
     for side in ('home', 'away'):
         sign = 1 if side == 'home' else -1

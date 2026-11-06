@@ -27,9 +27,13 @@ UTC = timezone.utc
 
 
 def _int(value):
-    try:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        number = value
+    elif isinstance(value, str) and value.isascii() and value.isdigit():
         number = int(value)
-    except (TypeError, ValueError):
+    else:
         return None
     return number if number >= 0 else None
 
@@ -142,7 +146,10 @@ def refresh_api_football(apif, league: dict, rows: list[dict]):
     known = {(r['source'], r['event_id']) for r in rows}
     added = []
     for fx in data or []:
-        goals = (fx.get('score') or {}).get('fulltime') or fx.get('goals') or {}
+        goals = (fx.get('score') or {}).get('fulltime')
+        if not goals and ((fx.get('fixture') or {}).get('status') or {}).get('short') == 'FT':
+            goals = fx.get('goals')
+        goals = goals or {}
         h, a = _int(goals.get('home')), _int(goals.get('away'))
         key = ('api_football', str((fx.get('fixture') or {}).get('id')))
         if h is None or a is None or key in known:

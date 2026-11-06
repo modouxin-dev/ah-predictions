@@ -33,6 +33,23 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - run: pip install -r requirements.txt
+      - name: Check API-Football status
+        run: |
+          python - <<'PY'
+          from ah import api_football
+          client = api_football.Client()
+          if not client.enabled:
+              print('API-Football: not configured or disabled')
+          else:
+              try:
+                  data = client.status()
+                  print('API-Football status reachable; subscription active:',
+                        (data.get('subscription') or {}).get('active', 'unknown'))
+              except Exception as exc:
+                  print('API-Football status unavailable:', type(exc).__name__)
+                  if client.disabled_reason() and 'suspend' in client.disabled_reason().lower():
+                      print('API-Football account suspended; source disabled for this run')
+          PY
       - name: Build live report
         run: |
           D=$(date -u +%F)
@@ -40,7 +57,10 @@ jobs:
           echo "RECHECK_FILE=$F" >> "$GITHUB_ENV"
           python -u -m ah.recheck collect --path "$F"
       - name: Save report and odds evidence
-        run: scripts/safe_commit.sh --skip-tests -m "save live recheck $GITHUB_RUN_ID" reports/rechecks data/snapshots/odds data/history
+        run: |
+          paths=(reports/rechecks data/snapshots/odds)
+          if [ -d data/history ]; then paths+=(data/history); fi
+          scripts/safe_commit.sh --skip-tests -m "save live recheck $GITHUB_RUN_ID" "${paths[@]}"
       - name: Check bot and destination
         run: |
           python - <<'PY'

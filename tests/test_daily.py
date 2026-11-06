@@ -49,6 +49,19 @@ def test_backup_form_is_attributed_to_actual_provider():
     assert observation['form_source'] == '5DollarFootballAPI'
 
 
+@pytest.mark.parametrize('source,url', [('api_football', 'https://www.api-football.com/'),
+                                        ('infersports', 'https://infersports.dev/')])
+def test_asian_form_sources_are_not_misattributed(source, url):
+    pick, why = daily.assess(fixture(), quotes(), {**FORM, 'source': source}, CFG, NOW)
+    assert not why and url in pick['sources']
+    assert 'https://www.football-data.org/' not in pick['sources']
+
+
+def test_unknown_form_source_is_not_presented_as_verified():
+    pick, why = daily.assess(fixture(), quotes(), {**FORM, 'source': 'unknown'}, CFG, NOW)
+    assert pick is None and why == '近期状态来源未识别'
+
+
 def test_unverified_stale_or_missing_fundamentals_are_not_recommended():
     rows = quotes()
     for row in rows:
@@ -280,7 +293,26 @@ def test_infersports_score_extraction_never_guesses():
     assert fh.extract_score({'home_score': '0', 'away_score': '0'}) == (0, 0)
     assert fh.extract_score({'status': 'finished'}) is None
     assert fh.extract_score({'score': {'home': None, 'away': 1}}) is None
+    assert fh.extract_score({'score': {'home': 1.9, 'away': 1}}) is None
+    assert fh.extract_score({'score': {'home': True, 'away': 1}}) is None
     assert fh.is_finished({'status': 'Finished'}) and not fh.is_finished({'status': 'scheduled'})
+
+
+def test_api_football_form_does_not_treat_extra_time_score_as_regulation():
+    from ah import form_history as fh
+    class API:
+        enabled = True
+        def get(self, *_args, **_kwargs):
+            def fx(mid, status, goals, fulltime=None):
+                return {'fixture': {'id': mid, 'date': '2026-10-12T12:00:00Z', 'status': {'short': status}},
+                        'teams': {'home': {'name': 'A'}, 'away': {'name': 'B'}},
+                        'goals': goals, 'score': {'fulltime': fulltime}}
+            return {'response': [fx(1, 'AET', {'home': 2, 'away': 1}),
+                                 fx(2, 'FT', {'home': 2, 'away': 0}),
+                                 fx(3, 'PEN', {'home': 3, 'away': 2}, {'home': 1, 'away': 1})]}
+    rows, notes = fh.refresh_api_football(API(), {'id': 'j1', 'apif': 98, 'season': 2026}, [])
+    assert not notes and [r['event_id'] for r in rows] == ['2', '3']
+    assert [(r['home_goals'], r['away_goals']) for r in rows] == [(2, 0), (1, 1)]
 
 
 def test_infersports_backfill_reports_missing_score_fields(tmp_path):
