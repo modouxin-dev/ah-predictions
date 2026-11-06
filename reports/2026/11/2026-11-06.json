@@ -1,9 +1,196 @@
 {
   "date": "2026-11-06",
-  "generated_at": "2026-11-06T13:38:22Z",
+  "generated_at": "2026-11-06T14:15:08Z",
   "edition": "automatic",
   "odds_format": "HK",
-  "picks": [],
+  "picks": [
+    {
+      "match_id": "fd-560632",
+      "league": "英超",
+      "home": "Leeds United FC",
+      "away": "Tottenham Hotspur FC",
+      "kickoff_utc": "2026-11-07T12:30:00Z",
+      "pick_side": "away",
+      "line": -0.0,
+      "line_open": 0.25,
+      "odds": 0.877,
+      "confidence": "low",
+      "score": 3.55,
+      "reasons": [
+        "同机构初盘 +0.25 → 当前 -0，盘口已通过多源核验",
+        "近期赛果（最近在前）：Leeds United FC LDDLD；Tottenham Hotspur FC WWWDL"
+      ],
+      "risks": [
+        "尚未自动核实伤停及首发；规则评分未经独立回测，赛前应再次核查",
+        "盘口报价超过新鲜度阈值，信心已降一级"
+      ],
+      "sources": [
+        "https://www.football-data.org/",
+        "https://oddspapi.io/",
+        "https://the-odds-api.com/",
+        "https://5dollarfootballapi.com/"
+      ],
+      "pick_team": "Tottenham Hotspur FC",
+      "market_consensus": {
+        "source": "多源盘口快照",
+        "bookmakers": 13,
+        "agree": 13,
+        "home_line": 0.0,
+        "pick_line": -0.0,
+        "pick_water": 0.85
+      },
+      "observation": {
+        "pick_side": "away",
+        "pick_team": "Tottenham Hotspur FC",
+        "line": -0.0,
+        "line_open": 0.25,
+        "odds": 0.877,
+        "score": 3.55,
+        "model_confidence": "medium",
+        "home_form": "LDDLD",
+        "away_form": "WWWDL",
+        "form_source": "football-data.org",
+        "bookmaker": "pinnacle",
+        "source": "oddspapi",
+        "price_ts": "2026-11-06T12:33:10Z",
+        "freshness": "stale_downgrade"
+      },
+      "bet365_movement": {
+        "bookmaker": "Bet 365",
+        "open_pick_line": 0.25,
+        "pick_line": 0.0,
+        "open_pick_water": 0.8,
+        "pick_water": 0.85,
+        "toward_pick": 0.25,
+        "fixture_id": 2120212024
+      }
+    },
+    {
+      "match_id": "fd-558532",
+      "league": "意甲",
+      "home": "Torino FC",
+      "away": "US Lecce",
+      "kickoff_utc": "2026-11-07T14:00:00Z",
+      "pick_side": "home",
+      "line": -0.75,
+      "line_open": -0.5,
+      "odds": 1.07,
+      "confidence": "low",
+      "score": 3.07,
+      "reasons": [
+        "同机构初盘 -0.5 → 当前 -0.75，盘口跨来源核验未完全通过（advisory），仅作参考",
+        "近期赛果（最近在前）：Torino FC LLWWW；US Lecce LLLWL"
+      ],
+      "risks": [
+        "尚未自动核实伤停及首发；规则评分未经独立回测，赛前应再次核查",
+        "盘口跨来源核验未完全通过（advisory），结论仅作分析参考"
+      ],
+      "sources": [
+        "https://www.football-data.org/",
+        "https://oddspapi.io/",
+        "https://infersports.dev/",
+        "https://5dollarfootballapi.com/"
+      ],
+      "verification_advisory": true,
+      "pick_team": "Torino FC",
+      "market_consensus": {
+        "source": "多源盘口快照",
+        "bookmakers": 8,
+        "agree": 5,
+        "home_line": -0.75,
+        "pick_line": -0.75,
+        "pick_water": 1.07
+      },
+      "observation": {
+        "pick_side": "home",
+        "pick_team": "Torino FC",
+        "line": -0.75,
+        "line_open": -0.5,
+        "odds": 1.07,
+        "score": 3.07,
+        "model_confidence": "low",
+        "home_form": "LLWWW",
+        "away_form": "LLLWL",
+        "form_source": "football-data.org",
+        "bookmaker": "sbobet",
+        "source": "oddspapi",
+        "price_ts": "2026-11-06T03:34:04Z",
+        "freshness": "stale_withdraw"
+      },
+      "bet365_movement": {
+        "bookmaker": "Bet 365",
+        "open_pick_line": -0.5,
+        "pick_line": -0.5,
+        "open_pick_water": 0.825,
+        "pick_water": 0.8,
+        "toward_pick": 0.0,
+        "fixture_id": 2908931517
+      }
+    },
+    {
+      "match_id": "fd-558534",
+      "league": "意甲",
+      "home": "Cagliari Calcio",
+      "away": "Frosinone Calcio",
+      "kickoff_utc": "2026-11-07T14:00:00Z",
+      "pick_side": "away",
+      "line": -0.0,
+      "line_open": -0.0,
+      "odds": 0.847,
+      "confidence": "low",
+      "score": 2.16,
+      "reasons": [
+        "同机构初盘 -0 → 当前 -0，盘口跨来源核验未完全通过（advisory），仅作参考",
+        "近期赛果（最近在前）：Cagliari Calcio LLLLD；Frosinone Calcio WWDWL"
+      ],
+      "risks": [
+        "尚未自动核实伤停及首发；规则评分未经独立回测，赛前应再次核查",
+        "盘口跨来源核验未完全通过（advisory），结论仅作分析参考"
+      ],
+      "sources": [
+        "https://www.football-data.org/",
+        "https://oddspapi.io/",
+        "https://the-odds-api.com/",
+        "https://infersports.dev/",
+        "https://5dollarfootballapi.com/"
+      ],
+      "verification_advisory": true,
+      "pick_team": "Frosinone Calcio",
+      "market_consensus": {
+        "source": "多源盘口快照",
+        "bookmakers": 13,
+        "agree": 13,
+        "home_line": 0.0,
+        "pick_line": -0.0,
+        "pick_water": 0.85
+      },
+      "observation": {
+        "pick_side": "away",
+        "pick_team": "Frosinone Calcio",
+        "line": -0.0,
+        "line_open": -0.0,
+        "odds": 0.847,
+        "score": 2.16,
+        "model_confidence": "low",
+        "home_form": "LLLLD",
+        "away_form": "WWDWL",
+        "form_source": "football-data.org",
+        "bookmaker": "pinnacle",
+        "source": "oddspapi",
+        "price_ts": "2026-11-06T14:01:09Z",
+        "freshness": "stale_withdraw"
+      },
+      "bet365_movement": {
+        "bookmaker": "Bet 365",
+        "open_pick_line": 0.0,
+        "pick_line": 0.0,
+        "open_pick_water": 0.875,
+        "pick_water": 0.825,
+        "toward_pick": 0.0,
+        "fixture_id": 3930125471
+      }
+    }
+  ],
   "watched": [],
   "watchlist": [
     {
@@ -17,8 +204,8 @@
       "tier": 2,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "近期状态数据不足",
-      "withheld_reason": "近期状态数据不足"
+      "withheld_category": "比赛已开始",
+      "withheld_reason": "比赛已开始"
     },
     {
       "match_id": "infs-evt_YT19Y8BW",
@@ -157,8 +344,24 @@
       "tier": 3,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "基本面与盘口评分不足",
-      "withheld_reason": "基本面与盘口评分不足"
+      "withheld_category": "盘口报价过期，降级后不足",
+      "withheld_reason": "盘口报价过期，降级后不足",
+      "observation": {
+        "pick_side": "away",
+        "pick_team": "Bolton Wanderers FC",
+        "line": -0.0,
+        "line_open": 0.25,
+        "odds": 0.98,
+        "score": 2.94,
+        "model_confidence": "low",
+        "home_form": "LLDLL",
+        "away_form": "WLLDW",
+        "form_source": "football-data.org",
+        "bookmaker": "pinnacle",
+        "source": "oddspapi",
+        "price_ts": "2026-11-06T13:58:51Z",
+        "freshness": "stale_downgrade"
+      }
     },
     {
       "match_id": "infs-evt_NSJK7FGJ",
@@ -171,8 +374,8 @@
       "tier": 1,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
+      "withheld_category": "近期状态数据不足",
+      "withheld_reason": "近期状态数据不足"
     },
     {
       "match_id": "infs-evt_PYMBNVWS",
@@ -185,8 +388,8 @@
       "tier": 2,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
+      "withheld_category": "近期状态数据不足",
+      "withheld_reason": "近期状态数据不足"
     },
     {
       "match_id": "infs-evt_DJTCS58P",
@@ -199,38 +402,8 @@
       "tier": 1,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
-    },
-    {
-      "match_id": "fd-560632",
-      "fixture_id": null,
-      "league_id": "epl",
-      "league": "英超",
-      "home": "Leeds United FC",
-      "away": "Tottenham Hotspur FC",
-      "kickoff_utc": "2026-11-07T12:30:00Z",
-      "tier": 1,
-      "list": "watchlist",
-      "confidence": null,
-      "withheld_category": "基本面与盘口评分不足",
-      "withheld_reason": "基本面与盘口评分不足",
-      "observation": {
-        "pick_side": "away",
-        "pick_team": "Tottenham Hotspur FC",
-        "line": -0.0,
-        "line_open": 0.25,
-        "odds": 0.877,
-        "score": 3.55,
-        "model_confidence": "low",
-        "home_form": "LDDLD",
-        "away_form": "WWWDL",
-        "form_source": "football-data.org",
-        "bookmaker": "pinnacle",
-        "source": "oddspapi",
-        "price_ts": "2026-11-06T12:33:10Z",
-        "freshness": "stale_downgrade"
-      }
+      "withheld_category": "近期状态数据不足",
+      "withheld_reason": "近期状态数据不足"
     },
     {
       "match_id": "fd-561933",
@@ -257,8 +430,8 @@
       "tier": 3,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
+      "withheld_category": "基本面与盘口评分不足",
+      "withheld_reason": "基本面与盘口评分不足"
     },
     {
       "match_id": "fd-561939",
@@ -271,8 +444,8 @@
       "tier": 3,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
+      "withheld_category": "基本面与盘口评分不足",
+      "withheld_reason": "基本面与盘口评分不足"
     },
     {
       "match_id": "infs-evt_836CD9M7",
@@ -299,36 +472,8 @@
       "tier": 2,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
-    },
-    {
-      "match_id": "fd-558532",
-      "fixture_id": null,
-      "league_id": "seriea",
-      "league": "意甲",
-      "home": "Torino FC",
-      "away": "US Lecce",
-      "kickoff_utc": "2026-11-07T14:00:00Z",
-      "tier": 2,
-      "list": "watchlist",
-      "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
-    },
-    {
-      "match_id": "fd-558534",
-      "fixture_id": null,
-      "league_id": "seriea",
-      "league": "意甲",
-      "home": "Cagliari Calcio",
-      "away": "Frosinone Calcio",
-      "kickoff_utc": "2026-11-07T14:00:00Z",
-      "tier": 2,
-      "list": "watchlist",
-      "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
+      "withheld_category": "基本面与盘口评分不足",
+      "withheld_reason": "基本面与盘口评分不足"
     },
     {
       "match_id": "fd-565848",
@@ -341,8 +486,8 @@
       "tier": 2,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
+      "withheld_category": "基本面与盘口评分不足",
+      "withheld_reason": "基本面与盘口评分不足"
     },
     {
       "match_id": "fd-565850",
@@ -355,21 +500,23 @@
       "tier": 2,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
+      "withheld_category": "盘口过深",
+      "withheld_reason": "盘口过深"
     }
   ],
-  "odds_source_note": "赛程、盘口与近期状态自动采集；推荐需经盘口多源核验。",
-  "not_covered": "筛查上限 24 场；窗口内共发现 67 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）；OddsPapi 赛程 csl: 未取得赛程（HTTP 404）；盘口采集：oddspapi:no_fixture_match 2场；InferSports 已完赛事件没有可识别的比分字段，赛果兜底不可用；近期状态不足：Al Arabi Doha vs Ahli Doha（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Al Wakrah vs Al Shahaniya（API-Football 与 InferSports 赛果库均不足 3 场）；盘口核验：no_quotes 3场；sources:1<2 1场；stale>7200s 11场；verified:0<1 1场。",
+  "odds_source_note": "赛程、盘口与近期状态自动采集；推荐只用真实盘口，核验未完全通过的场次强制低信心并显式标注。",
+  "not_covered": "筛查上限 24 场；窗口内共发现 67 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）；OddsPapi 赛程 csl: 未取得赛程（HTTP 404）；盘口采集：oddspapi:no_fixture_match 2场；近期状态不足：Al Arabi Doha vs Ahli Doha（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Al Wakrah vs Al Shahaniya（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Shimizu S-Pulse vs T.Verdy（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Auckland FC vs Wellington Phoenix（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Jeju Utd vs Gwangju FC（API-Football 与 InferSports 赛果库均不足 3 场）；盘口核验：no_quotes 3场；sources:1<2 1场；stale>7200s 11场；verified:0<1 1场。",
   "collection_errors": [],
   "collection_notes": [
     "API-Football 未启用",
     "OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）",
     "OddsPapi 赛程 csl: 未取得赛程（HTTP 404）",
     "盘口采集：oddspapi:no_fixture_match 2场",
-    "InferSports 已完赛事件没有可识别的比分字段，赛果兜底不可用",
     "近期状态不足：Al Arabi Doha vs Ahli Doha（API-Football 与 InferSports 赛果库均不足 3 场）",
     "近期状态不足：Al Wakrah vs Al Shahaniya（API-Football 与 InferSports 赛果库均不足 3 场）",
+    "近期状态不足：Shimizu S-Pulse vs T.Verdy（API-Football 与 InferSports 赛果库均不足 3 场）",
+    "近期状态不足：Auckland FC vs Wellington Phoenix（API-Football 与 InferSports 赛果库均不足 3 场）",
+    "近期状态不足：Jeju Utd vs Gwangju FC（API-Football 与 InferSports 赛果库均不足 3 场）",
     "盘口核验：no_quotes 3场；sources:1<2 1场；stale>7200s 11场；verified:0<1 1场"
   ]
 }
