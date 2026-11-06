@@ -40,7 +40,7 @@ jobs:
           echo "RECHECK_FILE=$F" >> "$GITHUB_ENV"
           python -u -m ah.recheck collect --path "$F"
       - name: Save report and odds evidence
-        run: scripts/safe_commit.sh --skip-tests -m "save live recheck $GITHUB_RUN_ID" reports/rechecks data/snapshots/odds
+        run: scripts/safe_commit.sh --skip-tests -m "save live recheck $GITHUB_RUN_ID" reports/rechecks data/snapshots/odds data/history
       - name: Check bot and destination
         run: |
           python - <<'PY'

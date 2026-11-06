@@ -48,7 +48,7 @@ jobs:
         run: |
           D="${{ steps.report.outputs.date }}"
           [ -f var/source_status.json ] && cp var/source_status.json data/source_status.json || true
-          scripts/safe_commit.sh --skip-tests -m "daily report $D" reports data/predictions.csv data/snapshots/odds data/source_status.json
+          scripts/safe_commit.sh --skip-tests -m "daily report $D" reports data/predictions.csv data/snapshots/odds data/history data/source_status.json
       - name: Check Telegram configuration
         if: ${{ steps.report.outputs.created == 'true' || github.event_name == 'workflow_dispatch' }}
         run: |
