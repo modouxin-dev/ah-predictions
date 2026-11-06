@@ -7,13 +7,14 @@ from ah import grounding, publish_telegram as pt
 REPORT = Path(__file__).resolve().parents[1] / "reports" / "2026" / "11" / "2026-11-06.json"
 
 
-def test_real_zero_pick_report_passes_gate():
+def test_real_daily_report_passes_gate():
+    """不硬编码场次数：日报每天 --refresh 重采，picks / watchlist 会变化。"""
     rep = json.loads(REPORT.read_text(encoding="utf-8"))
     result = grounding.check_all(rep, text="\n".join(pt.plain(m) for m in pt.daily(rep)),
                                  ledger=Path("/nonexistent/ledger.json"))
     assert result["ok"], result["errors"]
-    assert result["checked"]["picks"] == 0
-    assert result["checked"]["fixture_lines"] == 12
+    assert result["checked"]["picks"] == len(rep.get("picks") or [])
+    assert result["checked"]["fixture_lines"] == len(pt.fixture_facts_lines(rep))
 
 
 def test_invented_team_is_rejected():
@@ -25,9 +26,19 @@ def test_invented_team_is_rejected():
 
 def test_speculative_reason_is_rejected():
     rep = json.loads(REPORT.read_text(encoding="utf-8"))
-    bad = pt.fixture_facts_lines(rep)[0].replace(
-        "盘口跨来源核验未通过", "大概率是盘口没对齐")
+    line = pt.fixture_facts_lines(rep)[0]
+    bad = line.rsplit("｜原因：", 1)[0] + "｜原因：大概率是盘口没对齐"
     assert any("推测" in e for e in grounding.check_fixture_lines(rep, [bad]))
+
+
+def test_advisory_pick_must_be_labelled_low_confidence():
+    rep = {"date": "2026-11-06", "picks": [
+        {"verification_advisory": True, "confidence": "medium",
+         "reasons": ["盘口已通过多源核验"], "risks": []}], "watched": [], "watchlist": []}
+    errors = grounding.check_text(rep, "推荐 1 场")
+    assert any("低信心" in e for e in errors)
+    assert any("已通过多源核验" in e for e in errors)
+    assert any("披露" in e for e in errors)
 
 
 def test_unevidence_assertion_is_rejected():

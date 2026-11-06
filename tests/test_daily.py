@@ -73,21 +73,69 @@ def test_unverified_stale_or_missing_fundamentals_are_not_recommended():
 
 
 def test_low_score_is_observation_not_official_pick():
+    """2026-11-06 阈值重标定后 3.9 分达 medium 门槛，可作正式推荐。
+
+    防幻觉核心不变：observation 仍单独保留；没有 verified 主线报价时绝不产出 pick/observation。
+    """
     rows = quotes()
     rows[-1]['ah_home_line'] = '-0.5'
     observation = {}
     pick, why = daily.assess(fixture(), rows,
                              {'form': {'home': 'WWWWW', 'away': 'DDDDD'}},
                              CFG, NOW, observation=observation)
-    assert pick is None and why == '基本面与盘口评分不足'
+    assert not why and pick['confidence'] == 'medium'
     assert observation['pick_team'] == 'Everton'
-    assert observation['model_confidence'] == 'low'
     assert observation['score'] == pytest.approx(3.9)
     assert observation['home_form'] == 'WWWWW' and observation['line_open'] == -0.5
     for row in rows:
         row['verification'] = 'single'
     blocked = {}
     assert daily.assess(fixture(), rows, FORM, CFG, NOW, observation=blocked)[0] is None
+    assert not blocked
+
+
+def _single_source_rows():
+    """核验未通过（sources:1<2）但仍有 3 家 verified 主线报价的真实形态。"""
+    def row(book, stage='report', line=-0.75):
+        return {'match_id': 'm1', 'stage': stage, 'source': 'oddspapi', 'bookmaker': book,
+                'is_main': '1', 'verification': 'verified', 'ah_home_line': str(line),
+                'odds_home': '1.91', 'odds_away': '1.91',
+                'captured_at': NOW.isoformat(), 'price_ts': NOW.isoformat()}
+    return [row('pinnacle'), row('sbobet'), row('singbet'),
+            row('pinnacle', stage='open', line=-0.25)]
+
+
+def test_advisory_only_downgrades_and_labels_unverified_recommendation():
+    """advisory_only 生效：放行但强制低信心、显式披露、不写「已通过多源核验」。"""
+    from ah import grounding
+    rows = _single_source_rows()
+    check = daily.odds_snapshots.evaluate_cross_verification(rows, 'm1', 'report', CFG, now=NOW)
+    assert check['passed'] is False
+    cfg = {**CFG, 'advisory_only': True}
+    pick, why = daily.assess(fixture(), rows, FORM, cfg, NOW)
+    assert not why, why
+    assert pick['verification_advisory'] is True
+    assert pick['confidence'] == 'low'
+    assert any('advisory' in r.lower() for r in pick['risks'])
+    assert not any('已通过多源核验' in r for r in pick['reasons'])
+    report = {'date': '2026-11-06', 'picks': [pick], 'watchlist': []}
+    assert grounding.check_text(report, '推荐 1 场') == []
+
+
+def test_advisory_disabled_still_hard_blocks():
+    rows = _single_source_rows()
+    pick, why = daily.assess(fixture(), rows, FORM, {**CFG, 'advisory_only': False}, NOW)
+    assert pick is None and why == '盘口跨来源核验未通过'
+
+
+def test_advisory_never_invents_quotes_without_verified_mains():
+    rows = _single_source_rows()
+    for r in rows:
+        r['verification'] = 'single'
+    blocked = {}
+    pick, why = daily.assess(fixture(), rows, FORM, {**CFG, 'advisory_only': True}, NOW,
+                             observation=blocked)
+    assert pick is None and why == '盘口跨来源核验未通过'
     assert not blocked
 
 
@@ -98,7 +146,8 @@ def test_age_downgrades_confidence_without_bypassing_other_checks():
     assert any('降一级' in risk for risk in pick['risks'])
     report = {'date': '2026-11-06', 'picks': [pick], 'watchlist': []}
     daily.policy.apply(report)
-    assert not report['picks'] and len(report['watchlist']) == 1
+    # 2026-11-06 发布门槛已重标定为「低」：降级后仍可发布，但必须如实保持低信心。
+    assert len(report['picks']) == 1 and report['picks'][0]['confidence'] == 'low'
 
     single_source = [row for row in quotes() if row['source'] != 'odds_api']
     assert daily.assess(fixture(), single_source, FORM, CFG, aged)[0] is None

@@ -46,6 +46,23 @@ def _usable_verification(check):
             and reasons[0].startswith('stale>'))
 
 
+def _verification_gate(check, cfg, has_verified):
+    """返回 (是否可用于推荐, 是否 advisory 降级放行)。
+
+    - 核验通过，或仅新鲜度降级 -> (True, False)
+    - cross_verification_draft.advisory_only 开启且存在 verified 主线报价 -> (True, True)
+    - 其余 -> (False, False)
+
+    防断言：advisory=True 只代表「有真实报价但核验未完全通过」，绝不等于核验通过；
+    调用方必须把信心压到低、显式标注风险，且不得写「已通过多源核验」。
+    """
+    if _usable_verification(check):
+        return True, False
+    if (cfg or {}).get('advisory_only') and has_verified:
+        return True, True
+    return False, False
+
+
 def _settings():
     return yaml.safe_load((CONFIG / 'settings.yaml').read_text(encoding='utf-8')) or {}
 
@@ -173,7 +190,8 @@ def assess(match, rows, fundamentals, cfg, now, observation=None):
     verification = odds_snapshots.evaluate_cross_verification(rows, mid, 'report', cfg, now=now)
     mains = [r for r in rows if r.get('match_id') == mid and r.get('stage') == 'report'
              and str(r.get('is_main')) == '1' and r.get('verification') == 'verified']
-    if not _usable_verification(verification) or not mains:
+    usable, advisory = _verification_gate(verification, cfg, bool(mains))
+    if not usable or not mains:
         return None, '盘口跨来源核验未通过'
     mains.sort(key=lambda r: (r.get('bookmaker') != 'pinnacle', r.get('source') != 'oddspapi'))
     quote = mains[0]
@@ -210,6 +228,8 @@ def assess(match, rows, fundamentals, cfg, now, observation=None):
     form_url = form_urls.get(form_source)
     if not form_url:
         return None, '近期状态来源未识别'
+    verify_note = ('盘口已通过多源核验' if not advisory
+                   else '盘口跨来源核验未完全通过（advisory），仅作参考')
     candidates = []
     for side in ('home', 'away'):
         sign = 1 if side == 'home' else -1
@@ -226,7 +246,7 @@ def assess(match, rows, fundamentals, cfg, now, observation=None):
             match_id=mid, league=match['league'], home=match['home'], away=match['away'],
             kickoff_utc=match['kickoff_utc'], pick_side=side, line=sign * line,
             line_open=sign * line_open, odds=round(decimal - 1, 3), features=features,
-            reasons=[f"同机构初盘 {sign * line_open:+g} → 当前 {sign * line:+g}，盘口已通过多源核验",
+            reasons=[f"同机构初盘 {sign * line_open:+g} → 当前 {sign * line:+g}，{verify_note}",
                      f"近期赛果（最近在前）：{match['home']} {forms['home']}；{match['away']} {forms['away']}"]
                     + (['Football data by 5DollarFootballAPI'] if form_source == '5DollarFootballAPI' else []),
             risks=['尚未自动核实伤停及首发；规则评分未经独立回测，赛前应再次核查'],
@@ -258,6 +278,12 @@ def assess(match, rows, fundamentals, cfg, now, observation=None):
             return None, '盘口报价过期，降级后不足'
         picked['confidence'] = confidence
         picked['risks'].append('盘口报价超过新鲜度阈值，信心已降一级')
+    if advisory:
+        # 核验未完全通过：不伪装成高/中信心，强制标低并显式披露。
+        # 不在此再做 low→None 降级，否则低信心场次会全部消失，等于把 advisory 关掉。
+        picked['verification_advisory'] = True
+        picked['confidence'] = 'low'
+        picked['risks'].append('盘口跨来源核验未完全通过（advisory），结论仅作分析参考')
     picked['pick_team'] = match[picked['pick_side']]
     excluded = set(cfg.get('exclude_sources') or ['api_football'])
     books = {}
@@ -378,7 +404,7 @@ def build_report(report_date, now=None, max_fixtures=None, snapshot_dir=None):
     cfg = odds_snapshots.load_cross_verification()
     report = {'date': report_date, 'generated_at': datetime.now(UTC).strftime('%Y-%m-%dT%H:%M:%SZ'),
               'edition': 'automatic', 'odds_format': 'HK', 'picks': [], 'watched': [], 'watchlist': [],
-              'odds_source_note': '赛程、盘口与近期状态自动采集；推荐需经盘口多源核验。',
+              'odds_source_note': '赛程、盘口与近期状态自动采集；推荐只用真实盘口，核验未完全通过的场次强制低信心并显式标注。',
               'not_covered': f'筛查上限 {max_fixtures} 场；窗口内共发现 {total} 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。',
               'collection_errors': errors, 'collection_notes': notes}
     verification_failures = Counter()
@@ -390,14 +416,15 @@ def build_report(report_date, now=None, max_fixtures=None, snapshot_dir=None):
             verification_failures.update(check.get('reasons') or ['no_quotes'])
         has_verified = any(r.get('match_id') == mid and r.get('stage') == 'report' and r.get('verification') == 'verified'
                            and str(r.get('is_main')) == '1' for r in rows)
+        usable, advisory = _verification_gate(check, cfg, has_verified)
         fundamental = None
         code = football_data.CODE_BY_LEAGUE.get(match['league_id'])
-        if _usable_verification(check) and has_verified and code and fd.enabled:
+        if usable and has_verified and code and fd.enabled:
             try:
                 fundamental = football_data.fundamentals(fd, code, match['home'], match['away'], match['kickoff_utc'], 'home')
             except Exception as exc:
                 errors.append('基本面: ' + type(exc).__name__)
-        if (fundamental is None and not code and _usable_verification(check) and has_verified):
+        if (fundamental is None and not code and usable and has_verified):
             # football-data 不覆盖的联赛（亚洲等）：API-Football → InferSports 赛果库，逐级兜底。
             if history is None:
                 history = form_history.load()
@@ -422,7 +449,7 @@ def build_report(report_date, now=None, max_fixtures=None, snapshot_dir=None):
             if fundamental is None:
                 notes.append(f"近期状态不足：{match['home']} vs {match['away']}（API-Football 与 InferSports 赛果库均不足 3 场）")
         forms = (fundamental or {}).get('form') or {}
-        if (_usable_verification(check) and has_verified and fd5.enabled
+        if (usable and has_verified and fd5.enabled
                 and match['league_id'] in fd5_leagues
                 and min(len(forms.get('home', '')), len(forms.get('away', ''))) < 3):
             try:

@@ -76,6 +76,7 @@ data/telegram_delivery.json
   - 允许范围：`cross_verification_draft.advisory_only` 真正生效（核验失败改为降级标注而非硬拦截）、按现有可用特征重标定 `confidence_thresholds`、移除已恢复数据源的 `exclude_sources` 排除。
   - 硬底线（防幻觉，不得放宽）：推荐仍必须有**真实采集**的 `line` / `odds` / `price_ts` / 同机构初盘 / ≥3 场近期状态；不得用默认值、推测值或聚合值补全；核验未通过必须如实标注，不得隐藏。
   - 仍然禁止：编造赛程/盘口/水位/比分/倾向/命中率；把「能连通」写成「数据充足」；把「已推送」写成「已送达」；把未回测的规则写成「准确率提升」。
+- **执行记录**：2026-11-06 的 `MODEL CHANGE:` 提交已执行 A；依据与未回测风险见 README「MODEL CHANGE」章节。
 
 ## 4. 每次改动必须附的证据
 

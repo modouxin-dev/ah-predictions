@@ -6,11 +6,11 @@ timezone: "America/Los_Angeles"  # 用户时区（报告内时间统一用 UTC�
 report_window_hours: 36          # 覆盖未来多少小时开球的比赛
 screening_max_fixtures: 24       # 每日报告初筛上限；数据源自身的限速和额度仍然生效
 max_picks_per_day: 10             # 积累期目标每天 5–10 场，上限 10
-min_confidence_to_publish: medium  # high | medium | low（见 policy）；积累期正式发中及以上
+min_confidence_to_publish: low     # 2026-11-06 重标定：见文末 MODEL CHANGE 依据；放行低信心正式推荐
 confidence_thresholds:           # analyze.score 加权分阈值
   high: 7.0
-  medium: 4.5
-  low: 3.0
+  medium: 3.5
+  low: 2.0
 odds_format: hk
 require_real_line: true          # 没有真实盘口的比赛绝不推荐
 stake_units: 1
@@ -31,10 +31,17 @@ push_rules:                      # 由 Grok Bot 定时任务执行（报告研�
     telegram_chat_id: "-1004312560482"
     web: "https://modouxin-dev.github.io/ah-predictions/"
 
-# 准确率优先策略（宁可少推，不推不确定的场次）—— src/ah/policy.py
+# 2026-11-06 MODEL CHANGE 依据（实测，非推测）：
+#   analyze.WEIGHTS 共 8 个因子，但 build_report 实际只填 form / h2h(可选) / line_movement(自动)，
+#   已填权重上限 1.2+0.3+1.5=3.0，score 理论上限约 6.0，原 high=7.0 数学上不可达；
+#   13:38 重采的 24 场里仅 1 场走到评分（Leeds vs Tottenham score=3.55），
+#   其余 14 场被「盘口跨来源核验未通过」硬拦、8 场评分不足、2 场近期状态不足。
+#   故：medium 4.5→3.5、low 3.0→2.0、两处发布门槛→低，并让 sources.yaml 的 advisory_only 生效。
+#   所有推荐仍只用真实盘口与真实赛果；核验未完全通过的场次强制低信心 + 显式风险标注，不编造结论。
+# 准确率优先策略（低信心场次如实标注，不伪装成已核验）—— src/ah/policy.py
 # 积累期：正式发「中」及以上；样本够、模型稳后再收回「只发高」。深盘 |line|≥1.75 默认进观察。
 policy:
-  min_confidence_to_publish: 中      # 发布门槛：中及以上；低于门槛进 JSON watchlist，不推送、不展示为推荐
+  min_confidence_to_publish: 低      # 2026-11-06：低及以上；核验未完全通过的场次强制标低信心并注明风险
   max_picks_per_day: 10             # 积累期目标每天 5–10 场，上限 10
   max_abs_line_to_publish: 1.75     # |line|≥1.75 默认不进正式，进 watchlist（深盘）
   hit_rate_by_confidence: true      # 高/中分账命中率（统计侧 by_confidence）

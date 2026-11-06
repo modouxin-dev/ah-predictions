@@ -126,6 +126,26 @@ scripts/safe_commit.sh --help                          # 全部选项与退出�
 scripts/publish_source_status.sh            # var/ -> data/ 快照，内容有变化才经 safe_commit 提交推送
 ```
 
+## MODEL CHANGE（2026-11-06）：让日报真正产出比赛推荐
+
+**依据（【已验证】）**
+- 远端 13:38 强制重采的日报：`picks=0`、24 场中 14 场「盘口跨来源核验未通过」硬拦、8 场「基本面与盘口评分不足」、2 场「近期状态数据不足」；仅 1 场走到评分（Leeds vs Tottenham，score 3.55）。
+- `analyze.WEIGHTS` 有 8 个因子，但 `build_report` 实际只填 `form` / 可选 `h2h` / 自动 `line_movement`，已填权重上限 3.0、score 理论上限约 6.0，原 `high=7.0` 数学上不可达。
+- `config/sources.yaml` 的 `cross_verification_draft.advisory_only: true` 与 `on_fail.report: 置信度降一级` 早已写明降级语义，但 `daily.py` 一直当硬拦截用。
+
+**改动**
+- `config/settings.yaml`：`medium 4.5→3.5`、`low 3.0→2.0`；顶层与 `policy` 两处发布门槛 `中/ medium → 低/ low`。
+- `src/ah/daily.py`：新增 `_verification_gate()` 让 `advisory_only` 真正生效；核验未完全通过但**有真实 verified 主线报价**的场次改为「降级放行」，强制 `confidence=low`、写入 `verification_advisory`、在风险里显式披露，且推荐理由不再写「盘口已通过多源核验」。`build_report` 同步为这些场次采集基本面。
+- `src/ah/grounding.py`：新增闸门——advisory 推荐若未标低信心、假称「已通过多源核验」、或未披露核验风险，一律判定失败并拒绝发送。
+- `tests/`：更新 5 个因契约变更失效的断言（不再硬编码每日重采的场次数），新增 3 个 advisory 防幻觉测试；本地 105 项通过。
+
+**硬底线未放宽**：推荐仍必须有真实采集的 `line` / `odds` / `price_ts` / 同机构初盘 / ≥3 场近期状态；没有 verified 主线报价时 `advisory_only` 也不放行；`advisory_only=false` 时维持原硬拦截。
+
+**风险（【未验证】，不得写成「准确率提升」）**
+- 阈值重标定**未经独立回测**；低信心推荐只代表规则放行，不代表更准。
+- advisory 场次的盘口跨来源核验未完全通过，结论仅作分析参考，已在消息里标低信心并列为风险。
+- 每次 `--refresh` 的真实近期状态不同，实际推荐场数以当日 `reports/**.json` 为准；规则评分未核实伤停与首发。
+
 ## 发布对账与真实数据原则（2026-11-06 编排层修复）
 
 **本次修复不改动模型算法框架**：`analyze.py` / `policy.py` / `daily.py` / `odds_snapshots.py` / `config/settings.yaml` / `config/sources.yaml` 的评分、核验、阈值与策略逻辑保持原样。改动仅在编排层、展示层与对账层，冻结清单见 `AGENTS.md`。
