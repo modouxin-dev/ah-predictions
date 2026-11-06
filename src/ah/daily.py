@@ -126,7 +126,7 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None):
                         add('oddspapi-' + str(game['fixtureId']), lid, game.get('participant1Name'),
                             game.get('participant2Name'), game.get('startTime'))
             except Exception as exc:
-                errors.append(_collection_error('OddsPapi 赛程', exc))
+                errors.append(_collection_error(f'OddsPapi 赛程 {lid}', exc))
     if not succeeded:
         raise RuntimeError('没有可用的赛程数据源')
     # The current recommendation pipeline obtains form exclusively from
@@ -310,9 +310,12 @@ def build_report(report_date, now=None, max_fixtures=8):
               'odds_source_note': '赛程、盘口与近期状态自动采集；推荐需经盘口多源核验。',
               'not_covered': f'筛查上限 {max_fixtures} 场；窗口内共发现 {total} 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。',
               'collection_errors': errors, 'collection_notes': notes}
+    verification_failures = Counter()
     for match in matches:
         mid = match['match_id']
         check = odds_snapshots.evaluate_cross_verification(rows, mid, 'report', cfg, now=datetime.now(UTC))
+        if not check.get('passed'):
+            verification_failures.update(check.get('reasons') or ['no_quotes'])
         has_verified = any(r.get('match_id') == mid and r.get('stage') == 'report' and r.get('verification') == 'verified'
                            and str(r.get('is_main')) == '1' for r in rows)
         fundamental = None
@@ -330,6 +333,9 @@ def build_report(report_date, now=None, max_fixtures=8):
             if mid in titan:
                 item['titan007_observation'] = titan[mid]
             report['watchlist'].append(item)
+    if verification_failures:
+        notes.append('盘口核验：' + '；'.join(f'{reason} {count}场'
+                                          for reason, count in sorted(verification_failures.items())))
     policy.apply(report)
     if report['picks']:
         # 5Dollar is supplementary only; lack of data never creates a pick.
