@@ -33,6 +33,14 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - run: pip install -r requirements.txt
+      - name: Build live report
+        run: |
+          D=$(date -u +%F)
+          F="reports/rechecks/${D:0:4}/${D:5:2}/${D}-${GITHUB_RUN_ID}.json"
+          echo "RECHECK_FILE=$F" >> "$GITHUB_ENV"
+          python -u -m ah.recheck collect --path "$F"
+      - name: Save report and odds evidence
+        run: scripts/safe_commit.sh --skip-tests -m "save live recheck $GITHUB_RUN_ID" reports/rechecks data/snapshots/odds
       - name: Check bot and destination
         run: |
           python - <<'PY'
@@ -51,18 +59,17 @@ jobs:
               group = requests.post(base + 'getChat', json={'chat_id': chat}, timeout=20)
               print('目标会话检查 HTTP', group.status_code, flush=True)
               if group.status_code != 200:
+                  description = str(group.json().get('description', '')).casefold()
+                  if 'chat not found' in description:
+                      print('Telegram 返回 chat not found', flush=True)
                   raise SystemExit('机器人无法访问目标会话')
               print('已确认目标会话可访问')
           except Exception as exc:
               raise SystemExit('Telegram 连接检查失败：' + type(exc).__name__) from None
           PY
-      - name: Build live report
-        run: |
-          D=$(date -u +%F)
-          F="reports/rechecks/${D:0:4}/${D:5:2}/${D}-${GITHUB_RUN_ID}.json"
-          echo "RECHECK_FILE=$F" >> "$GITHUB_ENV"
-          python -u -m ah.recheck collect --path "$F"
-      - name: Save report and official records
-        run: scripts/safe_commit.sh --skip-tests -m "record live recheck $GITHUB_RUN_ID" reports/rechecks data/predictions.csv data/snapshots/odds
       - name: Send report to Telegram
         run: python -m ah.recheck send --path "$RECHECK_FILE"
+      - name: Record sent official recommendations
+        run: |
+          python -m ah.recheck record --path "$RECHECK_FILE"
+          scripts/safe_commit.sh --skip-tests -m "record sent recheck $GITHUB_RUN_ID" data/predictions.csv

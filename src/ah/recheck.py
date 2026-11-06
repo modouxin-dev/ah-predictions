@@ -32,7 +32,6 @@ def collect(path: Path, max_fixtures: int = 12) -> dict:
     with path.open('x', encoding='utf-8') as stream:
         json.dump(report, stream, ensure_ascii=False, indent=2)
         stream.write('\n')
-    render_report.append_ledger(report, DATA / 'predictions.csv')
     count = sum(1 for x in report.get('watchlist', []) if x.get('observation'))
     print(f'已保存复核报告：正式推荐 {len(official)} 场，分析观察 {count} 场')
     return report
@@ -40,12 +39,16 @@ def collect(path: Path, max_fixtures: int = 12) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['collect', 'send'])
+    parser.add_argument('action', choices=['collect', 'send', 'record'])
     parser.add_argument('--path', required=True, type=Path)
     parser.add_argument('--max-fixtures', type=int, default=12, choices=range(1, 13))
     args = parser.parse_args()
     if args.action == 'collect':
         collect(args.path, args.max_fixtures)
+    elif args.action == 'record':
+        report = json.loads(args.path.read_text(encoding='utf-8'))
+        count = render_report.append_ledger(report, DATA / 'predictions.csv')
+        print(f'发送后已记录正式推荐 {count} 场')
     else:
         if not os.environ.get('TELEGRAM_BOT_TOKEN') or not os.environ.get('TELEGRAM_CHAT_ID'):
             raise SystemExit('Telegram 配置缺失，停止发送')
