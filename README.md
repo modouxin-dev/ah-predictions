@@ -211,3 +211,6 @@ PYTHONPATH=src python -m ah delivery preflight
 
 管理员需在 **Settings → Secrets and variables → Actions** 确认两个 Secret 与 `config/settings.yaml` 一致，并把机器人加入目标群、赋予发送权限。仓库代码无法读取 Secret 明文，也无法代替这一步。
 
+## CI 与定时触发（追加说明）
+- `.github/workflows/tests.yml`：push/PR/手动触发时运行 `pytest -q` 与 `ah grounding`，对应 AGENTS.md 验收口径。
+- `daily.yml` 含主 cron（01:00 UTC）与备用 cron（02:47 UTC）；重复触发由台账 `data/telegram_delivery.json` 的 (date, chat_id) 幂等键保证不会重复推送。

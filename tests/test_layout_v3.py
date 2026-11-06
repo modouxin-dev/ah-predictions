@@ -9,13 +9,15 @@ REP = {"date": "2026-11-05", "picks": [], "no_pick_reason": "中信心仅 1 场"
                      {"home": "G", "away": "H"}]}
 
 
-def test_tg_no_pick_counts_from_watchlist_without_names():
+def test_tg_no_pick_counts_from_watchlist_and_lists_facts_only():
     msg = "\n".join(pt.daily(REP, None))
     assert policy.no_pick_title() + "（宁缺毋滥）" in msg
     assert "观察 4 场" in msg and "中 2" in msg and "低 1" in msg and "未定 1" in msg
     assert "<code>2</code>  深盘" in msg and "<code>1</code>  信号不足" in msg
     assert "中信心仅 1 场" not in msg            # 不用手写原因里的错误计数
-    assert "A vs B" not in msg and "<b>A" not in msg  # 中/低信心不点名推送
+    # 现契约：0 场推荐时只列「赛程事实清单」（非推荐、无预测结论）；不得出现推荐/倾向字样
+    assert "赛程事实清单" in msg and "A vs B" in msg and "状态：未推荐" in msg
+    assert "<b>A" not in msg and "🎯" not in msg and "推荐 A" not in msg
     assert policy.DISCLAIMER in msg and "—— 先知" in msg
 
 

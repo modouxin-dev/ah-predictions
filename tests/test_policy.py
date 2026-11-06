@@ -23,14 +23,16 @@ def rep(picks):
 
 
 def test_settings_policy():
-    assert POL["min_confidence_to_publish"] == "中" and POL["max_picks_per_day"] == 10
+    # 2026-11-06 MODEL CHANGE：发布门槛下调为「低」
+    assert POL["min_confidence_to_publish"] == "低" \
+        and POL["max_picks_per_day"] == 10
     assert POL["max_abs_line_to_publish"] == 1.75
     assert POL["require_real_odds"] and POL["prematch_cancel_on_confidence_drop"]
     assert "0.25" in POL["consensus_alignment"]
 
 
 def test_apply_medium_and_watchlist():
-    """中信心可通过；低仍拦；深盘 |line|≥1.75 拦；偏离规则保留。"""
+    """发布门槛「低」：低信心也可通过（标注信心等级）；深盘 |line|≥1.75 拦；偏离规则保留。"""
     r = rep([
         pk("1", "high"),
         pk("2", "medium"),
@@ -45,11 +47,12 @@ def test_apply_medium_and_watchlist():
     policy.apply(r, POL)
     ids = [p["match_id"] for p in r["picks"]]
     assert "1" in ids and "2" in ids and "7" in ids
-    assert "3" not in ids and "4" not in ids and "6" not in ids
+    assert "3" in ids                          # 低信心：门槛下调后可发布（由展示层标注「低」）
+    assert "4" not in ids and "6" not in ids
     assert "8" not in ids and "9" not in ids
     why = {w["match_id"]: w["withheld_reason"] for w in r["watchlist"]}
     assert "赔率" in why["4"] and "偏离" in why["6"]
-    assert "信心低" in why["3"]
+    assert "3" not in why                      # 不再以「信心低」为由撤下
     assert "深盘" in why["8"] and "深盘" in why["9"]
     # gap=0.5 降为中后应通过（或若被日上限挤出则在 watchlist）
     assert "5" in ids or "超过每日上限" in why.get("5", "")
@@ -82,20 +85,19 @@ def test_history_untouched():
     assert h == HIST
 
 
-def test_outputs_show_medium_hide_low_and_carry_disclaimer(tmp_path):
+def test_outputs_show_low_with_label_and_carry_disclaimer(tmp_path):
+    """门槛「低」：低信心推荐照常展示，但必须明确标注「低」；免责声明不丢。"""
     r = policy.apply(rep([pk("1", "high"), pk("2", "medium"), pk("3", "low")]), POL)
-    r["picks"].append(pk("9", "low"))           # 即使误入 picks 也不展示（低信心）
     t = publish_telegram.summary(r, stats=compute([]))
-    assert "H1" in t and "H2" in t and "H3" not in t and "H9" not in t
+    assert "H1" in t and "H2" in t and "H3" in t
+    assert "信心 ⚪<b>低</b>" in t               # 低信心必须带等级标注，不得伪装成高/中
     assert policy.DISCLAIMER in t and "历史战绩" in t
     assert policy.DISCLAIMER in publish_telegram.summary(rep([]))
     h = build_site.report_html(r)
-    picks_part, _, watch_part = h.partition("观察名单")
-    assert "H1" in picks_part and "H2" in picks_part
-    assert "H9" not in h and "H3" not in picks_part
-    assert "H3" in watch_part and "不推荐" in h
+    assert "H1" in h and "H2" in h and "H3" in h
     md = render_report.render_md(r)
-    assert "H9" not in md and policy.DISCLAIMER in md and md.rstrip().endswith("—— 先知")
+    assert "H3" in md and "低" in md
+    assert policy.DISCLAIMER in md and md.rstrip().endswith("—— 先知")
 
 
 def test_cancel_on_drop():

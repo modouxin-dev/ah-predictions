@@ -120,19 +120,19 @@ def test_today_published_only(repo):
     assert "鹿岛" not in text  # 已撤销不在今日推荐
 
 
-def test_today_no_picks(repo, tmp_path):
+def test_today_low_confidence_pick_is_published_and_labelled(repo, tmp_path):
     from ah import policy as _pol
     p = next(repo[0].glob("*/*/*.json"))
     r = json.loads(p.read_text(encoding="utf-8"))
     r["date"] = "2026-11-06"
-    # 清空正式 picks；低信心不应发布
+    # 低信心：门槛下调后属可发布推荐（2026-11-06 MODEL CHANGE），须带「低」标注
     r["picks"] = [{**r["picks"][1], "confidence": "low", "cancelled": False}]
     r["picks"][0].pop("final_check", None)
     r["watchlist"] = [{"home": "WATCHED", "away": "X"}]
     (p.parent / "2026-11-06.json").write_text(json.dumps(r, ensure_ascii=False), encoding="utf-8")
     text, _ = tg_bot.render("today", repo[0], repo[1])
-    assert _pol.no_pick_title() + "（宁缺毋滥）" in text
-    assert "波尔图" not in text and "WATCHED" not in text
+    assert _pol.no_pick_title() + "（宁缺毋滥）" not in text
+    assert "低" in text
 
 
 def test_records_show_prematch_and_result(repo):

@@ -3,6 +3,9 @@ on:
   schedule:
     # 09:00 北京开始采集（留 60 分钟窗口；历史实跑 10–20 分钟），publish 等到 10:00 整点再发送。
     - cron: "0 1 * * *"
+    # 备用触发：GitHub 定时任务可能延迟/丢失。同一天重复触发安全：
+    # collect 已送达带推荐则跳过；publish 以台账 (date, chat_id) 为唯一幂等键。
+    - cron: "47 2 * * *"
   workflow_dispatch:
 permissions:
   contents: write

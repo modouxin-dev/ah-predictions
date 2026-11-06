@@ -1,0 +1,27 @@
+name: tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pytest:
+    name: pytest + grounding（AGENTS.md 验收口径）
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: src
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - name: pytest
+        run: python -m pytest -q
+      - name: Grounding gate on latest committed report
+        run: |
+          F="$(ls reports/*/*/*.json 2>/dev/null | sort | tail -1)"
+          test -n "$F" || { echo "无报告可校验，跳过"; exit 0; }
+          python -m ah grounding --report "$F"
