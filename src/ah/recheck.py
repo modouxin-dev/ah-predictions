@@ -17,7 +17,12 @@ def collect(path: Path, max_fixtures: int | None = None) -> dict:
     official = policy.published(report)
     observations = publish_telegram.observation_blocks(report)
     if not official and not observations:
-        raise RuntimeError('本次没有可核验的推荐或模型观察，停止发布')
+        # 不再中断：0 场推荐仍如实发布「赛程事实清单」（非推荐、不含预测结论）。
+        # 不改动 policy / observation_blocks / 评分与核验算法（见 AGENTS.md 冻结清单）。
+        report['analysis_note'] = (
+            '本次无可发布的正式推荐或模型观察；消息仅列本次已采集的赛程事实与不推原因，'
+            '不生成任何预测、盘口或倾向。'
+        )
     existing = {(r.get('date'), r.get('match_id')) for r in settle.read_ledger(DATA / 'predictions.csv')}
     if any((report['date'], p['match_id']) in existing for p in official):
         raise RuntimeError('当天已有相同比赛的正式记录，停止重复发布')
@@ -51,16 +56,30 @@ def main():
         count = render_report.append_ledger(report, DATA / 'predictions.csv')
         print(f'发送后已记录正式推荐 {count} 场')
     else:
-        if not os.environ.get('TELEGRAM_BOT_TOKEN') or not os.environ.get('TELEGRAM_CHAT_ID'):
-            raise SystemExit('Telegram 配置缺失，停止发送')
+        from . import delivery, grounding
+        if not os.environ.get('TELEGRAM_BOT_TOKEN'):
+            raise SystemExit('TELEGRAM_BOT_TOKEN 未配置，拒绝静默跳过')
+        try:
+            chat, source, _facts = delivery.resolve_chat()
+        except RuntimeError as exc:
+            raise SystemExit(str(exc)) from None
         report = json.loads(args.path.read_text(encoding='utf-8'))
+        gate = grounding.check_all(report)
+        if not gate['ok']:
+            raise SystemExit('事实闸门未通过，拒绝发送：' + '；'.join(gate['errors'][:5]))
+        sha = delivery.report_fingerprint(report)
+        key = 'recheck:' + args.path.stem
+        ok, reason = delivery.should_send(key, sha, chat)
+        if not ok:
+            print(f'[recheck send] 台账已有送达记录，跳过重复发送：{reason}')
+            return
         stats_path = DATA / 'stats.json'
         stats = json.loads(stats_path.read_text(encoding='utf-8')) if stats_path.exists() else None
         messages = publish_telegram.daily(report, stats, os.environ.get('SITE_URL') or publish_telegram.SITE_URL)
-        try:
-            publish_telegram.send(messages)
-        except Exception as exc:
-            raise SystemExit(f'Telegram 发送失败：{type(exc).__name__}') from None
+        ids = publish_telegram.send(messages)
+        delivery.record_sent(key, sha, chat, ids,
+                             run_id=os.environ.get('GITHUB_RUN_ID'), report_path=str(args.path))
+        print(f'DELIVERED recheck message_ids={ids} chat={chat} chat_source={source} evidence=sendMessage')
 
 
 if __name__ == '__main__':

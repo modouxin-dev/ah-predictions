@@ -1,0 +1,83 @@
+# 本项目 AI / 维护者工作指令（强制）
+
+> 本文件是**约束**，不是说明文档。任何智能体、脚本或维护者在改动本仓库前必须遵守。
+> 目的：杜绝「推测当事实、幻觉当数据、断言当证据」。
+
+## 1. 证据分级（所有结论必须带标签）
+
+| 标签 | 含义 | 允许写入产物 |
+|---|---|---|
+| `【已验证】` | 有可复核的本地文件行号、API 响应、命令退出码或运行记录 ID | 是 |
+| `【运行时代理自检】` | 由工作流在运行时代理实测，写入台账/日志 | 是，但必须附 `run_id` 与时间戳 |
+| `【未验证】` | 无法读取或无权核验（如 Secrets 明文、Actions 步骤日志、Telegram 端收件记录） | **只能列为待办，不得写成已完成** |
+| `【推断】` | 基于现象的判断，未直接观测 | 必须写明依据与替代解释，不得单独作为结论 |
+
+禁止把 `【推断】` 或 `【未验证】` 包装成「已修复 / 已推送 / 已验证 / 应该能收到」。
+
+## 2. 硬性禁止（防推测 / 防幻觉 / 防断言）
+
+1. **禁止编造数据**：不得生成报告中不存在的赛程、对阵、盘口、水位、比分、伤停、首发、来源、推荐理由、命中率或战绩。所有展示字段必须能在 `reports/**.json` 的对应键中逐字回溯。
+2. **禁止补全空值**：`null` / 空字符串 / 缺键一律渲染为 `未取得`。不得用「待定」「预计」「应该是」「通常为」等措辞填充，也不得用默认值冒充真实值。
+3. **禁止无证据断言**：
+   - Actions 步骤绿色 **不等于** 消息已送达；
+   - `getMe` / `getChat` 通过 **不等于** `sendMessage` 成功；
+   - 只有 Telegram 返回 HTTP 200 + `ok=true` + 非空 `message_id` 并写入 `data/telegram_delivery.json`，才允许写 `status: sent` 或「已送达」。
+   - 禁止出现「推送成功」「已成功推送」「保证命中」「稳赢」「必定」等词，除非同一处附带 `message_id` 证据。
+4. **禁止静默跳过**：缺 `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`、报告文件不存在、目标会话不一致时，必须**非零退出并打印原因**，不得 `exit 0` 假装成功。
+5. **禁止猜目标会话**：`TELEGRAM_CHAT_ID` 与 `config/settings.yaml` 的 `telegram.chat_id` 同时存在且不一致时，立即报错；不得静默任选其一。
+6. **禁止把 0 场伪装成有场次**：`picks=[]` 时只能输出「0 场正式推荐」+ 报告中**已存在**的赛程事实清单（明确标注「非推荐、不含预测结论」）。不得为了凑数生成任何预测倾向、模型评分或盘口。
+7. **禁止把模型观察写成推荐**：`observation` 块、实验盘、`watchlist` 一律标注「非正式推荐 / 不计战绩」。
+
+## 3. 冻结边界（模型算法框架，禁止改动）
+
+以下文件属于模型/算法框架，**本次及后续修复不得修改其评分、核验、阈值、权重、策略逻辑**：
+
+```
+src/ah/analyze.py            # 权重、score/confidence/select
+src/ah/policy.py             # 发布门槛、深盘、共识偏离
+src/ah/daily.py              # assess / build_report 的采集、核验、评分、观察生成
+src/ah/odds_snapshots.py     # 跨来源核验判定
+src/ah/enrich.py             # 特征工程
+src/ah/consensus.py
+src/ah/settle.py / stats.py
+src/ah/model/**
+src/ah/api_football.py / football_data.py / odds_api.py / oddspapi.py
+src/ah/infersports.py / fivedollar.py / form_history.py
+src/ah/fetch_fixtures.py / fetch_odds.py
+config/settings.yaml         # 阈值、置信度、policy、push_rules
+config/sources.yaml          # 核验口径与数据源开关
+config/model.yaml / leagues.yaml / team_aliases.yaml / oddspapi_ah_markets.json
+research/** / schema/** / templates/report.md.j2
+```
+
+**允许改动范围（仅编排层、发布层、展示层、对账层）**：
+```
+.github/workflows/**          # 调度与 job 编排
+src/ah/delivery.py            # 发送台账、目标会话一致性、重试、送达证据
+src/ah/grounding.py           # 事实一致性闸门
+src/ah/publish_telegram.py    # 仅 send() 与新增「赛程事实清单」展示；不动 daily() 的 picks/observation 生成逻辑
+src/ah/recheck.py             # 仅中断策略与发送编排
+src/ah/__main__.py            # 命令注册
+scripts/check_grounding.py
+tests/**
+AGENTS.md / docs/grounding-policy.md / README.md（追加章节）
+data/telegram_delivery.json
+```
+
+> 若确需调整模型阈值或核验口径，必须**单独提出、单独评审、单独提交**，并在提交信息中写明「MODEL CHANGE」及依据；不得混在编排修复里。
+
+## 4. 每次改动必须附的证据
+
+提交信息或 PR 描述中必须包含：
+- 改动文件 + 行号；
+- 对应的已验证事实（本地命令输出 / API 响应 / run id）；
+- 明确列出本次**未验证**项；
+- 是否触碰冻结清单：是 / 否。
+
+## 5. 落地验收标准（不得降低）
+
+1. `pytest -q` 全绿；
+2. `python -m ah grounding --report <当日报告>` 返回 `GROUNDING_OK`；
+3. 0 场报告的推送**纯文本**中必须出现报告里真实存在的对阵，且不含任何编造队名；
+4. 以「发送台账」为唯一幂等键：报告已存在但无 `message_id` 记录时仍会发送一次；已有记录则跳过；
+5. 真实送达以 `message_id` 入账为准；未取得时如实标注 `【未验证】`。

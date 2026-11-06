@@ -1,7 +1,7 @@
 name: daily-report
 on:
   schedule:
-    - cron: "0 2 * * *"   # 每天 02:00 UTC（北京时间 10:00）
+    - cron: "0 2 * * *"   # 02:00 UTC = 10:00 北京时间；GitHub 定时任务实际启动可能延迟
   workflow_dispatch:
 permissions:
   contents: write
@@ -9,12 +9,12 @@ concurrency:
   group: daily-report
   cancel-in-progress: false
 jobs:
-  report:
+  collect:
+    name: 采集并生成日报（不负责推送）
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     env:
       PYTHONPATH: src
-      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
       ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
       ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}
@@ -23,55 +23,69 @@ jobs:
       GITHUB_AH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
+        with: {fetch-depth: 0, persist-credentials: false, ref: main}
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: pip install -r requirements.txt
-      - name: Generate daily report
-        id: report
+      - name: Generate daily report (only when absent)
         run: |
           D=$(date -u +%F)
-          echo "date=$D" >> "$GITHUB_OUTPUT"
-          F=reports/${D:0:4}/${D:5:2}/$D.json
+          F="reports/${D:0:4}/${D:5:2}/${D}.json"
           if [ -f "$F" ]; then
-            echo "今日报告已存在，避免覆盖及重复推送"
-            echo "created=false" >> "$GITHUB_OUTPUT"
+            echo "报告已存在，不覆盖；是否推送由 publish job 依据发送台账决定"
           else
             python -m ah.daily --date "$D"
             python -m ah render "$D"
-            echo "created=true" >> "$GITHUB_OUTPUT"
           fi
-      - name: Commit
-        if: ${{ steps.report.outputs.created == 'true' }}
+          test -f "$F"
+      - name: Commit report
         run: |
-          D="${{ steps.report.outputs.date }}"
+          D=$(date -u +%F)
           [ -f var/source_status.json ] && cp var/source_status.json data/source_status.json || true
           paths=(reports data/predictions.csv data/snapshots/odds data/source_status.json)
           if [ -d data/history ]; then paths+=(data/history); fi
           scripts/safe_commit.sh --skip-tests -m "daily report $D" "${paths[@]}"
-      - name: Check Telegram configuration
-        if: ${{ steps.report.outputs.created == 'true' || github.event_name == 'workflow_dispatch' }}
+
+  publish:
+    name: 推送 Telegram（独立 job，采集失败不阻断）
+    needs: collect
+    if: ${{ always() && needs.collect.result != 'cancelled' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: src
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      SITE_URL: ${{ vars.SITE_URL }}
+      GITHUB_AH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false, ref: main}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - name: Fail closed if report missing
         run: |
-          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
-            echo "Telegram 密钥未配置，无法发送日报"
+          D=$(date -u +%F)
+          F="reports/${D:0:4}/${D:5:2}/${D}.json"
+          if [ ! -f "$F" ]; then
+            echo "::error::当日报告不存在，拒绝发送不存在的报告：$F"
             exit 1
           fi
+          echo "报告存在：$F"
+      - name: Delivery decision (ledger is the only idempotency key)
+        id: gate
+        run: python -m ah delivery check >> "$GITHUB_OUTPUT"
+      - name: Facts-only destination preflight
+        if: ${{ steps.gate.outputs.should_send == 'true' }}
+        run: python -m ah delivery preflight
+      - name: Grounding gate (fail-closed)
+        if: ${{ steps.gate.outputs.should_send == 'true' }}
+        run: python -m ah grounding --report "reports/$(date -u +%Y)/$(date -u +%m)/$(date -u +%F).json"
       - name: Publish Telegram
-        if: ${{ (steps.report.outputs.created == 'true' || github.event_name == 'workflow_dispatch') && env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHAT_ID != '' }}
-        env:
-          SITE_URL: ${{ vars.SITE_URL }}
+        if: ${{ steps.gate.outputs.should_send == 'true' }}
+        run: python -m ah delivery send
+      - name: Commit delivery evidence
+        if: ${{ steps.gate.outputs.should_send == 'true' }}
         run: |
-          D="${{ steps.report.outputs.date }}"
-          F=reports/${D:0:4}/${D:5:2}/$D.json
-          echo "=== Telegram push check ==="
-          echo "Date: $D"
-          echo "Report file: $F"
-          if [ ! -f "$F" ]; then
-            echo "❌ 没有找到今日报告 JSON，跳过推送"
-            exit 0
-          fi
-          echo "✅ 找到报告，开始推送..."
-          python -m ah telegram $D
-          echo "✅ 推送完成"
+          scripts/safe_commit.sh --skip-tests -m "telegram delivery $(date -u +%F)" data/telegram_delivery.json

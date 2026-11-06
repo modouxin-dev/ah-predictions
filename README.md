@@ -10,11 +10,11 @@
 
 | 工作流 | 配置时间 | 当前行为 |
 |---|---|---|
-| `daily-report` | 每天 10:00 | 采集数据、生成并保存日报；新生成日报后发送 Telegram。 |
+| `daily-report` | 每天 10:00 | `collect` job 采集并保存日报；独立的 `publish` job 依 `data/telegram_delivery.json` 送达台账决定是否推送。采集失败不会静默阻断发布判断。 |
 | `settle-and-stats` | 每天 17:00 | 尝试获取已完赛比分，结算已记录的预测并更新统计。无法确认的结果保留待处理。 |
 | `pages` | 报告或相关数据更新等触发 | 生成并部署 GitHub Pages 看板。 |
 | `Check live collection` | 手动触发；其工作流文件推送到 `main` 时也触发 | 用当前数据源做采集预览，不提交日报，也不发送 Telegram；仍会消耗接口额度。 |
-| `Publish live recheck` | 手动触发；指定提交信息更新工作流时触发 | 实时采集并保存独立复核报告，有正式推荐或符合条件的模型观察时推送 Telegram。 |
+| `Publish live recheck` | 每天 14:00 定时 + 手动触发 | 实时采集并保存独立复核报告并推送；0 场推荐时只发「赛程事实清单」，不生成预测。 |
 
 GitHub Actions 提供运行环境，以上任务不要求用户另行购买服务器。任务是否真正完成，以 [Actions 运行记录](https://github.com/modouxin-dev/ah-predictions/actions)和实际 Telegram 消息为准。
 
@@ -31,9 +31,9 @@ GitHub Actions 提供运行环境，以上任务不要求用户另行购买服�
 - 当 football-data 近期状态不足时，已配置的 5DollarFootballAPI 可补充其支持联赛的近期赛果；只使用确认完赛且发生在采集之前的比赛，并标注真实来源。程序可根据该账号返回的联赛列表识别已配置的亚洲联赛 ID；实际能否使用取决于账号套餐和数据覆盖，亚洲球队状态仍可能缺失。
 - 已取得符合核验条件的数据、且模型至少给出低信心评分的观察场次，可以在 Telegram 的「比赛观察分析」中展示模型倾向、盘口、球队近期赛果和报价时间。观察明确标为非正式推荐，不进入推荐账本或战绩；报价超过 30 分钟时会注明。
 
-日报保存在 `reports/YYYY/MM/YYYY-MM-DD.json` 和对应 Markdown 中，推荐记录写入 `data/predictions.csv`。日报同一 UTC 日期的 JSON 已存在时不会覆盖：定时运行不会重复推送，手动运行 `daily-report` 会重新发送已有日报，**不会重新采集并覆盖它**。
+日报保存在 `reports/YYYY/MM/YYYY-MM-DD.json` 和对应 Markdown 中，推荐记录写入 `data/predictions.csv`。日报同一 UTC 日期的 JSON 已存在时不会覆盖。**是否推送不再以「报告文件是否存在」为准**，而以 `data/telegram_delivery.json` 中 `(date, report_sha, chat_id, message_ids)` 的送达记录为准：报告已存在但无送达记录仍会发送一次；报告内容变化（`report_sha` 变化）视为新版本。送达判定必须是 Telegram `sendMessage` 返回的非空 `message_id` 入账，Actions 步骤绿色不等于消息已送达。
 
-实时复核另存于 `reports/rechecks/YYYY/MM/`，盘口快照按运行次数单独保存在 `data/snapshots/odds/rechecks/`，不会覆盖当天已有日报或其他复核的快照；符合条件且已发送的正式推荐记入账本，观察不记入账本。如果没有正式推荐且没有符合条件的观察，复核任务会停止，不发送空分析报告。
+实时复核另存于 `reports/rechecks/YYYY/MM/`，盘口快照按运行次数单独保存在 `data/snapshots/odds/rechecks/`，不会覆盖当天已有日报或其他复核的快照；符合条件且已发送的正式推荐记入账本，观察不记入账本。如果没有正式推荐且没有符合条件的观察，复核任务**不再中断**：仍发送一份只含本次已采集赛程事实与不推原因的报告，明确标注「非推荐、不含预测结论」，不生成任何盘口、比分或倾向。
 
 ## 数据源与密钥
 
@@ -125,3 +125,38 @@ scripts/safe_commit.sh --help                          # 全部选项与退出�
 ```bash
 scripts/publish_source_status.sh            # var/ -> data/ 快照，内容有变化才经 safe_commit 提交推送
 ```
+
+## 发布对账与真实数据原则（2026-11-06 编排层修复）
+
+**本次修复不改动模型算法框架**：`analyze.py` / `policy.py` / `daily.py` / `odds_snapshots.py` / `config/settings.yaml` / `config/sources.yaml` 的评分、核验、阈值与策略逻辑保持原样。改动仅在编排层、展示层与对账层，冻结清单见 `AGENTS.md`。
+
+- **防推测 / 防幻觉 / 防断言**：强制指令见 `AGENTS.md`，操作规范见 `docs/grounding-policy.md`，可执行闸门见 `src/ah/grounding.py`。所有展示字段必须能在报告 JSON 中逐字回溯；缺字段写「未取得」；禁止编造对阵、盘口、比分、倾向、送达结论。
+- **0 场也有比赛**：`picks=[]` 时推送会增加「赛程事实清单」，列出本次筛过的真实对阵、开球时间与不推原因，明确标注「非推荐、不含预测结论」。不为了凑数生成任何预测。
+- **送达证据**：`python -m ah delivery send` 只有在 Telegram 返回 HTTP 200 / `ok=true` / 非空 `message_id` 后才写 `status: sent` 到 `data/telegram_delivery.json`。缺密钥、目标会话与配置不一致、闸门未通过一律非零退出，不再 `exit 0` 静默跳过。
+- **目标会话一致性**：`TELEGRAM_CHAT_ID`（Secret）与 `config/settings.yaml` 的 `telegram.chat_id` 同时存在且不一致时直接报错，不再静默任选其一。
+
+```bash
+# 事实闸门（失败则退出码 1，工作流拒绝发送）
+PYTHONPATH=src python -m ah grounding --report reports/2026/11/2026-11-06.json
+
+# 查看当天日报的纯文本，不发送
+PYTHONPATH=src python -m ah telegram 2026-11-06 --dry-run
+
+# 查看送达台账
+PYTHONPATH=src python -m ah delivery show
+
+# 运行时代理自检（只输出事实，不代表已送达）
+PYTHONPATH=src python -m ah delivery preflight
+```
+
+### 本次修复仍未验证的项（不得写成已完成）
+
+| 项 | 状态 |
+|---|---|
+| `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` 的明文值与有效性 | 【未验证】所持令牌读 `/actions/secrets` 返回 403 |
+| 目标群是否真的收到消息 | 【未验证】需 Telegram 端收件记录或 `message_id` 入账 |
+| 定时任务是否被 GitHub 自动禁用、`02:00Z` 配置的实际启动延迟 | 【未验证】需管理员在 Actions 页面确认 |
+| `.github/workflows/**` 是否已同步到 `main` | 以远端文件校验结果为准；fine-grained PAT 的 Workflows 权限接口不可读，可能被拒绝 |
+
+管理员需在 **Settings → Secrets and variables → Actions** 确认两个 Secret 与 `config/settings.yaml` 一致，并把机器人加入目标群、赋予发送权限。仓库代码无法读取 Secret 明文，也无法代替这一步。
+

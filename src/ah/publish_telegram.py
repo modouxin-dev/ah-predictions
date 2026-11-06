@@ -21,6 +21,7 @@ import json
 import os
 import re
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
 
@@ -31,6 +32,7 @@ from .render_report import report_paths
 
 SITE_URL = "https://modouxin-dev.github.io/ah-predictions/"
 LIMIT = 4096
+MISSING = "未取得"  # 缺字段统一标注；禁止用推测值补全（见 AGENTS.md）
 CONF = {"high": "高", "medium": "中", "low": "低", "高": "高", "中": "中", "低": "低"}
 CONF_ICON = {"高": "🟢", "中": "🟡", "低": "⚪"}
 DECISION = {"保留": "✅ 保留", "keep": "✅ 保留", "调整": "🔄 调整", "adjust": "🔄 调整",
@@ -507,6 +509,45 @@ def no_pick_lines(rep: dict, pol: dict | None = None) -> list[str]:
     return lines
 
 
+def fixture_facts_lines(rep: dict, limit: int = 20) -> list[str]:
+    """只列报告 JSON 中已存在的赛程事实，不生成任何预测、盘口或倾向。
+
+    缺字段一律写「未取得」；不推原因直接取 withheld 字段，不补全、不推断。
+    该函数是 grounding.py 的可核验数据源，格式不得随意改动。
+    """
+    tagged: list[str] = []
+    seen = set()
+    for tag, items in (("正式推荐", rep.get("picks") or []),
+                       ("观察", rep.get("watched") or []),
+                       ("未推荐", rep.get("watchlist") or [])):
+        for w in items:
+            if not isinstance(w, dict):
+                continue
+            key = (tag, w.get("match_id"), w.get("home"), w.get("away"))
+            if key in seen:
+                continue
+            seen.add(key)
+            league = str(w.get("league") or MISSING)
+            home = str(w.get("home") or MISSING)
+            away = str(w.get("away") or MISSING)
+            ko = f"{bj(w['kickoff_utc'])} 北京时间" if w.get("kickoff_utc") else MISSING
+            reason = str(w.get("withheld_reason") or w.get("withheld_category") or MISSING)
+            tagged.append(f"• {league}｜{home} vs {away}｜{ko}｜状态：{tag}｜原因：{reason}")
+    return tagged[:limit]
+
+
+def fixture_facts_block(rep: dict, limit: int = 20) -> str | None:
+    """0 场推荐时也如实列出本次筛过的赛事，明确标注为非推荐、不含预测结论。"""
+    lines = fixture_facts_lines(rep, limit)
+    if not lines:
+        return None
+    total = (len(rep.get("picks") or []) + len(rep.get("watched") or [])
+             + len(rep.get("watchlist") or []))
+    note = (f"仅列本次已采集字段；非推荐、不含预测结论；报告共 {total} 条，"
+            f"本清单展示 {len(lines)} 条；缺字段标注「未取得」")
+    return sec("📋", "赛程事实清单", note) + "\n" + "\n".join(e(x) for x in lines)
+
+
 DAILY_ITEMS_MAX = 7   # 正式推荐 + 观察分析 每日合计上限；观察只补位，不降低正式推荐门槛
 
 
@@ -591,6 +632,9 @@ def daily(rep: dict, stats: dict | None = None, site_url: str = SITE_URL, lab: l
     lb = lab_block(lab)
     if lb:
         blocks.append(DIV + "\n" + lb)
+    fb = fixture_facts_block(rep)
+    if fb:
+        blocks.append(DIV + "\n" + fb)
     blocks.append(DIV + "\n" + tail(stats, site_url))
     return split(blocks)
 
@@ -894,21 +938,65 @@ def plain(msg: str) -> str:
     return html.unescape(re.sub(r"<[^>]+>", "", msg))
 
 
-def send(msgs: list[str], dry: bool = False) -> None:
-    token, chat = os.environ.get("TELEGRAM_BOT_TOKEN"), os.environ.get("TELEGRAM_CHAT_ID") or _default_chat()
-    if dry or not (token and chat):
+def send(msgs: list[str], dry: bool = False) -> list[int]:
+    """发送并返回 message_id 列表。
+
+    防断言：缺配置、目标会话不一致、HTTP 失败、无 message_id 一律非零退出，
+    不静默跳过、不记为已送达（见 AGENTS.md）。
+    """
+    if dry:
         print("\n\n-----\n\n".join(msgs))
-        if not dry:
-            print("[skip] TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID 未设置", file=sys.stderr)
-        return
-    ids = []
+        return []
+    token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    if not token:
+        raise SystemExit("TELEGRAM_BOT_TOKEN 未配置：拒绝静默跳过")
+    # 统一走 delivery.resolve_chat()，避免 Secret 与 settings.yaml 漂移时静默选错群
+    from . import delivery
+    try:
+        chat, _source, _facts = delivery.resolve_chat()
+    except RuntimeError as exc:
+        raise SystemExit(str(exc)) from None
+    base = "https://api.telegram.org/bot" + token + "/"
+    ids: list[int] = []
     for m in msgs:
-        r = requests.post(f"https://api.telegram.org/bot{token}/sendMessage",
-                          json={"chat_id": chat, "text": m, "parse_mode": "HTML",
-                                "disable_web_page_preview": True}, timeout=20)
-        r.raise_for_status()
-        ids.append((r.json().get("result") or {}).get("message_id"))
+        for attempt in range(1, 5):
+            try:
+                r = requests.post(base + "sendMessage",
+                                  json={"chat_id": chat, "text": m, "parse_mode": "HTML",
+                                        "disable_web_page_preview": True}, timeout=20)
+            except requests.RequestException as exc:
+                if attempt == 4:
+                    # 只暴露异常类型：原始异常可能含带令牌的 URL
+                    raise SystemExit(f"Telegram 网络请求失败：{type(exc).__name__}") from None
+                time.sleep(min(2 ** attempt, 8))
+                continue
+            if r.status_code == 200:
+                body = r.json() or {}
+                if not body.get("ok"):
+                    raise SystemExit("Telegram 返回 ok=false，不记为已送达")
+                mid = (body.get("result") or {}).get("message_id")
+                if mid is None:
+                    raise SystemExit("Telegram 未返回 message_id，不记为已送达")
+                ids.append(int(mid))
+                break
+            if r.status_code in (429, 500, 502, 503, 504) and attempt < 4:
+                wait = min(2 ** attempt, 8)
+                try:
+                    wait = int((r.json() or {}).get("parameters", {}).get("retry_after", wait))
+                except (ValueError, AttributeError, TypeError):
+                    pass
+                time.sleep(max(1, wait))
+                continue
+            desc = ""
+            try:
+                desc = str((r.json() or {}).get("description", ""))[:200]
+            except ValueError:
+                pass
+            raise SystemExit(f"Telegram sendMessage HTTP {r.status_code}：{desc}")
+        else:
+            raise SystemExit("Telegram sendMessage 重试耗尽，未记为已送达")
     print(f"sent {len(msgs)} message_id={ids}")
+    return ids
 
 
 def _stats():

@@ -1,17 +1,15 @@
 name: Publish live recheck
 on:
+  schedule:
+    - cron: "0 6 * * *"   # 06:00 UTC = 14:00 北京时间；独立于 daily-report
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/publish-recheck.yml']
 permissions:
   contents: write
 concurrency:
-  group: daily-report
+  group: publish-recheck
   cancel-in-progress: false
 jobs:
   recheck:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.head_commit.message == 'Send one live prediction analysis report' }}
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
@@ -27,13 +25,13 @@ jobs:
       GITHUB_AH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
+        with: {fetch-depth: 0, persist-credentials: false, ref: main}
       - uses: actions/setup-python@v5
-        with: {python-version: '3.12'}
+        with: {python-version: "3.12"}
       - run: pip install -r requirements.txt
-      - name: Check API-Football status
+      - name: Facts-only destination preflight
+        run: python -m ah delivery preflight
+      - name: Check API-Football status (facts only)
         run: |
           python - <<'PY'
           from ah import api_football
@@ -63,35 +61,12 @@ jobs:
           paths=("$RECHECK_FILE" "$RECHECK_SNAPSHOT_DIR")
           if [ -d data/history ]; then paths+=(data/history); fi
           scripts/safe_commit.sh --skip-tests -m "save live recheck $GITHUB_RUN_ID" "${paths[@]}"
-      - name: Check bot and destination
-        run: |
-          python - <<'PY'
-          import os, requests
-          token, chat = os.environ.get('TELEGRAM_BOT_TOKEN'), os.environ.get('TELEGRAM_CHAT_ID')
-          if not token or not chat:
-              raise SystemExit('Telegram 配置不完整')
-          try:
-              base = 'https://api.telegram.org/bot' + token + '/'
-              who = requests.get(base + 'getMe', timeout=20)
-              print('机器人令牌检查 HTTP', who.status_code, flush=True)
-              if who.status_code != 200:
-                  raise SystemExit('机器人令牌检查未通过')
-              bot = who.json()['result']
-              print('当前机器人 @' + bot['username'], flush=True)
-              group = requests.post(base + 'getChat', json={'chat_id': chat}, timeout=20)
-              print('目标会话检查 HTTP', group.status_code, flush=True)
-              if group.status_code != 200:
-                  description = str(group.json().get('description', '')).casefold()
-                  if 'chat not found' in description:
-                      print('Telegram 返回 chat not found', flush=True)
-                  raise SystemExit('机器人无法访问目标会话')
-              print('已确认目标会话可访问')
-          except Exception as exc:
-              raise SystemExit('Telegram 连接检查失败：' + type(exc).__name__) from None
-          PY
       - name: Send report to Telegram
         run: python -m ah.recheck send --path "$RECHECK_FILE"
       - name: Record sent official recommendations
         run: |
           python -m ah.recheck record --path "$RECHECK_FILE"
           scripts/safe_commit.sh --skip-tests -m "record sent recheck $GITHUB_RUN_ID" data/predictions.csv
+      - name: Commit delivery evidence
+        run: |
+          scripts/safe_commit.sh --skip-tests -m "telegram recheck delivery $GITHUB_RUN_ID" data/telegram_delivery.json
