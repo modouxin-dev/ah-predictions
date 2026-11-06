@@ -109,7 +109,12 @@ def report_fingerprint(report: dict) -> str:
 
 
 def _force() -> bool:
-    return os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
+    """仅显式 manual 时段强制重发。
+
+    外部调度以 workflow_dispatch 带具体 slot 触发时必须走正常 slot 幂等，
+    否则会把 2/3/4 次更新变成 primary 完整重发并重复推送。
+    """
+    return os.environ.get("AH_SLOT", "1").strip() == "manual"
 
 
 def delivery_mode(date: str, sha: str, chat: str, path: Path | None = None,

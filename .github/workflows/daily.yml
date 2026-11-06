@@ -59,20 +59,21 @@ jobs:
           # 把运行时代理自检的结构化事实写入仓库；失败也保留事实，不推断原因
           python -m ah source-probe --json data/source_probe_facts.json
 
-      - name: Skip collection when not needed (schedule only)
+      - name: Skip collection when not needed
         id: skip
         run: |
-          if [ "${{ github.event_name }}" != "schedule" ]; then
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-            echo "[skip] 手动触发，完整重采以验证链路"
-            exit 0
-          fi
           D="$AH_DATE"
           F="reports/${D:0:4}/${D:5:2}/${D}.json"
-          # 第 2/3/4 次：当日报告已存在就复用，不再消耗赔率接口额度；不存在才兜底重采。
+          # 外部调度（workflow_dispatch 带 slot）与定时一视同仁：
+          # 第 2/3/4 次复用当日报告，不重复消耗赔率接口额度；报告缺失才兜底重采。
           if [ "$AH_SLOT" != "1" ] && [ -f "$F" ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "[skip] 更新时段 $AH_SLOT：复用当日报告 $F，不重新采集"
+            exit 0
+          fi
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "[skip] 完整采集时段 $AH_SLOT（外部触发或手动）"
             exit 0
           fi
           if D="$D" python - <<'PY'
