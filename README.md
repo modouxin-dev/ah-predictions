@@ -155,10 +155,10 @@ scripts/publish_source_status.sh            # var/ -> data/ 快照，内容有�
 4. `screening_max_fixtures: 24` 把窗口内 60+ 场裁到 24，可能把有真实盘口的比赛挡在门外。
 
 **改动**
-- `.github/workflows/daily.yml`：cron 提前到 `01:30 UTC`（09:30 北京）先采集；`publish` job 等到 `02:00 UTC`（10:00 整点）再发送；`timeout-minutes` 调到 60 / 75。
+- `.github/workflows/daily.yml`：cron 提前到 `01:00 UTC`（09:00 北京）先采集；`publish` job 等到 `02:00 UTC`（10:00 整点）再发送；`timeout-minutes` 调到 90 / 100。
 - `collect` 产出的日报经 `actions/upload-artifact` 传给 `publish`，publish 优先用**本次采集产物**覆盖 checkout 报告；即使 git 提交失败也不会推旧报告。
 - `src/ah/delivery.py`：幂等键改为 `(date, chat_id)`，一天只正式推送一次；手动 `workflow_dispatch` 允许强制重发；**已推送 0 场而本次重采出正式推荐时允许补发一条升级版**。台账新增 `picks_count` 便于审计。
-- `config/settings.yaml`：默认初筛上限 24 → 40；collect 显式 `--max-fixtures 40`，若采集无错误但 0 场，再扩到 60 场重采一次。**只扩候选池，不改评分/核验/阈值**；仍 0 场则如实推赛程事实清单，绝不编造预测。
+- `config/settings.yaml`：默认初筛上限 24 → 32；collect 显式 `--max-fixtures 32`，若采集无错误但 0 场，再扩到 48 场重采一次。**只扩候选池，不改评分/核验/阈值**；仍 0 场则如实推赛程事实清单，绝不编造预测。
 - schedule 补跑时若当天已送达带推荐日报，collect 直接跳过，避免重复采集与刷屏。
 
 **未验证 / 风险（不得写成「保证准点」）**

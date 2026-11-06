@@ -1,8 +1,8 @@
 name: daily-report
 on:
   schedule:
-    # 09:30 北京开始采集（历史实跑约 10–18 分钟），publish job 等到 10:00 整点再发送。
-    - cron: "30 1 * * *"
+    # 09:00 北京开始采集（留 60 分钟窗口；历史实跑 10–20 分钟），publish 等到 10:00 整点再发送。
+    - cron: "0 1 * * *"
   workflow_dispatch:
 permissions:
   contents: write
@@ -13,7 +13,7 @@ jobs:
   collect:
     name: 采集并生成日报（不负责推送）
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       PYTHONPATH: src
       API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
@@ -66,8 +66,8 @@ jobs:
           D=$(date -u +%F)
           F="reports/${D:0:4}/${D:5:2}/${D}.json"
           # 显式 --refresh：每次运行都用当前数据源重新采集，不复用旧报告（编排层开关）。
-          # 初筛上限 40（窗口内常有 60+ 场），扩大候选池以提高产出真实推荐的概率；不改评分/核验/阈值。
-          python -m ah.daily --date "$D" --refresh --max-fixtures 40
+          # 初筛上限 32（原 24 会漏掉有真实盘口的比赛）；不改评分/核验/阈值。
+          python -m ah.daily --date "$D" --refresh --max-fixtures 32
           python -m ah render "$D"
           # 0 场兜底：若采集无错误但规则筛完 0 场，再扩到 60 场重采一次。
           # 只扩大候选池，不改模型算法；仍 0 场则如实推送赛程事实清单，绝不编造预测。
@@ -77,8 +77,8 @@ jobs:
           sys.exit(0 if (not r.get('picks') and not r.get('collection_errors')) else 1)
           PY
           then
-            echo "ZERO_PICK_FALLBACK 采集无错误但 0 场推荐：扩大初筛到 60 场再采一次"
-            python -m ah.daily --date "$D" --refresh --max-fixtures 60
+            echo "ZERO_PICK_FALLBACK 采集无错误但 0 场推荐：扩大初筛到 48 场再采一次"
+            python -m ah.daily --date "$D" --refresh --max-fixtures 48
             python -m ah render "$D"
           fi
           test -f "$F"
@@ -115,7 +115,7 @@ jobs:
     needs: collect
     if: ${{ always() && needs.collect.result != 'cancelled' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 100
     env:
       PYTHONPATH: src
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -169,7 +169,7 @@ jobs:
           now = datetime.now(timezone.utc)
           target = now.replace(hour=2, minute=0, second=0, microsecond=0)
           diff = (target - now).total_seconds()
-          if 0 < diff <= 3600:
+          if 0 < diff <= 5400:
               print(f"等待到 10:00 北京时间，剩余 {int(diff)} 秒")
               time.sleep(diff)
           elif diff > 3600:

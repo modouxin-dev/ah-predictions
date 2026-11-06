@@ -4,7 +4,7 @@ bot_name: 先知                    # 机器人名称（报告/推送/站点统�
 vip_password_sha256: "6d19ca72de1fe7973e5a763cdbaf47af34674d4f45a8a2cacd881b751d680a4f"
 timezone: "America/Los_Angeles"  # 用户时区（报告内时间统一用 UTC）
 report_window_hours: 36          # 覆盖未来多少小时开球的比赛
-screening_max_fixtures: 40       # 每日报告初筛上限（窗口内常 60+ 场，24 场会漏掉有真实盘口的比赛）；数据源限速与额度仍生效
+screening_max_fixtures: 32       # 每日报告初筛上限（窗口内常 60+ 场，24 场会漏掉有真实盘口的比赛）；数据源限速与额度仍生效
 max_picks_per_day: 10             # 积累期目标每天 5–10 场，上限 10
 min_confidence_to_publish: low     # 2026-11-06 重标定：见文末 MODEL CHANGE 依据；放行低信心正式推荐
 confidence_thresholds:           # analyze.score 加权分阈值
