@@ -1,7 +1,7 @@
 name: Publish live recheck
 on:
-  schedule:
-    - cron: "0 6 * * *"   # 06:00 UTC = 14:00 北京时间；独立于 daily-report
+  # 已取消定时：daily-report 每天 4 次推送（北京 07/11/16/22 点）复用同一次采集；
+  # 本流程每次都会完整重采（耗赔率接口额度），仅保留手动触发。
   workflow_dispatch:
 permissions:
   contents: write

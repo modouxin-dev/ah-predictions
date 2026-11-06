@@ -504,8 +504,10 @@ def main(argv=None):
         return
     if args.refresh and path.exists():
         print(f'REPORT_REFRESH_OVERWRITE 显式覆盖已存在报告：{path}', file=sys.stderr)
-    if date.fromisoformat(args.date) != datetime.now(UTC).date():
-        parser.error('只能为当前 UTC 日期采集实时数据')
+    # 一天 4 次推送按北京日期归档（北京 07:00 = UTC 前一日 23:00），故当前 UTC 日期或北京日期均可。
+    allowed = {datetime.now(UTC).date(), (datetime.now(UTC) + timedelta(hours=8)).date()}
+    if date.fromisoformat(args.date) not in allowed:
+        parser.error('只能为当前 UTC 日期或当前北京日期采集实时数据')
     report = build_report(args.date, max_fixtures=args.max_fixtures)
     if args.preview:
         print(f"预览：观察 {len(report['watchlist'])} 场，推荐 {len(report['picks'])} 场；采集问题 {len(report['collection_errors'])} 项")

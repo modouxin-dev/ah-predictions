@@ -214,3 +214,15 @@ PYTHONPATH=src python -m ah delivery preflight
 ## CI 与定时触发（追加说明）
 - `.github/workflows/tests.yml`：push/PR/手动触发时运行 `pytest -q` 与 `ah grounding`，对应 AGENTS.md 验收口径。
 - `daily.yml` 含主 cron（01:00 UTC）与备用 cron（02:47 UTC）；重复触发由台账 `data/telegram_delivery.json` 的 (date, chat_id) 幂等键保证不会重复推送。
+
+
+## ORCHESTRATION（2026-11-07）：每天 4 次推送（北京 07/11/16/22 点）
+
+- `daily.yml` 的 cron：`0 22`（采集，北京 06:00，publish 等到 07:00 再发）、`0 3`（11:00）、`0 8`（16:00）、`0 14`（22:00），均为 UTC。
+- 只有第 1 次完整采集。第 2/3/4 次**复用当日报告**，只列尚未开赛的推荐与赛程，并在消息开头注明「第 N 次更新 / 沿用几点采集的数据」；不额外消耗赔率接口额度，也不生成任何新预测。
+- 若早间采集失败（当日报告不存在），后续时段会自动补一次完整采集并按完整日报发送。
+- 台账幂等键由 (date, chat_id) 扩展为 (date, chat_id, slot)；旧记录按 slot=1 处理。报告日期改按**北京日期**归档（`AH_DATE`），`ah.daily --date` 接受当前 UTC 或北京日期。
+- 更新时段若已无尚未开赛的正式推荐，则不发送并在日志说明（不是故障）。
+- `publish-recheck.yml` 取消定时（它每次完整重采，会重复消耗额度），仅保留手动触发。
+- `workflow_dispatch` 支持 `slot` 输入（默认 `1`）：用于补跑已错过的 07:00 班次，publish 会等到北京 07:00 再发送。
+- 【未验证】定时触发的实际时刻（GitHub cron 常有延迟）、Actions 实跑、群内实际到达；本地仅用假 Telegram 接口模拟。

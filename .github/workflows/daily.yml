@@ -1,12 +1,21 @@
 name: daily-report
 on:
   schedule:
-    # 09:00 北京开始采集（留 60 分钟窗口；历史实跑 10–20 分钟），publish 等到 10:00 整点再发送。
-    - cron: "0 1 * * *"
-    # 备用触发：GitHub 定时任务可能延迟/丢失。同一天重复触发安全：
-    # collect 已送达带推荐则跳过；publish 以台账 (date, chat_id) 为唯一幂等键。
-    - cron: "47 2 * * *"
+    # 一天 4 次推送（北京 07:00 / 11:00 / 16:00 / 22:00）。时区换算：北京 = UTC+8。
+    # 第 1 次：22:00 UTC（北京 06:00）开始采集，publish 等到 23:00 UTC（北京 07:00）再发；
+    # 第 2/3/4 次：03:00 / 08:00 / 14:00 UTC 直接推送，复用当日采集数据，仅列尚未开赛场次。
+    # 若早间采集失败，后续时段会自动补一次完整采集与推送（兜底）。
+    - cron: "0 22 * * *"
+    - cron: "0 3 * * *"
+    - cron: "0 8 * * *"
+    - cron: "0 14 * * *"
+  # 编排增强（本次会话）：手动触发可指定 slot=1，用于补跑已错过的 07:00 班次。
   workflow_dispatch:
+    inputs:
+      slot:
+        description: '推送时段：1=完整日报(等到北京07:00)，2/3/4=更新，manual=立即'
+        required: false
+        default: '1'
 permissions:
   contents: write
 concurrency:
@@ -31,6 +40,18 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: pip install -r requirements.txt
+      - name: Resolve slot and Beijing date
+        run: |
+          case "${{ github.event.schedule }}" in
+            "0 22 * * *") SLOT=1 ;;
+            "0 3 * * *")  SLOT=2 ;;
+            "0 8 * * *")  SLOT=3 ;;
+            "0 14 * * *") SLOT=4 ;;
+            *)            SLOT="${{ github.event.inputs.slot || 'manual' }}" ;;
+          esac
+          echo "AH_SLOT=$SLOT" >> "$GITHUB_ENV"
+          echo "AH_DATE=$(TZ=Asia/Shanghai date +%F)" >> "$GITHUB_ENV"
+          echo "slot=$SLOT date_bj=$(TZ=Asia/Shanghai date +%F)"
 
       - name: Data source runtime selfcheck (facts only)
         continue-on-error: true
@@ -38,7 +59,7 @@ jobs:
           # 把运行时代理自检的结构化事实写入仓库；失败也保留事实，不推断原因
           python -m ah source-probe --json data/source_probe_facts.json
 
-      - name: Skip collection when today already delivered with picks (schedule only)
+      - name: Skip collection when not needed (schedule only)
         id: skip
         run: |
           if [ "${{ github.event_name }}" != "schedule" ]; then
@@ -46,7 +67,14 @@ jobs:
             echo "[skip] 手动触发，完整重采以验证链路"
             exit 0
           fi
-          D="$(date -u +%F)"
+          D="$AH_DATE"
+          F="reports/${D:0:4}/${D:5:2}/${D}.json"
+          # 第 2/3/4 次：当日报告已存在就复用，不再消耗赔率接口额度；不存在才兜底重采。
+          if [ "$AH_SLOT" != "1" ] && [ -f "$F" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "[skip] 更新时段 $AH_SLOT：复用当日报告 $F，不重新采集"
+            exit 0
+          fi
           if D="$D" python - <<'PY'
           import json, os, sys
           p = 'data/telegram_delivery.json'
@@ -66,13 +94,13 @@ jobs:
       - name: Collect and regenerate daily report
         if: ${{ steps.skip.outputs.skip != 'true' }}
         run: |
-          D=$(date -u +%F)
+          D="$AH_DATE"
           F="reports/${D:0:4}/${D:5:2}/${D}.json"
           # 显式 --refresh：每次运行都用当前数据源重新采集，不复用旧报告（编排层开关）。
           # 初筛上限 32（原 24 会漏掉有真实盘口的比赛）；不改评分/核验/阈值。
           python -m ah.daily --date "$D" --refresh --max-fixtures 32
           python -m ah render "$D"
-          # 0 场兜底：若采集无错误但规则筛完 0 场，再扩到 60 场重采一次。
+          # 0 场兜底：若采集无错误但规则筛完 0 场，再扩到 48 场重采一次。
           # 只扩大候选池，不改模型算法；仍 0 场则如实推送赛程事实清单，绝不编造预测。
           if D="$D" F="$F" python - <<'PY'
           import json, os, sys
@@ -90,7 +118,7 @@ jobs:
       - name: Stage report for this run
         if: ${{ steps.skip.outputs.skip != 'true' }}
         run: |
-          D=$(date -u +%F)
+          D="$AH_DATE"
           mkdir -p _stage
           cp "reports/${D:0:4}/${D:5:2}/${D}.json" _stage/report.json
           cp "reports/${D:0:4}/${D:5:2}/${D}.md" _stage/report.md 2>/dev/null || true
@@ -107,7 +135,7 @@ jobs:
       - name: Commit report
         if: ${{ steps.skip.outputs.skip != 'true' }}
         run: |
-          D=$(date -u +%F)
+          D="$AH_DATE"
           [ -f var/source_status.json ] && cp var/source_status.json data/source_status.json || true
           paths=(reports data/predictions.csv data/snapshots/odds data/source_status.json data/source_probe_facts.json)
           if [ -d data/history ]; then paths+=(data/history); fi
@@ -131,6 +159,18 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: pip install -r requirements.txt
+      - name: Resolve slot and Beijing date
+        run: |
+          case "${{ github.event.schedule }}" in
+            "0 22 * * *") SLOT=1 ;;
+            "0 3 * * *")  SLOT=2 ;;
+            "0 8 * * *")  SLOT=3 ;;
+            "0 14 * * *") SLOT=4 ;;
+            *)            SLOT="${{ github.event.inputs.slot || 'manual' }}" ;;
+          esac
+          echo "AH_SLOT=$SLOT" >> "$GITHUB_ENV"
+          echo "AH_DATE=$(TZ=Asia/Shanghai date +%F)" >> "$GITHUB_ENV"
+          echo "slot=$SLOT date_bj=$(TZ=Asia/Shanghai date +%F)"
 
       # 关键根因修复：publish 原本只靠 main 上已提交的报告；collect 的 git push 一旦失败，
       # 这里就会拿到旧报告甚至 0 场版本。改为优先使用本次运行采集的 artifact。
@@ -143,7 +183,7 @@ jobs:
 
       - name: Use artifact report (not stale main checkout)
         run: |
-          D=$(date -u +%F)
+          D="$AH_DATE"
           F="reports/${D:0:4}/${D:5:2}/${D}.json"
           if [ -f "_artifact/report.json" ]; then
             mkdir -p "$(dirname "$F")"
@@ -156,7 +196,7 @@ jobs:
 
       - name: Fail closed if report missing
         run: |
-          D=$(date -u +%F)
+          D="$AH_DATE"
           F="reports/${D:0:4}/${D:5:2}/${D}.json"
           if [ ! -f "$F" ]; then
             echo "::error::当日报告不存在，拒绝发送不存在的报告：$F"
@@ -164,25 +204,27 @@ jobs:
           fi
           echo "报告存在：$F"
 
-      - name: Wait until 10:00 Beijing (02:00 UTC) before publishing
+      - name: Wait until 07:00 Beijing (23:00 UTC) before the first publish of the day
         run: |
+          if [ "$AH_SLOT" != "1" ]; then
+            echo "更新/手动时段 $AH_SLOT：不等待，立即处理"
+            exit 0
+          fi
           python - <<'PY'
           import time
           from datetime import datetime, timezone
           now = datetime.now(timezone.utc)
-          target = now.replace(hour=2, minute=0, second=0, microsecond=0)
+          target = now.replace(hour=23, minute=0, second=0, microsecond=0)
           diff = (target - now).total_seconds()
           if 0 < diff <= 5400:
-              print(f"等待到 10:00 北京时间，剩余 {int(diff)} 秒")
+              print(f"等待到 07:00 北京时间，剩余 {int(diff)} 秒")
               time.sleep(diff)
-          elif diff > 3600:
-              print("启动时间早于等待窗口，按采集完成时间推送")
           else:
-              print("已过 10:00 北京时间（GitHub 定时延迟），立即推送")
+              print("已过 07:00 北京时间（GitHub 定时延迟）或启动过早，按采集完成时间推送")
           print(f"PUBLISH_AT_UTC {datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}")
           PY
 
-      - name: Delivery decision (one delivery per day, force on manual dispatch)
+      - name: Delivery decision (slot-aware, one delivery per slot)
         id: gate
         run: python -m ah delivery check >> "$GITHUB_OUTPUT"
       - name: Facts-only destination preflight
@@ -190,11 +232,11 @@ jobs:
         run: python -m ah delivery preflight
       - name: Grounding gate (fail-closed)
         if: ${{ steps.gate.outputs.should_send == 'true' }}
-        run: python -m ah grounding --report "reports/$(date -u +%Y)/$(date -u +%m)/$(date -u +%F).json"
+        run: python -m ah grounding --report "reports/${AH_DATE:0:4}/${AH_DATE:5:2}/${AH_DATE}.json"
       - name: Publish Telegram
         if: ${{ steps.gate.outputs.should_send == 'true' }}
         run: python -m ah delivery send
       - name: Commit delivery evidence
         if: ${{ steps.gate.outputs.should_send == 'true' }}
         run: |
-          scripts/safe_commit.sh --skip-tests -m "telegram delivery $(date -u +%F)" data/telegram_delivery.json
+          scripts/safe_commit.sh --skip-tests -m "telegram delivery $AH_DATE slot $AH_SLOT" data/telegram_delivery.json

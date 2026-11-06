@@ -34,6 +34,53 @@ def _utc_date() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 
+def _bj_date() -> str:
+    """报告日期按北京时间：一天 4 次推送（北京 07/11/16/22 点）共用同一个日期键。"""
+    from datetime import timedelta
+    return (datetime.now(timezone.utc) + timedelta(hours=8)).strftime("%Y-%m-%d")
+
+
+REFRESH_SLOTS = ("2", "3", "4")
+
+
+def _slot() -> str:
+    """推送时段：1=北京 07:00（完整采集）；2/3/4=11/16/22 点（复用当日采集，仅更新未开赛场次）；manual=手动。"""
+    return os.environ.get("AH_SLOT", "1").strip() or "1"
+
+
+def _parse_ko(v):
+    try:
+        return datetime.fromisoformat(str(v).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return None
+
+
+def refresh_view(report: dict, now: datetime | None = None) -> dict:
+    """刷新推送视图：只保留尚未开球的推荐与赛程；开球时间无法解析的一律不保留（无法证明未开赛）。
+    只做过滤，不修改、不新增任何预测内容；返回深拷贝，原报告不变。"""
+    import copy
+    now = now or datetime.now(timezone.utc)
+    out = copy.deepcopy(report)
+    for key in ("picks", "watchlist"):
+        keep = []
+        for x in out.get(key) or []:
+            ko = _parse_ko(x.get("kickoff_utc"))
+            if ko is not None and ko > now:
+                keep.append(x)
+        out[key] = keep
+    return out
+
+
+def refresh_note(report: dict, slot: str, now: datetime | None = None) -> str:
+    from datetime import timedelta
+    now = now or datetime.now(timezone.utc)
+    gen = _parse_ko(report.get("generated_at"))
+    when = (gen + timedelta(hours=8)).strftime("%H:%M") if gen else "未取得"
+    hhmm = (now + timedelta(hours=8)).strftime("%H:%M")
+    return (f"🔄 <b>第 {slot} 次更新</b>（北京 {hhmm}）· 沿用今日 {when} 采集的数据，"
+            f"仅列尚未开赛场次；盘口可能已变动，以实际为准\n\n")
+
+
 # ---------------------------------------------------------------- 台账
 
 def load_ledger(path: Path | None = None) -> dict:
@@ -62,37 +109,51 @@ def report_fingerprint(report: dict) -> str:
 
 
 def _force() -> bool:
-    """手动触发允许重发；定时触发严格一天一次，避免 GitHub 补跑刷屏。"""
     return os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
 
 
-def should_send(date: str, sha: str, chat: str, path: Path | None = None,
-                picks_count: int = 0, force: bool | None = None) -> tuple[bool, str]:
-    """幂等键 = (date, chat_id)，一天只正式推送一次。
+def delivery_mode(date: str, sha: str, chat: str, path: Path | None = None,
+                  picks_count: int = 0, force: bool | None = None, slot: str = "1") -> tuple[str, str]:
+    """返回 (mode, reason)。mode: primary=完整日报；refresh=沿用当日采集的更新推送；skip=不发。
 
-    例外（防「又不出现比赛」）：
-    - 手动 workflow_dispatch 允许强制重发；
-    - 已送达的版本是 0 场、本次重采有正式推荐时，允许补发一条升级版。
-    report_sha 仍记录在台账中用于审计，但不再作为幂等键。
+    幂等键 = (date, chat_id, slot)：同一时段只发一次。
+    - 手动 workflow_dispatch：强制 primary 重发；
+    - 当日尚无任何送达记录：不论哪个时段都按 primary 发（早上失败时由后续时段兜底）；
+    - 已有送达且本时段（2/3/4）未发：refresh；
+    - 已送达的版本是 0 场、本次重采有正式推荐：允许补发升级版（primary）。
     """
     if force is None:
         force = _force()
     if force:
-        return True, "forced_by_manual_dispatch"
+        return "primary", "forced_by_manual_dispatch"
     rows = [r for r in load_ledger(path)["deliveries"]
             if r.get("date") == date and str(r.get("chat_id")) == str(chat)
             and r.get("status") == "sent" and r.get("message_ids")]
     if not rows:
-        return True, "no_delivery_record"
+        return "primary", "no_delivery_record"
+    if any(str(r.get("slot", "1")) == str(slot) for r in rows):
+        last_picks = rows[-1].get("picks_count")
+        if last_picks is not None and int(last_picks) == 0 and picks_count > 0 and slot not in REFRESH_SLOTS:
+            return "primary", "upgrade_zero_pick_report"
+        return "skip", "already_delivered_today"
+    if slot in REFRESH_SLOTS:
+        return "refresh", "refresh_slot_not_delivered"
     last_picks = rows[-1].get("picks_count")
     if last_picks is not None and int(last_picks) == 0 and picks_count > 0:
-        return True, "upgrade_zero_pick_report"
-    return False, "already_delivered_today"
+        return "primary", "upgrade_zero_pick_report"
+    return "skip", "already_delivered_today"
+
+
+def should_send(date: str, sha: str, chat: str, path: Path | None = None,
+                picks_count: int = 0, force: bool | None = None, slot: str = "1") -> tuple[bool, str]:
+    """兼容接口：是否发送。report_sha 仍记录在台账中用于审计，但不是幂等键。"""
+    mode, reason = delivery_mode(date, sha, chat, path, picks_count, force, slot)
+    return mode != "skip", reason
 
 
 def record_sent(date: str, sha: str, chat: str, message_ids: list,
                 run_id: str | None = None, report_path: str | None = None,
-                picks_count: int = 0, path: Path | None = None) -> dict:
+                picks_count: int = 0, path: Path | None = None, slot: str = "1") -> dict:
     """仅在 message_ids 非空时调用；否则属于伪造送达证据。"""
     if not message_ids:
         raise RuntimeError("拒绝写入空 message_ids 的送达记录")
@@ -104,6 +165,7 @@ def record_sent(date: str, sha: str, chat: str, message_ids: list,
         "status": "sent",
         "message_ids": [int(x) for x in message_ids],
         "picks_count": int(picks_count),
+        "slot": str(slot),
         "sent_at": _now(),
         "run_id": run_id or None,
         "report_path": report_path,
@@ -207,7 +269,7 @@ def cmd_preflight() -> None:
 
 def cmd_check() -> None:
     """stdout 只输出一行 GITHUB_OUTPUT 变量；其余信息走 stderr。"""
-    date = _utc_date()
+    date = _bj_date()
     chat, source, facts = resolve_chat()
     p, _ = report_paths(date)
     if not p.exists():
@@ -218,15 +280,22 @@ def cmd_check() -> None:
     sha = report_fingerprint(report)
     from . import policy
     picks_count = len(policy.published(report))
-    ok, reason = should_send(date, sha, chat, picks_count=picks_count)
+    slot = _slot()
+    mode, reason = delivery_mode(date, sha, chat, picks_count=picks_count, slot=slot)
+    if mode == "refresh":
+        view = refresh_view(report)
+        if not policy.published(view):
+            mode, reason = "skip", "refresh_no_unstarted_picks"
+    ok = mode != "skip"
     print(f"should_send={'true' if ok else 'false'}", flush=True)
-    print(f"[check] date={date} report_sha={sha} picks={picks_count} chat_source={source} "
+    print(f"[check] date={date} slot={slot} mode={mode} report_sha={sha} picks={picks_count} chat_source={source} "
           f"event={os.environ.get('GITHUB_EVENT_NAME', 'local')} "
           f"facts={json.dumps(facts, ensure_ascii=False)} reason={reason}", file=sys.stderr)
 
 
 def cmd_send() -> None:
-    date = _utc_date()
+    date = _bj_date()
+    slot = _slot()
     chat, source, facts = resolve_chat()
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
     if not token:
@@ -235,24 +304,38 @@ def cmd_send() -> None:
     sha = report_fingerprint(report)
     from . import grounding, policy, publish_telegram as pt
     picks_count = len(policy.published(report))
-    ok, reason = should_send(date, sha, chat, picks_count=picks_count)
-    if not ok:
-        print(f"[send] 今日已送达或无需补发，跳过：{reason}")
+    mode, reason = delivery_mode(date, sha, chat, picks_count=picks_count, slot=slot)
+    if mode == "skip":
+        print(f"[send] 本时段已送达或无需补发，跳过：{reason} slot={slot}")
         return
 
-    # 发送前 fail-closed 事实闸门
-    gate = grounding.check_all(report)
+    view = report
+    if mode == "refresh":
+        view = refresh_view(report)
+        picks_count = len(policy.published(view))
+        if picks_count == 0:
+            print(f"[send] 更新时段无尚未开赛的正式推荐，不发送：slot={slot}（不是故障；早间日报已送达）")
+            return
+
+    # 发送前 fail-closed 事实闸门（对实际要发送的内容）
+    gate = grounding.check_all(view)
     if not gate["ok"]:
         raise RuntimeError("事实闸门未通过，拒绝发送：" + "；".join(gate["errors"][:5]))
 
     stats_path = DATA / "stats.json"
     stats = json.loads(stats_path.read_text(encoding="utf-8")) if stats_path.exists() else None
-    messages = pt.daily(report, stats, os.environ.get("SITE_URL") or pt.SITE_URL)
+    messages = pt.daily(view, stats, os.environ.get("SITE_URL") or pt.SITE_URL)
+    if mode == "refresh" and messages:
+        note = refresh_note(report, slot)
+        if len(note) + len(messages[0]) <= 4000:
+            messages[0] = note + messages[0]
+        else:
+            messages.insert(0, note.rstrip())
     ids = pt.send(messages)  # 缺配置 / 失败一律非零退出；返回 message_id 列表
     row = record_sent(date, sha, chat, ids,
                       run_id=os.environ.get("GITHUB_RUN_ID"), report_path=str(p),
-                      picks_count=picks_count)
-    print(f"DELIVERED date={date} message_ids={row['message_ids']} chat={chat} "
+                      picks_count=picks_count, slot=slot)
+    print(f"DELIVERED date={date} slot={slot} mode={mode} message_ids={row['message_ids']} chat={chat} "
           f"chat_source={source} sha={sha} evidence=sendMessage")
 
 
