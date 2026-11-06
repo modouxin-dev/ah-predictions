@@ -37,6 +37,15 @@ def _collection_error(source, exc):
     return f'{source}: {type(exc).__name__}'
 
 
+def _usable_verification(check):
+    """Allow a freshness downgrade only when all other checks have passed."""
+    if check.get('passed'):
+        return True
+    reasons = check.get('reasons') or []
+    return (check.get('freshness') == 'stale_downgrade' and len(reasons) == 1
+            and reasons[0].startswith('stale>'))
+
+
 def _settings():
     return yaml.safe_load((CONFIG / 'settings.yaml').read_text(encoding='utf-8')) or {}
 
@@ -148,7 +157,7 @@ def assess(match, rows, fundamentals, cfg, now):
     verification = odds_snapshots.evaluate_cross_verification(rows, mid, 'report', cfg, now=now)
     mains = [r for r in rows if r.get('match_id') == mid and r.get('stage') == 'report'
              and str(r.get('is_main')) == '1' and r.get('verification') == 'verified']
-    if not verification.get('passed') or not mains:
+    if not _usable_verification(verification) or not mains:
         return None, '盘口跨来源核验未通过'
     mains.sort(key=lambda r: (r.get('bookmaker') != 'pinnacle', r.get('source') != 'oddspapi'))
     quote = mains[0]
@@ -202,6 +211,12 @@ def assess(match, rows, fundamentals, cfg, now):
     if not picks:
         return None, '基本面与盘口评分不足'
     picked = picks[0]
+    if verification.get('freshness') == 'stale_downgrade':
+        confidence = policy.DOWN.get(policy.EN.get(picked.get('confidence', '')))
+        if confidence is None:
+            return None, '盘口报价过期，降级后不足'
+        picked['confidence'] = confidence
+        picked['risks'].append('盘口报价超过新鲜度阈值，信心已降一级')
     picked['pick_team'] = match[picked['pick_side']]
     excluded = set(cfg.get('exclude_sources') or ['api_football'])
     books = {}
@@ -314,13 +329,13 @@ def build_report(report_date, now=None, max_fixtures=8):
     for match in matches:
         mid = match['match_id']
         check = odds_snapshots.evaluate_cross_verification(rows, mid, 'report', cfg, now=datetime.now(UTC))
-        if not check.get('passed'):
+        if not _usable_verification(check):
             verification_failures.update(check.get('reasons') or ['no_quotes'])
         has_verified = any(r.get('match_id') == mid and r.get('stage') == 'report' and r.get('verification') == 'verified'
                            and str(r.get('is_main')) == '1' for r in rows)
         fundamental = None
         code = football_data.CODE_BY_LEAGUE.get(match['league_id'])
-        if check.get('passed') and has_verified and code and fd.enabled:
+        if _usable_verification(check) and has_verified and code and fd.enabled:
             try:
                 fundamental = football_data.fundamentals(fd, code, match['home'], match['away'], match['kickoff_utc'], 'home')
             except Exception as exc:

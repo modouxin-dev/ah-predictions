@@ -49,6 +49,20 @@ def test_unverified_stale_or_missing_fundamentals_are_not_recommended():
     assert daily.assess(fixture(), quotes()[:-1], FORM, CFG, NOW)[0] is None
 
 
+def test_age_downgrades_confidence_without_bypassing_other_checks():
+    aged = NOW + timedelta(minutes=31)
+    pick, reason = daily.assess(fixture(), quotes(), FORM, CFG, aged)
+    assert not reason and pick['confidence'] == 'low'
+    assert any('降一级' in risk for risk in pick['risks'])
+    report = {'date': '2026-11-06', 'picks': [pick], 'watchlist': []}
+    daily.policy.apply(report)
+    assert not report['picks'] and len(report['watchlist']) == 1
+
+    single_source = [row for row in quotes() if row['source'] != 'odds_api']
+    assert daily.assess(fixture(), single_source, FORM, CFG, aged)[0] is None
+    assert daily.assess(fixture(), quotes(), FORM, CFG, NOW + timedelta(hours=3))[0] is None
+
+
 def test_match_started_during_collection_is_not_recommended():
     after_kickoff = datetime(2026, 11, 6, 20, 1, tzinfo=UTC)
     pick, reason = daily.assess(fixture(), quotes(after_kickoff), FORM, CFG, after_kickoff)
