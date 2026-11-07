@@ -1,22 +1,22 @@
 {
-  "updated_at": "2026-11-05T16:57:26Z",
+  "updated_at": "2026-11-07T00:05:15Z",
   "hit_rate_definition": "(win + 0.5*half_win)/(picks - push - void)",
   "roi_definition": "units/(picks - push - void)（每注1单位）",
   "cancelled_definition": "cancelled = 赛前撤销场数（已计入 void，不计入命中率/ROI）",
   "overall": {
-    "picks": 3,
+    "picks": 4,
     "win": 1,
     "half_win": 0,
     "push": 0,
     "half_loss": 0,
-    "loss": 1,
+    "loss": 2,
     "void": 1,
-    "hit_rate": 0.5,
-    "units": 0.06,
-    "roi": 0.03,
+    "hit_rate": 0.3333,
+    "units": -0.94,
+    "roi": -0.3133,
     "cancelled": 1,
     "odds_estimated": 0,
-    "decided": 2,
+    "decided": 3,
     "hits": 1.0
   },
   "odds_estimated": {
@@ -74,6 +74,22 @@
       "odds_estimated": 0,
       "decided": 1,
       "hits": 1.0
+    },
+    "英冠": {
+      "picks": 1,
+      "win": 0,
+      "half_win": 0,
+      "push": 0,
+      "half_loss": 0,
+      "loss": 1,
+      "void": 0,
+      "hit_rate": 0.0,
+      "units": -1.0,
+      "roi": -1.0,
+      "cancelled": 0,
+      "odds_estimated": 0,
+      "decided": 1,
+      "hits": 0.0
     }
   },
   "by_confidence": {
@@ -92,9 +108,41 @@
       "odds_estimated": 0,
       "decided": 2,
       "hits": 1.0
+    },
+    "低": {
+      "picks": 1,
+      "win": 0,
+      "half_win": 0,
+      "push": 0,
+      "half_loss": 0,
+      "loss": 1,
+      "void": 0,
+      "hit_rate": 0.0,
+      "units": -1.0,
+      "roi": -1.0,
+      "cancelled": 0,
+      "odds_estimated": 0,
+      "decided": 1,
+      "hits": 0.0
     }
   },
   "by_line": {
+    "-0": {
+      "picks": 1,
+      "win": 0,
+      "half_win": 0,
+      "push": 0,
+      "half_loss": 0,
+      "loss": 1,
+      "void": 0,
+      "hit_rate": 0.0,
+      "units": -1.0,
+      "roi": -1.0,
+      "cancelled": 0,
+      "odds_estimated": 0,
+      "decided": 1,
+      "hits": 0.0
+    },
     "-0.75": {
       "picks": 2,
       "win": 1,
@@ -145,6 +193,22 @@
       "decided": 1,
       "hits": 1.0
     },
+    "平手 0": {
+      "picks": 1,
+      "win": 0,
+      "half_win": 0,
+      "push": 0,
+      "half_loss": 0,
+      "loss": 1,
+      "void": 0,
+      "hit_rate": 0.0,
+      "units": -1.0,
+      "roi": -1.0,
+      "cancelled": 0,
+      "odds_estimated": 0,
+      "decided": 1,
+      "hits": 0.0
+    },
     "深盘 ≥1.25": {
       "picks": 1,
       "win": 0,
@@ -163,6 +227,22 @@
     }
   },
   "by_role": {
+    "平手盘": {
+      "picks": 1,
+      "win": 0,
+      "half_win": 0,
+      "push": 0,
+      "half_loss": 0,
+      "loss": 1,
+      "void": 0,
+      "hit_rate": 0.0,
+      "units": -1.0,
+      "roi": -1.0,
+      "cancelled": 0,
+      "odds_estimated": 0,
+      "decided": 1,
+      "hits": 0.0
+    },
     "让球方（上盘）": {
       "picks": 3,
       "win": 1,
@@ -202,6 +282,17 @@
       "units": -1.0,
       "odds_estimated": false,
       "cum_units": 0.06
+    },
+    {
+      "date": "2026-11-06",
+      "kickoff_utc": "2026-11-06T20:00:00Z",
+      "match_id": "fd-561932",
+      "match": "Derby County FC vs Bolton Wanderers FC",
+      "league": "英冠",
+      "outcome": "loss",
+      "units": -1.0,
+      "odds_estimated": false,
+      "cum_units": -0.94
     }
   ]
 }
