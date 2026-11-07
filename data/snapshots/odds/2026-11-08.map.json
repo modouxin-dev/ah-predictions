@@ -146,5 +146,18 @@
   "oddspapi": "id1000003572513300",
   "infersports": "evt_CG8YGDP3",
   "odds_api": "c1b9696d88719cb8832d794b986cdd68"
+ },
+ "fd-558530": {
+  "oddspapi": null
+ },
+ "infs-evt_4RXBA0QV": {
+  "oddspapi": "id1000002371945392",
+  "infersports": "evt_4RXBA0QV",
+  "odds_api": "657fd1ac35832f65fcc6feba93970e10"
+ },
+ "fd-564742": {
+  "oddspapi": "id1000000872478688",
+  "infersports": "evt_WB7VBPR6",
+  "odds_api": "0d2e199bfba0db42871696c10037bad3"
  }
 }

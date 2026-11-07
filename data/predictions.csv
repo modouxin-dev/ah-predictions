@@ -20,3 +20,6 @@ date,match_id,league,home,away,kickoff_utc,pick_side,pick,line,odds_if_known,con
 2026-11-08,fd-560636,英超,Sunderland AFC,Chelsea FC,2026-11-08T14:00:00Z,away,Chelsea FC,-0.5,0.99,high,,,,false,hk,false,active,,,official,,,ah,
 2026-11-08,fd-559634,法甲,Angers SCO,OGC Nice,2026-11-08T16:15:00Z,away,OGC Nice,-0.5,1.08,high,,,,false,hk,false,active,,,official,,,ah,
 2026-11-08,fd-560637,英超,Ipswich Town FC,AFC Bournemouth,2026-11-08T14:00:00Z,away,AFC Bournemouth,-0.5,0.925,low,,,,false,hk,false,active,,,official,,,ah,
+2026-11-08,fd-559633,法甲,Le Havre AC,FC Lorient,2026-11-08T16:15:00Z,away,FC Lorient,-0.25,1.06,low,,,,false,hk,false,active,,,official,,,ah,
+2026-11-08,fd-560638,英超,Brighton & Hove Albion FC,Brentford FC,2026-11-08T14:00:00Z,home,Brighton & Hove Albion FC,-0.5,0.892,low,,,,false,hk,false,active,,,official,,,ah,
+2026-11-08,fd-559631,法甲,Le Mans FC,AS Monaco FC,2026-11-08T16:15:00Z,away,AS Monaco FC,-0.75,0.892,low,,,,false,hk,false,active,,,official,,,ah,
