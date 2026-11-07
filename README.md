@@ -261,7 +261,7 @@ PYTHONPATH=src python -m ah delivery preflight
 之前只有 4 天日报、`stats.json` 里 3 条推荐 / 2 场算完结果，样本远不够校准。本轮不改算法、不额外消耗接口额度，做两件事：
 
 **A. 结算修稳 + 失败可见**
-- `.github/workflows/settle.yml` 增加备用 cron `30 12 * * *`（主 `0 9 * * *`；GitHub cron 实测曾漂到 16:28 UTC 且失败）。settle 以 `settled` 标记幂等，重复触发不会重复计数。
+- `.github/workflows/settle.yml` 改为早班 `0 9 * * *`（北京 17:00）、晚班 `0 18 * * *`（北京次日 02:00）、备用 `30 19 * * *`（防 GitHub cron 漂移/丢失，实测曾漂到 16:28 UTC 且失败）。**晚班时间按当日最晚开球（北京 23:00 = UTC 15:00）+ autofill 最小等待 110 分钟推算**，否则晚间场次永远要等第二天才结算。settle 以 `settled` 标记幂等，重复触发不会重复计数。
 - 无论成功失败都写 `data/settle_health.json`：列出 `predictions.csv` 里仍未结算的条目（date / match_id / 对阵 / 开球 / 状态 / 档位），**赛果字段为空就写「未取得」，不补造比分、不推断原因、不假称已补齐**；失败时日志打 `::error::`。
 - 赛果仍由 `python -m ah settle` 按已配置的 API-Football / football-data 数据源回填。密钥没返回数据就保持「未取得」，本轮不承诺补齐几条。
 

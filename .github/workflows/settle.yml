@@ -1,8 +1,11 @@
 name: settle-and-stats
 on:
   schedule:
-    - cron: "0 9 * * *"    # 主：每天 09:00 UTC（北京 17:00），欧洲/美洲比赛已完场
-    - cron: "30 12 * * *"  # 备用：GitHub cron 常延迟/丢失（实测曾漂到 16:28 UTC 且失败）；
+    # 结算必须晚于当日最晚开球 + 110 分钟（autofill 的最小等待）；
+    # 报告里最晚场次为北京 23:00（UTC 15:00），故晚班定在 UTC 18:00（北京次日 02:00）。
+    - cron: "0 9 * * *"    # 早班：北京 17:00，结算前一日/凌晨已完场遗留
+    - cron: "0 18 * * *"   # 晚班：北京次日 02:00，覆盖当日全部开球场次
+    - cron: "30 19 * * *"  # 备用：GitHub cron 实测会延迟/丢失（曾漂到 16:28 UTC 且失败）；
                            # settle 以 settled 标记幂等，重复触发不会重复计数。
   workflow_dispatch:
 permissions:
