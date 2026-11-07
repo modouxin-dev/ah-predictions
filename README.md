@@ -276,3 +276,27 @@ PYTHONPATH=src python -m ah delivery preflight
 - 未验证：备用 cron 的真实触发时刻与延迟；本轮 settle 手动运行实际回填了几场（取决于密钥与数据源返回）；Telegram 端收件（本轮**未额外触发 TG 推送**，避免刷屏）。
 - **样本量仍不足以做概率校准**：研究口径是每个档位 80–100 场；A+B 之后每天约 32 条候选入池，需连续积累数周才能做第一轮时间外回看。阈值仍是「规则档位，未经独立回测」。
 - 历史盘口快照只有 3 天，缺的部分**不能补造**，只能从今天开始攒。
+
+
+## 2026-11-07 二次升级：因子证据 / 时间外回测 / 样本缺口告警
+
+用户选择「全都要·能做的全做」。原则：**能做的立刻做；受数据源或样本量限制的建自动验收并如实标未验证，绝不硬编数据。**
+
+**已做（不额外调用任何接口，复用已有报告、缓存 standings、落盘赛果）**
+- `src/ah/factors.py`：三态准入 `off / observation / scoring`（默认 observation，线上评分结果不变）。
+  - 可回溯因子：`home_away`（form_history 逐场赛果算主队主场/客队客场积分率差）、`motivation`（football-data 已缓存 standings 名次差）、`line_value`（market_consensus 家数/一致性 + 真实 line 深度惩罚）。每个因子带 source_id / source_url / as_of / coverage_status；数据不足 `value=None`，**不填 0**。
+  - `injuries / xg` 无授权接口、未逐场取证，保持 `missing`，不硬上。
+  - 时序事实：`market_consensus` 是在评分之后才 attach 的，故 `line_value` **进不了本次 score**；要进需把共识聚合提前，属于算法框架改动，本轮不做、不假称已做。
+  - `analyze.py` 的 WEIGHTS 与 score 公式**未改**：权重表本来就预留了这三个位置，scoring 模式只是把有证据的值喂进去。
+  - 报告 JSON 新增 `feature_evidence.by_match` 逐场证据块；`data/feature_coverage/<date>.json` 每天落一份覆盖事实。
+- `src/ah/backtest.py`：时间外回测流水线。按日期切 train/valid/test（不随机打散），赛果只取 `predictions.csv` 真实值；**每档 <80 或总 <300 时整体 `INSUFFICIENT_SAMPLE`，只输出样本统计，不输出命中率/校准/ROI 结论**；无校准概率则 Brier / 可靠性曲线 `NOT_COMPUTED`；市场基准只用单方水位换算并注明「未去水，仅参考」。输出 `data/backtest_report.json/.md`。
+- `src/ah/sample_gaps.py`：`gaps gap` 输出样本池天数、候选数、已结算数、分档缺口、按最近窗口日均新增**推算**（明确标注非承诺）的达标天数；`gaps health` 在 settle 健康盘点上补「距开球分钟数 / 是否已满足 110 分钟回填条件 / 归因」，只做事实分类，不推断数据源为何没返回、不补造比分。
+- `.github/workflows/research-backtest.yml`：每天北京 03:40（结算晚班之后）跑 gap → backtest → readiness → replay → promote，提交产物。
+- `factors promote`：仅当连续 14 天覆盖达标、每因子 ≥80 个 full 样本、且离线重放不会把任一场打到发布门槛以下时，才把 `settings.yaml` 的 mode 改成 scoring；否则写 `data/feature_promotion.json` 记录 REJECTED 原因。**不达标绝不自动改线上评分。**
+- `settle.yml` 顺手修好上轮被吞掉的 shell 续行，健康盘点改走 `gaps health`（带回填时限归因）。
+
+**如实标注（不得写成已完成）**
+- 当前只有 1 天样本池 / 4 天日报 / 已结算个位数，`INSUFFICIENT_SAMPLE` 与 `NOT_READY` 是预期状态，不是故障。
+- 阈值仍是「规则档位，未经独立回测」；本次没有改阈值、没有改评分公式、没有改两端展示、没有额外触发 TG 推送。
+- 三个 cron 的真实触发时刻、GitHub 延迟、数据源实际返回仍以运行记录为准；历史盘口只有 3 天，缺的部分不能补造。
+- 概率校准需时间外样本与可靠性曲线，样本够才能做；启用 scoring 前不会宣称命中率或 ROI 改善。

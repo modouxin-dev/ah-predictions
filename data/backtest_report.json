@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "checked_at": "2026-11-07T00:20:22Z",
+  "pool_days": 1,
+  "pool_rows": 32,
+  "ledger_rows": 15,
+  "matched_rows": 7,
+  "settled_rows": 0,
+  "ledger_settled_rows": 4,
+  "time_split": {
+    "dates": [
+      "2026-11-07"
+    ],
+    "train": [
+      "2026-11-07"
+    ],
+    "valid": [],
+    "test": [
+      "2026-11-07"
+    ],
+    "note": "日期不足 3 天，无法做三段切分；仅保留最后一天作测试集占位"
+  },
+  "evaluation": {
+    "status": "INSUFFICIENT_SAMPLE",
+    "thresholds": {
+      "min_per_tier": 80,
+      "min_total": 300
+    },
+    "settled_rows": 0,
+    "tiers": {},
+    "brier_score": "NOT_COMPUTED",
+    "reliability_curve": "NOT_COMPUTED",
+    "note": "样本未达门槛：只输出样本统计，不输出命中率结论、不输出校准结论、不宣称模型更准。"
+  },
+  "note": "赛果只来自 data/predictions.csv；未取得一律不推断；样本不足时不输出任何准确率结论。"
+}

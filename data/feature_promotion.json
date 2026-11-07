@@ -1,0 +1,5 @@
+{
+  "status": "REJECTED",
+  "reason": "覆盖/样本未达标，拒绝启用 scoring（不编造数据）",
+  "readiness": "NOT_READY"
+}

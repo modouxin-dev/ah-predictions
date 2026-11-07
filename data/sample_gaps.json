@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "checked_at": "2026-11-07T00:20:21Z",
+  "pool_days": 1,
+  "pool_rows": 32,
+  "settled_rows": 0,
+  "unsettled_rows": 32,
+  "ledger_settled_rows": 4,
+  "by_tier": {},
+  "thresholds": {
+    "min_per_tier": 80,
+    "min_total": 300
+  },
+  "recent_window_days": 1,
+  "recent_rows": 32,
+  "observed_daily_new_rows": 32.0,
+  "observed_daily_settled_rows": 0.0,
+  "estimated_days_to_total_threshold": null,
+  "estimate_note": "近期无已结算样本，无法推算达标天数（不编造估算）",
+  "alert": "SAMPLE_INSUFFICIENT 样本未达校准门槛，暂不输出命中率/校准结论",
+  "note": "只统计真实落盘字段；未取得赛果一律不计入已结算，不补造比分。"
+}

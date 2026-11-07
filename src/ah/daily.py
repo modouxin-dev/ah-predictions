@@ -182,7 +182,7 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None, fd5
     return selected, errors, len(rows)
 
 
-def assess(match, rows, fundamentals, cfg, now, observation=None):
+def assess(match, rows, fundamentals, cfg, now, observation=None, pre_features=None):
     """Return a supported pick, or a reason for withholding the match."""
     mid = match['match_id']
     if parse_dt(match['kickoff_utc']) <= now:
@@ -235,6 +235,10 @@ def assess(match, rows, fundamentals, cfg, now, observation=None):
         sign = 1 if side == 'home' else -1
         mine, opp = (forms['home'], forms['away']) if side == 'home' else (forms['away'], forms['home'])
         features = {'form': enrich.form_feature(mine, opp)}
+        # 2026-11-07：仅 scoring 模式且该侧有 full 证据时才把可回溯因子写进评分；
+        # None 一律不写（不填 0、不推断）。observation 模式完全不动原有三因子。
+        if pre_features and side in pre_features:
+            features.update(pre_features[side].get('features') or {})
         h2h = (fundamentals or {}).get('h2h')
         if h2h and h2h.get('played', 0) >= 3:
             h2h_score = enrich.h2h_feature(h2h)
@@ -464,7 +468,11 @@ def build_report(report_date, now=None, max_fixtures=None, snapshot_dir=None):
             except Exception as exc:
                 errors.append('5Dollar 近期赛果: ' + type(exc).__name__)
         observation = {}
-        pick, why = assess(match, rows, fundamental, cfg, datetime.now(UTC), observation=observation)
+        # 评分前因子（两侧方向分别算）；scoring 模式才传给 assess 参与 score。
+        from . import factors as _factors
+        pre = _factors.pre_match_values(match, fundamental, history) if _factors.mode() != 'off' else None
+        pick, why = assess(match, rows, fundamental, cfg, datetime.now(UTC),
+                           observation=observation, pre_features=pre)
         if pick:
             if observation:
                 pick['observation'] = observation
@@ -484,6 +492,21 @@ def build_report(report_date, now=None, max_fixtures=None, snapshot_dir=None):
         # 5Dollar is supplementary only; lack of data never creates a pick.
         consensus.attach(report, fetch=lambda _sport: {}, fd5=fd5)
         policy.apply(report)
+    # 逐场因子证据（facts only）：在共识 attach 之后生成，line_value 才能读到 market_consensus。
+    # 不修改 picks 的评分结果；缺字段写「未取得」；injuries / xg 无授权接口保持 missing。
+    from . import factors as _factors
+    if _factors.mode() != 'off':
+        report['feature_evidence'] = {
+            'schema': 1, 'mode': _factors.mode(),
+            'note': '逐场因子证据；observation 模式不参与 score；无证据不得进评分',
+            'by_match': {},
+        }
+        for _p in report['picks']:
+            _pre = _factors.pre_match_values(
+                {'kickoff_utc': _p.get('kickoff_utc'), 'home': _p.get('home'), 'away': _p.get('away')},
+                None, history)
+            report['feature_evidence']['by_match'][str(_p.get('match_id'))] = _factors.final_evidence(
+                _p, None, history, _pre)
     if notes or errors:
         report['not_covered'] += ' 数据源状态：' + '；'.join(notes + errors) + '。'
     validate(report)

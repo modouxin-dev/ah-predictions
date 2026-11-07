@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-07T00:05:17Z",
-  "run_id": "42315939247",
-  "job_conclusion": "success",
-  "event": "workflow_dispatch",
+  "checked_at": "2026-11-07T00:20:22Z",
+  "run_id": "local-upgrade",
+  "job_conclusion": "local",
+  "event": "local",
   "source": "data/predictions.csv",
   "total_rows": 15,
   "settled_rows": 4,
@@ -18,7 +18,10 @@
       "status": "active",
       "confidence": "low",
       "track": "official",
-      "result": "未取得"
+      "result": "未取得",
+      "minutes_since_kickoff": -730,
+      "autofill_time_eligible": false,
+      "attribution": "尚未开赛，按规则不回填"
     },
     {
       "date": "2026-11-06",
@@ -29,7 +32,10 @@
       "status": "active",
       "confidence": "low",
       "track": "official",
-      "result": "未取得"
+      "result": "未取得",
+      "minutes_since_kickoff": -820,
+      "autofill_time_eligible": false,
+      "attribution": "尚未开赛，按规则不回填"
     },
     {
       "date": "2026-11-06",
@@ -40,7 +46,10 @@
       "status": "active",
       "confidence": "low",
       "track": "official",
-      "result": "未取得"
+      "result": "未取得",
+      "minutes_since_kickoff": -820,
+      "autofill_time_eligible": false,
+      "attribution": "尚未开赛，按规则不回填"
     },
     {
       "date": "2026-11-06",
@@ -51,7 +60,10 @@
       "status": "active",
       "confidence": "low",
       "track": "official",
-      "result": "未取得"
+      "result": "未取得",
+      "minutes_since_kickoff": -880,
+      "autofill_time_eligible": false,
+      "attribution": "尚未开赛，按规则不回填"
     },
     {
       "date": "2026-11-07",
@@ -62,7 +74,10 @@
       "status": "active",
       "confidence": "low",
       "track": "official",
-      "result": "未取得"
+      "result": "未取得",
+      "minutes_since_kickoff": -880,
+      "autofill_time_eligible": false,
+      "attribution": "尚未开赛，按规则不回填"
     },
     {
       "date": "2026-11-07",
@@ -73,7 +88,10 @@
       "status": "active",
       "confidence": "low",
       "track": "official",
-      "result": "未取得"
+      "result": "未取得",
+      "minutes_since_kickoff": -730,
+      "autofill_time_eligible": false,
+      "attribution": "尚未开赛，按规则不回填"
     },
     {
       "date": "2026-11-07",
@@ -84,7 +102,10 @@
       "status": "active",
       "confidence": "low",
       "track": "official",
-      "result": "未取得"
+      "result": "未取得",
+      "minutes_since_kickoff": -880,
+      "autofill_time_eligible": false,
+      "attribution": "尚未开赛，按规则不回填"
     },
     {
       "date": "2026-11-07",
@@ -95,7 +116,10 @@
       "status": "active",
       "confidence": "low",
       "track": "official",
-      "result": "未取得"
+      "result": "未取得",
+      "minutes_since_kickoff": -880,
+      "autofill_time_eligible": false,
+      "attribution": "尚未开赛，按规则不回填"
     },
     {
       "date": "2026-11-07",
@@ -106,7 +130,10 @@
       "status": "active",
       "confidence": "low",
       "track": "official",
-      "result": "未取得"
+      "result": "未取得",
+      "minutes_since_kickoff": -880,
+      "autofill_time_eligible": false,
+      "attribution": "尚未开赛，按规则不回填"
     },
     {
       "date": "2026-11-07",
@@ -117,7 +144,10 @@
       "status": "active",
       "confidence": "low",
       "track": "official",
-      "result": "未取得"
+      "result": "未取得",
+      "minutes_since_kickoff": -820,
+      "autofill_time_eligible": false,
+      "attribution": "尚未开赛，按规则不回填"
     },
     {
       "date": "2026-11-07",
@@ -128,8 +158,14 @@
       "status": "active",
       "confidence": "low",
       "track": "official",
-      "result": "未取得"
+      "result": "未取得",
+      "minutes_since_kickoff": -880,
+      "autofill_time_eligible": false,
+      "attribution": "尚未开赛，按规则不回填"
     }
   ],
-  "note": "结算事实盘点：仅读取 predictions.csv 现有字段；赛果字段为空即写『未取得』；不填比分、不推断原因、不假称已补齐；赛果由 settle 任务按已配置数据源回填。"
+  "note": "结算事实盘点：仅读取 predictions.csv 现有字段；赛果字段为空即写『未取得』；不填比分、不推断原因、不假称已补齐；赛果由 settle 任务按已配置数据源回填。 归因仅按开球时间做事实分类，不推断数据源失败原因、不补造比分。",
+  "autofill_eligible_unsettled": 0,
+  "autofill_minutes_rule": 110,
+  "alert": "NO_TIME_ELIGIBLE_BACKLOG 当前无超过回填时限的未结算条目"
 }

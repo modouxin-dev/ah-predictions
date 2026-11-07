@@ -110,3 +110,13 @@ data/telegram_delivery.json
 - 硬约束：样本池与结算健康盘点只读报告 JSON 与 `predictions.csv` 现有字段；缺字段写「未取得」；不填比分、不推断原因、不生成预测结论、不假称「已补齐」「已结算」；`result` 固定「未取得」。
 - 「候选全留档」不等于「多推比赛」：两端展示仍只发 `policy.published` 的正式推荐。
 - 样本池一天一张开球前快照；赛果由 settle 按已配置数据源回填，回填不了就保持「未取得」。
+
+
+## 2026-11-07 二次升级执行记录
+
+- 用户授权「全都要·能做的全做」；未触碰 `analyze.py` WEIGHTS / score 公式、`odds_snapshots.py` 核验算法、盘口采集口径、两端展示与推送渲染。
+- 新增因子必须带 source_id / source_url / as_of / coverage_status；`value=None` 不等于 0 分；缺证据不得进 score。
+- `injuries / xg` 保持 missing；`line_value` 因共识在评分后 attach，时序上不能进本次 score，不得假称已接入。
+- 样本不足时回测一律 `INSUFFICIENT_SAMPLE`，禁止输出命中率/校准/「模型更准」类断言；Brier 与可靠性曲线无校准概率时 `NOT_COMPUTED`。
+- 赛果只来自 `predictions.csv`；`未取得` 不得改写为「无伤停 / 无影响 / 已结算」；回填归因只按开球时间做事实分类，不推断数据源失败原因。
+- 因子转 scoring 必须通过连续覆盖验收 + 离线重放零场保护；未达标不得自动改 `settings.yaml`。

@@ -1,4 +1,4 @@
-"""python -m ah <cmd> 便捷入口：render|settle|stats|site|telegram|consensus|prematch-record|backtest-record|sources|tg-bot|delivery|grounding|source-probe|samples"""
+"""python -m ah <cmd> 便捷入口：render|settle|stats|site|telegram|consensus|prematch-record|backtest-record|sources|tg-bot|delivery|grounding|source-probe|samples|factors|backtest|gaps"""
 import sys
 
 cmd, sys.argv = (sys.argv[1] if len(sys.argv) > 1 else "help"), [sys.argv[0]] + sys.argv[2:]
@@ -30,5 +30,11 @@ elif cmd == "source-probe":
     from .source_probe import main; main()
 elif cmd == "samples":
     from .samples import main; main()
+elif cmd == "factors":
+    from .factors import main; main()
+elif cmd == "backtest":
+    from .backtest import main; main()
+elif cmd == "gaps":
+    from .sample_gaps import cli_main; cli_main()
 else:
     print(__doc__)

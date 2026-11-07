@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "checked_at": "2026-11-07T00:20:23Z",
+  "current_mode": "observation",
+  "factors": {
+    "home_away": {
+      "days_observed": 1,
+      "consecutive_full_days": 0,
+      "full_rows": 0,
+      "total_rows": 7,
+      "coverage_ratio": 0.0,
+      "required": {
+        "min_consecutive_days": 14,
+        "min_coverage_ratio": 0.8,
+        "min_samples": 80
+      },
+      "eligible": false
+    },
+    "motivation": {
+      "days_observed": 1,
+      "consecutive_full_days": 0,
+      "full_rows": 0,
+      "total_rows": 7,
+      "coverage_ratio": 0.0,
+      "required": {
+        "min_consecutive_days": 14,
+        "min_coverage_ratio": 0.8,
+        "min_samples": 80
+      },
+      "eligible": false
+    },
+    "line_value": {
+      "days_observed": 1,
+      "consecutive_full_days": 1,
+      "full_rows": 7,
+      "total_rows": 7,
+      "coverage_ratio": 1.0,
+      "required": {
+        "min_consecutive_days": 14,
+        "min_coverage_ratio": 0.8,
+        "min_samples": 80
+      },
+      "eligible": false
+    }
+  },
+  "all_eligible": false,
+  "status": "NOT_READY",
+  "note": "未达标一律不得把因子转入 scoring；injuries / xg 无授权接口，永久保持 missing，除非单独取得逐场证据。"
+}

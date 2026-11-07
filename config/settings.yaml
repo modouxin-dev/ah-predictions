@@ -46,6 +46,18 @@ push_rules:                      # 由 Grok Bot 定时任务执行（报告研�
 #   所有推荐仍只用真实盘口与真实赛果；核验未完全通过的场次强制低信心 + 显式风险标注，不编造结论。
 # 准确率优先策略（低信心场次如实标注，不伪装成已核验）—— src/ah/policy.py
 # 积累期：正式发「中」及以上；样本够、模型稳后再收回「只发高」。深盘 |line|≥1.75 默认进观察。
+# 2026-11-07 因子三态准入（深度研究报告第一/三/八节）。
+# off=不记录；observation=只写证据不进 score（默认，线上结果不变）；scoring=带 full 证据才进 score。
+# 不额外调用接口：输入来自报告、football-data 已缓存 standings、form_history 已落盘赛果。
+# 自动验收由 research-backtest.yml 每日跑 factors readiness；达标且离线重放不把推荐打回 0 才 promote。
+feature_scoring:
+  mode: observation
+  promotion:
+    min_consecutive_days: 14      # 连续覆盖达标天数；研究建议 14 个自然日
+    min_coverage_ratio: 0.80      # 当日有 full 证据的场次占比
+    min_samples: 80               # 每因子累计 full 样本（研究口径每概率桶 80-100）
+    reject_if_replay_zero_picks: true
+
 policy:
   min_confidence_to_publish: 低      # 2026-11-06：低及以上；核验未完全通过的场次强制标低信心并注明风险
   max_picks_per_day: 10             # 积累期目标每天 5–10 场，上限 10

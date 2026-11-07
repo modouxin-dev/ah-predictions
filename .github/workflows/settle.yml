@@ -35,11 +35,15 @@ jobs:
       - name: Record settle health (facts only)
         if: always()
         run: |
-          python -m ah samples health             --run-id "${{ github.run_id }}"             --conclusion "${{ job.status }}"             --event "${{ github.event_name }}"
+          python -m ah gaps health \
+            --run-id "${{ github.run_id }}" \
+            --conclusion "${{ job.status }}" \
+            --event "${{ github.event_name }}"
           if [ "${{ job.status }}" != "success" ]; then
             echo "::error::结算任务未成功；未结算清单见 data/settle_health.json（不填比分、不假称补齐）"
           fi
       - name: Commit settle health
         if: always()
         run: |
-          scripts/safe_commit.sh --skip-tests -m "settle health $(date -u +%F)" data/settle_health.json             || echo "::warning::健康盘点提交失败，见上方日志"
+          scripts/safe_commit.sh --skip-tests -m "settle health $(date -u +%F)" data/settle_health.json \
+            || echo "::warning::健康盘点提交失败，见上方日志"

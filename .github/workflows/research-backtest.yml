@@ -1,0 +1,36 @@
+name: research-backtest
+# 每天 UTC 19:40（北京 03:40）：在结算晚班（UTC 18:00）与备用（19:30）之后跑。
+# 样本不足时输出 INSUFFICIENT_SAMPLE 并正常结束，不算故障、不假称已回测。
+on:
+  schedule:
+    - cron: "40 19 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: src
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - name: Sample gap alert (facts only)
+        run: python -m ah gaps gap
+      - name: Time-out-of-sample backtest
+        run: python -m ah backtest
+      - name: Factor coverage readiness
+        run: python -m ah factors readiness
+      - name: Factor replay (no report mutation)
+        run: python -m ah factors replay "$(TZ=Asia/Shanghai date +%F)"
+      - name: Promote to scoring only when eligible and replay is safe
+        run: python -m ah factors promote
+      - name: Commit research artifacts
+        run: |
+          scripts/safe_commit.sh --skip-tests -m "research: gaps + backtest + factor readiness $(date -u +%F)" \
+            data/sample_gaps.json data/backtest_report.json data/backtest_report.md \
+            data/feature_readiness.json data/feature_promotion.json config/settings.yaml \
+            || echo "研究产物无变化或提交失败，见上方日志"
