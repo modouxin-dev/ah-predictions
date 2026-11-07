@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-07T21:21:51Z",
+  "updated_at": "2026-11-07T22:55:43Z",
   "hit_rate_definition": "(win + 0.5*half_win)/(picks - push - void)",
   "roi_definition": "units/(picks - push - void)（每注1单位）",
   "cancelled_definition": "cancelled = 赛前撤销场数（已计入 void，不计入命中率/ROI）",
