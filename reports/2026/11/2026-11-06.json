@@ -64,6 +64,17 @@
     "pick_water": 0.8,
     "toward_pick": 0.25,
     "fixture_id": 2120212024
+   },
+   "result": {
+    "score": "1-0",
+    "settlement": "loss",
+    "settlement_cn": "输",
+    "units": -1.0,
+    "line": -0.0,
+    "odds": 0.877,
+    "review": null,
+    "settled_at": "2026-11-07T15:17:27Z",
+    "sources": []
    }
   },
   {

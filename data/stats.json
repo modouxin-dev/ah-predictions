@@ -1,22 +1,22 @@
 {
-  "updated_at": "2026-11-07T00:05:15Z",
+  "updated_at": "2026-11-07T15:17:27Z",
   "hit_rate_definition": "(win + 0.5*half_win)/(picks - push - void)",
   "roi_definition": "units/(picks - push - void)（每注1单位）",
   "cancelled_definition": "cancelled = 赛前撤销场数（已计入 void，不计入命中率/ROI）",
   "overall": {
-    "picks": 4,
+    "picks": 6,
     "win": 1,
     "half_win": 0,
     "push": 0,
     "half_loss": 0,
-    "loss": 2,
+    "loss": 4,
     "void": 1,
-    "hit_rate": 0.3333,
-    "units": -0.94,
-    "roi": -0.3133,
+    "hit_rate": 0.2,
+    "units": -2.94,
+    "roi": -0.588,
     "cancelled": 1,
     "odds_estimated": 0,
-    "decided": 3,
+    "decided": 5,
     "hits": 1.0
   },
   "odds_estimated": {
@@ -90,6 +90,22 @@
       "odds_estimated": 0,
       "decided": 1,
       "hits": 0.0
+    },
+    "英超": {
+      "picks": 2,
+      "win": 0,
+      "half_win": 0,
+      "push": 0,
+      "half_loss": 0,
+      "loss": 2,
+      "void": 0,
+      "hit_rate": 0.0,
+      "units": -2.0,
+      "roi": -1.0,
+      "cancelled": 0,
+      "odds_estimated": 0,
+      "decided": 2,
+      "hits": 0.0
     }
   },
   "by_confidence": {
@@ -110,37 +126,37 @@
       "hits": 1.0
     },
     "低": {
-      "picks": 1,
+      "picks": 3,
       "win": 0,
       "half_win": 0,
       "push": 0,
       "half_loss": 0,
-      "loss": 1,
+      "loss": 3,
       "void": 0,
       "hit_rate": 0.0,
-      "units": -1.0,
+      "units": -3.0,
       "roi": -1.0,
       "cancelled": 0,
       "odds_estimated": 0,
-      "decided": 1,
+      "decided": 3,
       "hits": 0.0
     }
   },
   "by_line": {
     "-0": {
-      "picks": 1,
+      "picks": 3,
       "win": 0,
       "half_win": 0,
       "push": 0,
       "half_loss": 0,
-      "loss": 1,
+      "loss": 3,
       "void": 0,
       "hit_rate": 0.0,
-      "units": -1.0,
+      "units": -3.0,
       "roi": -1.0,
       "cancelled": 0,
       "odds_estimated": 0,
-      "decided": 1,
+      "decided": 3,
       "hits": 0.0
     },
     "-0.75": {
@@ -194,19 +210,19 @@
       "hits": 1.0
     },
     "平手 0": {
-      "picks": 1,
+      "picks": 3,
       "win": 0,
       "half_win": 0,
       "push": 0,
       "half_loss": 0,
-      "loss": 1,
+      "loss": 3,
       "void": 0,
       "hit_rate": 0.0,
-      "units": -1.0,
+      "units": -3.0,
       "roi": -1.0,
       "cancelled": 0,
       "odds_estimated": 0,
-      "decided": 1,
+      "decided": 3,
       "hits": 0.0
     },
     "深盘 ≥1.25": {
@@ -228,19 +244,19 @@
   },
   "by_role": {
     "平手盘": {
-      "picks": 1,
+      "picks": 3,
       "win": 0,
       "half_win": 0,
       "push": 0,
       "half_loss": 0,
-      "loss": 1,
+      "loss": 3,
       "void": 0,
       "hit_rate": 0.0,
-      "units": -1.0,
+      "units": -3.0,
       "roi": -1.0,
       "cancelled": 0,
       "odds_estimated": 0,
-      "decided": 1,
+      "decided": 3,
       "hits": 0.0
     },
     "让球方（上盘）": {
@@ -293,6 +309,28 @@
       "units": -1.0,
       "odds_estimated": false,
       "cum_units": -0.94
+    },
+    {
+      "date": "2026-11-06",
+      "kickoff_utc": "2026-11-07T12:30:00Z",
+      "match_id": "fd-560632",
+      "match": "Leeds United FC vs Tottenham Hotspur FC",
+      "league": "英超",
+      "outcome": "loss",
+      "units": -1.0,
+      "odds_estimated": false,
+      "cum_units": -1.94
+    },
+    {
+      "date": "2026-11-07",
+      "kickoff_utc": "2026-11-07T12:30:00Z",
+      "match_id": "fd-560632",
+      "match": "Leeds United FC vs Tottenham Hotspur FC",
+      "league": "英超",
+      "outcome": "loss",
+      "units": -1.0,
+      "odds_estimated": false,
+      "cum_units": -2.94
     }
   ]
 }
