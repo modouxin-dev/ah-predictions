@@ -1,0 +1,232 @@
+{
+  "schema": 1,
+  "date": "2026-11-08",
+  "checked_at": "2026-11-07T18:44:53Z",
+  "mode": "observation",
+  "picks": 6,
+  "rows": [
+    {
+      "match_id": "fd-560635",
+      "factors": {
+        "line_value": {
+          "value": 0.6,
+          "coverage": "full"
+        },
+        "home_away": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "motivation": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "injuries": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "xg": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "form": {
+          "value": "未取得",
+          "coverage": "scoring"
+        },
+        "h2h": {
+          "value": "未取得",
+          "coverage": "scoring"
+        },
+        "line_movement": {
+          "value": "未取得",
+          "coverage": "scoring"
+        }
+      }
+    },
+    {
+      "match_id": "fd-558531",
+      "factors": {
+        "line_value": {
+          "value": 0.2,
+          "coverage": "full"
+        },
+        "home_away": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "motivation": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "injuries": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "xg": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "form": {
+          "value": "未取得",
+          "coverage": "scoring"
+        },
+        "h2h": {
+          "value": "未取得",
+          "coverage": "scoring"
+        },
+        "line_movement": {
+          "value": "未取得",
+          "coverage": "scoring"
+        }
+      }
+    },
+    {
+      "match_id": "fd-560639",
+      "factors": {
+        "line_value": {
+          "value": 1.0,
+          "coverage": "full"
+        },
+        "home_away": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "motivation": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "injuries": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "xg": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "form": {
+          "value": "未取得",
+          "coverage": "scoring"
+        },
+        "h2h": {
+          "value": "未取得",
+          "coverage": "scoring"
+        },
+        "line_movement": {
+          "value": "未取得",
+          "coverage": "scoring"
+        }
+      }
+    },
+    {
+      "match_id": "fd-560636",
+      "factors": {
+        "line_value": {
+          "value": 0.833,
+          "coverage": "full"
+        },
+        "home_away": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "motivation": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "injuries": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "xg": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "form": {
+          "value": "未取得",
+          "coverage": "scoring"
+        },
+        "h2h": {
+          "value": "未取得",
+          "coverage": "scoring"
+        },
+        "line_movement": {
+          "value": "未取得",
+          "coverage": "scoring"
+        }
+      }
+    },
+    {
+      "match_id": "fd-559634",
+      "factors": {
+        "line_value": {
+          "value": 0.333,
+          "coverage": "full"
+        },
+        "home_away": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "motivation": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "injuries": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "xg": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "form": {
+          "value": "未取得",
+          "coverage": "scoring"
+        },
+        "h2h": {
+          "value": "未取得",
+          "coverage": "scoring"
+        },
+        "line_movement": {
+          "value": "未取得",
+          "coverage": "scoring"
+        }
+      }
+    },
+    {
+      "match_id": "fd-560637",
+      "factors": {
+        "line_value": {
+          "value": 0.833,
+          "coverage": "full"
+        },
+        "home_away": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "motivation": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "injuries": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "xg": {
+          "value": null,
+          "coverage": "missing"
+        },
+        "form": {
+          "value": "未取得",
+          "coverage": "scoring"
+        },
+        "h2h": {
+          "value": "未取得",
+          "coverage": "scoring"
+        },
+        "line_movement": {
+          "value": "未取得",
+          "coverage": "scoring"
+        }
+      }
+    }
+  ],
+  "note": "仅统计报告里真实存在的字段；value=None 表示未取得，不代表 0 分"
+}
