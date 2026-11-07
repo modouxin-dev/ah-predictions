@@ -137,6 +137,17 @@
     "pick_water": 0.8,
     "toward_pick": 0.0,
     "fixture_id": 2908931517
+   },
+   "result": {
+    "score": "1-1",
+    "settlement": "loss",
+    "settlement_cn": "输",
+    "units": -1.0,
+    "line": -0.75,
+    "odds": 1.07,
+    "review": null,
+    "settled_at": "2026-11-07T21:21:51Z",
+    "sources": []
    }
   },
   {
@@ -251,6 +262,17 @@
     "source": "oddspapi",
     "price_ts": "2026-11-06T15:02:26Z",
     "freshness": "ok"
+   },
+   "result": {
+    "score": "2-1",
+    "settlement": "half_win",
+    "settlement_cn": "赢半",
+    "units": 0.431,
+    "line": -0.75,
+    "odds": 0.862,
+    "review": null,
+    "settled_at": "2026-11-07T21:21:51Z",
+    "sources": []
    }
   },
   {
@@ -314,6 +336,17 @@
     "pick_water": 0.825,
     "toward_pick": 0.0,
     "fixture_id": 3930125471
+   },
+   "result": {
+    "score": "1-0",
+    "settlement": "loss",
+    "settlement_cn": "输",
+    "units": -1.0,
+    "line": -0.0,
+    "odds": 0.847,
+    "review": null,
+    "settled_at": "2026-11-07T21:21:51Z",
+    "sources": []
    }
   }
  ],

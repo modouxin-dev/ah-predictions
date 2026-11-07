@@ -56,6 +56,17 @@
     "source": "oddspapi",
     "price_ts": "2026-11-06T22:02:50Z",
     "freshness": "stale_withdraw"
+   },
+   "result": {
+    "score": "1-0",
+    "settlement": "loss",
+    "settlement_cn": "输",
+    "units": -1.0,
+    "line": -1.0,
+    "odds": 1.07,
+    "review": null,
+    "settled_at": "2026-11-07T21:21:51Z",
+    "sources": []
    }
   },
   {
@@ -193,6 +204,17 @@
     "pick_water": 1.025,
     "toward_pick": 0.25,
     "fixture_id": 2407563369
+   },
+   "result": {
+    "score": "1-1",
+    "settlement": "loss",
+    "settlement_cn": "输",
+    "units": -1.0,
+    "line": -0.5,
+    "odds": 1.04,
+    "review": null,
+    "settled_at": "2026-11-07T21:21:51Z",
+    "sources": []
    }
   },
   {
@@ -244,6 +266,17 @@
     "source": "oddspapi",
     "price_ts": "2026-11-06T23:10:39Z",
     "freshness": "stale_downgrade"
+   },
+   "result": {
+    "score": "3-0",
+    "settlement": "win",
+    "settlement_cn": "赢",
+    "units": 1.07,
+    "line": -0.5,
+    "odds": 1.07,
+    "review": null,
+    "settled_at": "2026-11-07T21:21:51Z",
+    "sources": []
    }
   },
   {
@@ -298,6 +331,17 @@
     "source": "oddspapi",
     "price_ts": "2026-11-06T17:18:21Z",
     "freshness": "stale_withdraw"
+   },
+   "result": {
+    "score": "5-4",
+    "settlement": "win",
+    "settlement_cn": "赢",
+    "units": 1.06,
+    "line": -0.5,
+    "odds": 1.06,
+    "review": null,
+    "settled_at": "2026-11-07T21:21:51Z",
+    "sources": []
    }
   },
   {
@@ -362,6 +406,17 @@
     "pick_water": 0.8,
     "toward_pick": 0.0,
     "fixture_id": 3930125471
+   },
+   "result": {
+    "score": "1-0",
+    "settlement": "loss",
+    "settlement_cn": "输",
+    "units": -1.0,
+    "line": -0.0,
+    "odds": 0.826,
+    "review": null,
+    "settled_at": "2026-11-07T21:21:51Z",
+    "sources": []
    }
   },
   {
@@ -416,6 +471,17 @@
     "source": "oddspapi",
     "price_ts": "2026-11-06T17:19:20Z",
     "freshness": "stale_withdraw"
+   },
+   "result": {
+    "score": "2-1",
+    "settlement": "loss",
+    "settlement_cn": "输",
+    "units": -1.0,
+    "line": -0.25,
+    "odds": 0.869,
+    "review": null,
+    "settled_at": "2026-11-07T21:21:51Z",
+    "sources": []
    }
   }
  ],
