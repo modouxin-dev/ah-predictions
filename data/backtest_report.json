@@ -1,22 +1,24 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-07T00:23:16Z",
-  "pool_days": 1,
-  "pool_rows": 32,
-  "ledger_rows": 15,
-  "matched_rows": 7,
-  "settled_rows": 0,
-  "ledger_settled_rows": 4,
+  "checked_at": "2026-11-07T22:59:28Z",
+  "pool_days": 2,
+  "pool_rows": 64,
+  "ledger_rows": 21,
+  "matched_rows": 13,
+  "settled_rows": 7,
+  "ledger_settled_rows": 15,
   "time_split": {
     "dates": [
-      "2026-11-07"
+      "2026-11-07",
+      "2026-11-08"
     ],
     "train": [
-      "2026-11-07"
+      "2026-11-07",
+      "2026-11-08"
     ],
     "valid": [],
     "test": [
-      "2026-11-07"
+      "2026-11-08"
     ],
     "note": "日期不足 3 天，无法做三段切分；仅保留最后一天作测试集占位"
   },
@@ -26,8 +28,15 @@
       "min_per_tier": 80,
       "min_total": 300
     },
-    "settled_rows": 0,
-    "tiers": {},
+    "settled_rows": 7,
+    "tiers": {
+      "low": {
+        "n": 7,
+        "hits": 2,
+        "actual_hit_frequency": 0.2857,
+        "units_sum": -2.86
+      }
+    },
     "brier_score": "NOT_COMPUTED",
     "reliability_curve": "NOT_COMPUTED",
     "note": "样本未达门槛：只输出样本统计，不输出命中率结论、不输出校准结论、不宣称模型更准。"
