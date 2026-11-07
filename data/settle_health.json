@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-07T21:21:53Z",
-  "run_id": "42415429026",
+  "checked_at": "2026-11-07T22:55:44Z",
+  "run_id": "42422800134",
   "job_conclusion": "success",
   "event": "schedule",
   "source": "data/predictions.csv",
@@ -19,7 +19,7 @@
       "confidence": "high",
       "track": "official",
       "result": "未取得",
-      "minutes_since_kickoff": -999,
+      "minutes_since_kickoff": -905,
       "autofill_time_eligible": false,
       "attribution": "尚未开赛，按规则不回填"
     },
@@ -33,9 +33,9 @@
       "confidence": "high",
       "track": "official",
       "result": "未取得",
-      "minutes_since_kickoff": 96,
-      "autofill_time_eligible": false,
-      "attribution": "已开赛但距开球不足 110 分钟，按规则暂不回填"
+      "minutes_since_kickoff": 190,
+      "autofill_time_eligible": true,
+      "attribution": "已满足 110 分钟回填条件，仍未取得赛果；原因见 settle 运行日志，本文件不推断"
     },
     {
       "date": "2026-11-08",
@@ -47,7 +47,7 @@
       "confidence": "high",
       "track": "official",
       "result": "未取得",
-      "minutes_since_kickoff": -1149,
+      "minutes_since_kickoff": -1055,
       "autofill_time_eligible": false,
       "attribution": "尚未开赛，按规则不回填"
     },
@@ -61,7 +61,7 @@
       "confidence": "high",
       "track": "official",
       "result": "未取得",
-      "minutes_since_kickoff": -999,
+      "minutes_since_kickoff": -905,
       "autofill_time_eligible": false,
       "attribution": "尚未开赛，按规则不回填"
     },
@@ -75,7 +75,7 @@
       "confidence": "high",
       "track": "official",
       "result": "未取得",
-      "minutes_since_kickoff": -1134,
+      "minutes_since_kickoff": -1040,
       "autofill_time_eligible": false,
       "attribution": "尚未开赛，按规则不回填"
     },
@@ -89,13 +89,13 @@
       "confidence": "low",
       "track": "official",
       "result": "未取得",
-      "minutes_since_kickoff": -999,
+      "minutes_since_kickoff": -905,
       "autofill_time_eligible": false,
       "attribution": "尚未开赛，按规则不回填"
     }
   ],
   "note": "结算事实盘点：仅读取 predictions.csv 现有字段；赛果字段为空即写『未取得』；不填比分、不推断原因、不假称已补齐；赛果由 settle 任务按已配置数据源回填。 归因仅按开球时间做事实分类，不推断数据源失败原因、不补造比分。",
-  "autofill_eligible_unsettled": 0,
+  "autofill_eligible_unsettled": 1,
   "autofill_minutes_rule": 110,
-  "alert": "NO_TIME_ELIGIBLE_BACKLOG 当前无超过回填时限的未结算条目"
+  "alert": "SETTLE_BACKLOG 已有 1 场满足回填时间条件但仍未取得赛果；不假称已补齐"
 }
