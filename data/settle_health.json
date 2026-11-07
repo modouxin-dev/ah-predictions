@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-07T00:02:35Z",
-  "run_id": "local-init",
-  "job_conclusion": "local",
-  "event": "local",
+  "checked_at": "2026-11-07T00:05:17Z",
+  "run_id": "42315939247",
+  "job_conclusion": "success",
+  "event": "workflow_dispatch",
   "source": "data/predictions.csv",
   "total_rows": 15,
-  "settled_rows": 3,
-  "unsettled_rows": 12,
+  "settled_rows": 4,
+  "unsettled_rows": 11,
   "unsettled": [
     {
       "date": "2026-11-06",
@@ -37,17 +37,6 @@
       "home": "Cagliari Calcio",
       "away": "Frosinone Calcio",
       "kickoff_utc": "2026-11-07T14:00:00Z",
-      "status": "active",
-      "confidence": "low",
-      "track": "official",
-      "result": "未取得"
-    },
-    {
-      "date": "2026-11-06",
-      "match_id": "fd-561932",
-      "home": "Derby County FC",
-      "away": "Bolton Wanderers FC",
-      "kickoff_utc": "2026-11-06T20:00:00Z",
       "status": "active",
       "confidence": "low",
       "track": "official",
