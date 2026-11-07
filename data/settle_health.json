@@ -1,0 +1,146 @@
+{
+  "schema": 1,
+  "checked_at": "2026-11-07T00:02:35Z",
+  "run_id": "local-init",
+  "job_conclusion": "local",
+  "event": "local",
+  "source": "data/predictions.csv",
+  "total_rows": 15,
+  "settled_rows": 3,
+  "unsettled_rows": 12,
+  "unsettled": [
+    {
+      "date": "2026-11-06",
+      "match_id": "fd-560632",
+      "home": "Leeds United FC",
+      "away": "Tottenham Hotspur FC",
+      "kickoff_utc": "2026-11-07T12:30:00Z",
+      "status": "active",
+      "confidence": "low",
+      "track": "official",
+      "result": "未取得"
+    },
+    {
+      "date": "2026-11-06",
+      "match_id": "fd-558532",
+      "home": "Torino FC",
+      "away": "US Lecce",
+      "kickoff_utc": "2026-11-07T14:00:00Z",
+      "status": "active",
+      "confidence": "low",
+      "track": "official",
+      "result": "未取得"
+    },
+    {
+      "date": "2026-11-06",
+      "match_id": "fd-558534",
+      "home": "Cagliari Calcio",
+      "away": "Frosinone Calcio",
+      "kickoff_utc": "2026-11-07T14:00:00Z",
+      "status": "active",
+      "confidence": "low",
+      "track": "official",
+      "result": "未取得"
+    },
+    {
+      "date": "2026-11-06",
+      "match_id": "fd-561932",
+      "home": "Derby County FC",
+      "away": "Bolton Wanderers FC",
+      "kickoff_utc": "2026-11-06T20:00:00Z",
+      "status": "active",
+      "confidence": "low",
+      "track": "official",
+      "result": "未取得"
+    },
+    {
+      "date": "2026-11-06",
+      "match_id": "fd-561929",
+      "home": "Queens Park Rangers FC",
+      "away": "Lincoln City FC",
+      "kickoff_utc": "2026-11-07T15:00:00Z",
+      "status": "active",
+      "confidence": "low",
+      "track": "official",
+      "result": "未取得"
+    },
+    {
+      "date": "2026-11-07",
+      "match_id": "fd-561937",
+      "home": "Preston North End FC",
+      "away": "Southampton FC",
+      "kickoff_utc": "2026-11-07T15:00:00Z",
+      "status": "active",
+      "confidence": "low",
+      "track": "official",
+      "result": "未取得"
+    },
+    {
+      "date": "2026-11-07",
+      "match_id": "fd-560632",
+      "home": "Leeds United FC",
+      "away": "Tottenham Hotspur FC",
+      "kickoff_utc": "2026-11-07T12:30:00Z",
+      "status": "active",
+      "confidence": "low",
+      "track": "official",
+      "result": "未取得"
+    },
+    {
+      "date": "2026-11-07",
+      "match_id": "fd-560633",
+      "home": "Fulham FC",
+      "away": "Newcastle United FC",
+      "kickoff_utc": "2026-11-07T15:00:00Z",
+      "status": "active",
+      "confidence": "low",
+      "track": "official",
+      "result": "未取得"
+    },
+    {
+      "date": "2026-11-07",
+      "match_id": "fd-561936",
+      "home": "West Bromwich Albion FC",
+      "away": "Millwall FC",
+      "kickoff_utc": "2026-11-07T15:00:00Z",
+      "status": "active",
+      "confidence": "low",
+      "track": "official",
+      "result": "未取得"
+    },
+    {
+      "date": "2026-11-07",
+      "match_id": "fd-561930",
+      "home": "Cardiff City FC",
+      "away": "Burnley FC",
+      "kickoff_utc": "2026-11-07T15:00:00Z",
+      "status": "active",
+      "confidence": "low",
+      "track": "official",
+      "result": "未取得"
+    },
+    {
+      "date": "2026-11-07",
+      "match_id": "fd-558534",
+      "home": "Cagliari Calcio",
+      "away": "Frosinone Calcio",
+      "kickoff_utc": "2026-11-07T14:00:00Z",
+      "status": "active",
+      "confidence": "low",
+      "track": "official",
+      "result": "未取得"
+    },
+    {
+      "date": "2026-11-07",
+      "match_id": "fd-561931",
+      "home": "Charlton Athletic FC",
+      "away": "Sheffield United FC",
+      "kickoff_utc": "2026-11-07T15:00:00Z",
+      "status": "active",
+      "confidence": "low",
+      "track": "official",
+      "result": "未取得"
+    }
+  ],
+  "note": "结算事实盘点：仅读取 predictions.csv 现有字段；赛果字段为空即写『未取得』；不填比分、不推断原因、不假称已补齐；赛果由 settle 任务按已配置数据源回填。"
+}

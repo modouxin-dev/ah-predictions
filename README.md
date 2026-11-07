@@ -254,3 +254,25 @@ PYTHONPATH=src python -m ah delivery preflight
 - GitHub cron 实际触发时刻与 Telegram 端真实到达仍以运行记录 / `message_id` 台账为准。
 
 **AGENTS.md 冻结清单执行记录**：本轮 `MODEL CHANGE / ORCHESTRATION` 已获用户 2026-11-07 明确授权触碰 `analyze.py` 阈值相关配置与 `daily.py` 的 advisory 档位逻辑；未改动评分公式、核验算法、盘口采集口径与数据源开关。
+
+
+## 样本积累（2026-11-07）：把「开球前照片」和「踢完的账」都攒起来
+
+之前只有 4 天日报、`stats.json` 里 3 条推荐 / 2 场算完结果，样本远不够校准。本轮不改算法、不额外消耗接口额度，做两件事：
+
+**A. 结算修稳 + 失败可见**
+- `.github/workflows/settle.yml` 增加备用 cron `30 12 * * *`（主 `0 9 * * *`；GitHub cron 实测曾漂到 16:28 UTC 且失败）。settle 以 `settled` 标记幂等，重复触发不会重复计数。
+- 无论成功失败都写 `data/settle_health.json`：列出 `predictions.csv` 里仍未结算的条目（date / match_id / 对阵 / 开球 / 状态 / 档位），**赛果字段为空就写「未取得」，不补造比分、不推断原因、不假称已补齐**；失败时日志打 `::error::`。
+- 赛果仍由 `python -m ah settle` 按已配置的 API-Football / football-data 数据源回填。密钥没返回数据就保持「未取得」，本轮不承诺补齐几条。
+
+**B. 候选全留档，推送只挑推荐**
+- 新增 `src/ah/samples.py`：`python -m ah samples pool <date>` 把当日报告里 `picks + watched + watchlist` **全部候选**逐条写入 `data/samples/<date>.json`（按 match_id 去重）。11-07 实测 32 条 = 7 推荐 + 25 未推荐，样本量从每天 7 条变 32 条。
+- 每条只抄报告里真实存在的字段；缺字段写「未取得」；`result` 固定「未取得」、`settled=false`；**不生成任何预测结论、盘口或赛果**。`sample_role` 只标记该场在报告里的归属，不代表模型判断。
+- `daily.yml` 在采集末尾调用 pool，并把 `data/samples` 加入提交路径；群消息与网页**仍只显示正式推荐**，两端展示完全不变。
+- 一天只在完整采集时段（slot=1 / manual）写一张开球前快照；2/3/4 更新时段复用当日报告，不重复写。
+
+**验收口径 / 未验证**
+- 已验证（本地）：`tests/test_samples.py` 全通过；全量 pytest；11-07 样本池 32 条、无 `result` 字段被填入；`data/settle_health.json` 列出 12 条未结算。
+- 未验证：备用 cron 的真实触发时刻与延迟；本轮 settle 手动运行实际回填了几场（取决于密钥与数据源返回）；Telegram 端收件（本轮**未额外触发 TG 推送**，避免刷屏）。
+- **样本量仍不足以做概率校准**：研究口径是每个档位 80–100 场；A+B 之后每天约 32 条候选入池，需连续积累数周才能做第一轮时间外回看。阈值仍是「规则档位，未经独立回测」。
+- 历史盘口快照只有 3 天，缺的部分**不能补造**，只能从今天开始攒。

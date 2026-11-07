@@ -1,7 +1,9 @@
 name: settle-and-stats
 on:
   schedule:
-    - cron: "0 9 * * *"   # 每天 09:00 UTC，欧洲/美洲比赛已完场
+    - cron: "0 9 * * *"    # 主：每天 09:00 UTC（北京 17:00），欧洲/美洲比赛已完场
+    - cron: "30 12 * * *"  # 备用：GitHub cron 常延迟/丢失（实测曾漂到 16:28 UTC 且失败）；
+                           # settle 以 settled 标记幂等，重复触发不会重复计数。
   workflow_dispatch:
 permissions:
   contents: write
@@ -25,3 +27,16 @@ jobs:
       - run: python -m ah settle && python -m ah stats
       - run: |
           scripts/safe_commit.sh --skip-tests -m "settle $(date -u +%F)" data/predictions.csv data/stats.json reports
+      # 失败可见：无论成功/失败都写一份事实盘点，列出仍未结算的条目；
+      # 只读取 CSV 现有字段，赛果为空写「未取得」，绝不补造比分或假称已补齐。
+      - name: Record settle health (facts only)
+        if: always()
+        run: |
+          python -m ah samples health             --run-id "${{ github.run_id }}"             --conclusion "${{ job.status }}"             --event "${{ github.event_name }}"
+          if [ "${{ job.status }}" != "success" ]; then
+            echo "::error::结算任务未成功；未结算清单见 data/settle_health.json（不填比分、不假称补齐）"
+          fi
+      - name: Commit settle health
+        if: always()
+        run: |
+          scripts/safe_commit.sh --skip-tests -m "settle health $(date -u +%F)" data/settle_health.json             || echo "::warning::健康盘点提交失败，见上方日志"

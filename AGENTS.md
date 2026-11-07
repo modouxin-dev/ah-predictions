@@ -102,3 +102,11 @@ data/telegram_delivery.json
 - 新增 `src/ah/feature_contract.py`：新因子默认 `observation`，不参与 score；连续覆盖验收达标前不得转 `scoring`。
 - 展示层中文只做精确键映射，未收录保留英文原文；报告 JSON 原文是唯一可回溯锚点。
 - 界面必须写「规则档位，未经独立回测；不构成统计预测准确率」，禁止把 high/medium/low 写成「高胜率 / 已校准概率」。
+
+
+## 2026-11-07 样本积累执行记录（不触碰模型算法）
+
+- 仅新增 `src/ah/samples.py` 与 `tests/test_samples.py`，改 `__main__.py` 路由、`daily.yml`/`settle.yml` 编排、README；**未改** `analyze.py` / `daily.py build_report/assess` / `policy.py` / `odds_snapshots.py` / 阈值 / 核验算法 / 推送渲染。
+- 硬约束：样本池与结算健康盘点只读报告 JSON 与 `predictions.csv` 现有字段；缺字段写「未取得」；不填比分、不推断原因、不生成预测结论、不假称「已补齐」「已结算」；`result` 固定「未取得」。
+- 「候选全留档」不等于「多推比赛」：两端展示仍只发 `policy.published` 的正式推荐。
+- 样本池一天一张开球前快照；赛果由 settle 按已配置数据源回填，回填不了就保持「未取得」。

@@ -118,6 +118,9 @@ jobs:
           fi
           test -f "$F"
           python -m ah grounding --report "$F"
+          # 样本池：把本次筛过的全部候选（含未推荐）逐条落盘，只做事实留档，
+          # 不改报告、不生成预测；推送仍只发 policy.published 的正式推荐。
+          python -m ah samples pool "$D"
 
       - name: Stage report for this run
         if: ${{ steps.skip.outputs.skip != 'true' }}
@@ -141,7 +144,7 @@ jobs:
         run: |
           D="$AH_DATE"
           [ -f var/source_status.json ] && cp var/source_status.json data/source_status.json || true
-          paths=(reports data/predictions.csv data/snapshots/odds data/source_status.json data/source_probe_facts.json)
+          paths=(reports data/predictions.csv data/snapshots/odds data/samples data/source_status.json data/source_probe_facts.json)
           if [ -d data/history ]; then paths+=(data/history); fi
           scripts/safe_commit.sh --skip-tests -m "daily report $D" "${paths[@]}"
 
