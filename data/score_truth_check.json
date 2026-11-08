@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-08T15:40:34Z",
+  "checked_at": "2026-11-08T21:37:11Z",
   "date_filter": "未取得",
   "evidence_grade": "【已验证】本地解析与声明事实",
   "ledger_rows": 24,
@@ -45,8 +45,8 @@
   "verdict_counts": {
     "AGREE": 0,
     "DISAGREE": 0,
-    "THIRD_UNAVAILABLE": 15,
-    "PRIMARY_MISSING": 9,
+    "THIRD_UNAVAILABLE": 23,
+    "PRIMARY_MISSING": 1,
     "NO_MATCH": 0
   },
   "rows": [
@@ -208,11 +208,11 @@
       "match_id": "fd-560635",
       "home": "Crystal Palace FC",
       "away": "Liverpool FC",
-      "primary_result": "未取得",
+      "primary_result": "1-3",
       "third_claims": [],
       "independent_sources": [],
-      "verdict": "PRIMARY_MISSING",
-      "note": "主源无比分；不推断、不补造"
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
     },
     {
       "match_id": "fd-558531",
@@ -228,71 +228,71 @@
       "match_id": "fd-560639",
       "home": "Manchester United FC",
       "away": "Aston Villa FC",
-      "primary_result": "未取得",
+      "primary_result": "4-4",
       "third_claims": [],
       "independent_sources": [],
-      "verdict": "PRIMARY_MISSING",
-      "note": "主源无比分；不推断、不补造"
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
     },
     {
       "match_id": "fd-560636",
       "home": "Sunderland AFC",
       "away": "Chelsea FC",
-      "primary_result": "未取得",
+      "primary_result": "1-0",
       "third_claims": [],
       "independent_sources": [],
-      "verdict": "PRIMARY_MISSING",
-      "note": "主源无比分；不推断、不补造"
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
     },
     {
       "match_id": "fd-559634",
       "home": "Angers SCO",
       "away": "OGC Nice",
-      "primary_result": "未取得",
+      "primary_result": "0-2",
       "third_claims": [],
       "independent_sources": [],
-      "verdict": "PRIMARY_MISSING",
-      "note": "主源无比分；不推断、不补造"
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
     },
     {
       "match_id": "fd-560637",
       "home": "Ipswich Town FC",
       "away": "AFC Bournemouth",
-      "primary_result": "未取得",
+      "primary_result": "1-2",
       "third_claims": [],
       "independent_sources": [],
-      "verdict": "PRIMARY_MISSING",
-      "note": "主源无比分；不推断、不补造"
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
     },
     {
       "match_id": "fd-559633",
       "home": "Le Havre AC",
       "away": "FC Lorient",
-      "primary_result": "未取得",
+      "primary_result": "0-2",
       "third_claims": [],
       "independent_sources": [],
-      "verdict": "PRIMARY_MISSING",
-      "note": "主源无比分；不推断、不补造"
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
     },
     {
       "match_id": "fd-560638",
       "home": "Brighton & Hove Albion FC",
       "away": "Brentford FC",
-      "primary_result": "未取得",
+      "primary_result": "2-0",
       "third_claims": [],
       "independent_sources": [],
-      "verdict": "PRIMARY_MISSING",
-      "note": "主源无比分；不推断、不补造"
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
     },
     {
       "match_id": "fd-559631",
       "home": "Le Mans FC",
       "away": "AS Monaco FC",
-      "primary_result": "未取得",
+      "primary_result": "1-1",
       "third_claims": [],
       "independent_sources": [],
-      "verdict": "PRIMARY_MISSING",
-      "note": "主源无比分；不推断、不补造"
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
     }
   ],
   "fallback_enabled": false,
