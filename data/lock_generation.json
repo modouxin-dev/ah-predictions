@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "status": "OK",
+  "compile_outcome": "success",
+  "lock_exists": true,
+  "lock_bytes": 172535,
+  "lock_sha256": "323fd7f4025eee4e1e55ed65eaa2aca7ce4bb6cfd8d2fba319f01d08691761e5",
+  "generated_on_python": "3.12",
+  "note": "只记录生成结果；失败时保留事实，不伪造任何版本或 hash，不推断失败原因",
+  "unverified": [
+    "pip-compile 失败的具体原因（本会话日志下载可能受网络策略限制）"
+  ]
+}
