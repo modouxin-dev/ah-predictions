@@ -40,18 +40,14 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: pip install -r requirements.txt
-      - name: Resolve slot and Beijing date
+      - name: Resolve slot and Beijing date (by cron target time, not by actual run time)
+        env:
+          AH_SCHEDULE: ${{ github.event.schedule }}
+          AH_INPUT_SLOT: ${{ github.event.inputs.slot }}
         run: |
-          case "${{ github.event.schedule }}" in
-            "0 22 * * *") SLOT=1 ;;
-            "0 3 * * *")  SLOT=2 ;;
-            "0 8 * * *")  SLOT=3 ;;
-            "0 14 * * *") SLOT=4 ;;
-            *)            SLOT="${{ github.event.inputs.slot || 'manual' }}" ;;
-          esac
-          echo "AH_SLOT=$SLOT" >> "$GITHUB_ENV"
-          echo "AH_DATE=$(TZ=Asia/Shanghai date +%F)" >> "$GITHUB_ENV"
-          echo "slot=$SLOT date_bj=$(TZ=Asia/Shanghai date +%F)"
+          # GitHub cron 常延迟数小时：日期取「定时目标时刻」的北京日期，避免延迟班次跨过北京午夜后
+          # 被当成次日而整轮重采、凌晨推送。
+          python -m ah delivery resolve >> "$GITHUB_ENV"
 
       - name: Data source runtime selfcheck (facts only)
         continue-on-error: true
@@ -64,8 +60,7 @@ jobs:
         run: |
           D="$AH_DATE"
           F="reports/${D:0:4}/${D:5:2}/${D}.json"
-          # 只有明确的刷新时段 2/3/4 复用当日报告，不重复消耗赔率接口额度；
-          # slot=1 与 slot=manual 都完整重采（手动验证用于让新阈值/新展示立即生效）。
+          # 更新时段 2/3/4：当日报告已存在就复用，不重复消耗赔率接口额度；缺失才兜底重采。
           case "$AH_SLOT" in
             2|3|4)
               if [ -f "$F" ]; then
@@ -73,24 +68,25 @@ jobs:
                 echo "[skip] 更新时段 $AH_SLOT：复用当日报告 $F，不重新采集"
                 exit 0
               fi ;;
+            manual)
+              echo "skip=false" >> "$GITHUB_OUTPUT"
+              echo "[skip] 手动验证：完整重采"
+              exit 0 ;;
           esac
-          if [ "${{ github.event_name }}" != "schedule" ]; then
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-            echo "[skip] 完整采集时段 $AH_SLOT（外部触发或手动验证）"
-            exit 0
-          fi
-          if D="$D" python - <<'PY'
+          # 时段 1（早间版）：本时段已送达带推荐的日报才跳过（重跑幂等）；
+          # 其它时段（如凌晨兜底）留下的记录不影响早间版的新鲜采集。
+          if D="$D" S="$AH_SLOT" python - <<'PY'
           import json, os, sys
           p = 'data/telegram_delivery.json'
           d = json.load(open(p, encoding='utf-8')) if os.path.exists(p) else {'deliveries': []}
-          today = os.environ['D']
           rows = [r for r in d.get('deliveries', [])
-                  if r.get('date') == today and r.get('status') == 'sent' and r.get('message_ids')]
+                  if r.get('date') == os.environ['D'] and str(r.get('slot', '1')) == os.environ['S']
+                  and r.get('status') == 'sent' and r.get('message_ids')]
           sys.exit(0 if any(int(r.get('picks_count') or 0) > 0 for r in rows) else 1)
           PY
           then
             echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "[skip] 今日已推送带推荐的日报，跳过重复采集"
+            echo "[skip] 时段 $AH_SLOT 今日已推送带推荐的日报，跳过重复采集"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
@@ -168,18 +164,14 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: pip install -r requirements.txt
-      - name: Resolve slot and Beijing date
+      - name: Resolve slot and Beijing date (by cron target time, not by actual run time)
+        env:
+          AH_SCHEDULE: ${{ github.event.schedule }}
+          AH_INPUT_SLOT: ${{ github.event.inputs.slot }}
         run: |
-          case "${{ github.event.schedule }}" in
-            "0 22 * * *") SLOT=1 ;;
-            "0 3 * * *")  SLOT=2 ;;
-            "0 8 * * *")  SLOT=3 ;;
-            "0 14 * * *") SLOT=4 ;;
-            *)            SLOT="${{ github.event.inputs.slot || 'manual' }}" ;;
-          esac
-          echo "AH_SLOT=$SLOT" >> "$GITHUB_ENV"
-          echo "AH_DATE=$(TZ=Asia/Shanghai date +%F)" >> "$GITHUB_ENV"
-          echo "slot=$SLOT date_bj=$(TZ=Asia/Shanghai date +%F)"
+          # GitHub cron 常延迟数小时：日期取「定时目标时刻」的北京日期，避免延迟班次跨过北京午夜后
+          # 被当成次日而整轮重采、凌晨推送。
+          python -m ah delivery resolve >> "$GITHUB_ENV"
 
       # 关键根因修复：publish 原本只靠 main 上已提交的报告；collect 的 git push 一旦失败，
       # 这里就会拿到旧报告甚至 0 场版本。改为优先使用本次运行采集的 artifact。

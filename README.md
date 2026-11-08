@@ -300,3 +300,19 @@ PYTHONPATH=src python -m ah delivery preflight
 - 阈值仍是「规则档位，未经独立回测」；本次没有改阈值、没有改评分公式、没有改两端展示、没有额外触发 TG 推送。
 - 三个 cron 的真实触发时刻、GitHub 延迟、数据源实际返回仍以运行记录为准；历史盘口只有 3 天，缺的部分不能补造。
 - 概率校准需时间外样本与可靠性曲线，样本够才能做；启用 scoring 前不会宣称命中率或 ROI 改善。
+
+## ORCHESTRATION（2026-11-08）：修复 cron 延迟造成的错日期与吞早间版
+
+**事故证据（【已验证】，来自 `data/telegram_delivery.json` 的 `sent_at`）**
+- 目标 03:00/08:00/14:00 UTC 的第 2/3/4 次，实际送达于 09:51 / 14:34 / 18:45 UTC，延迟约 6.8 / 6.5 / 4.7 小时（GitHub cron 不保证准点）。
+- 第 4 次延迟到北京已是 11-08 凌晨 02:45：旧逻辑按「运行时刻的北京日期」取 11-08，找不到报告，于是整轮重采并以 `date=2026-11-08 slot=4` 完整推送。后果：凌晨 3 点收到日报、额外消耗一次赔率额度，且 11-08 早间版（slot 1）因「当日已有送达记录」被吞。
+
+**改动**
+- `src/ah/delivery.py`：新增 `resolve_slot()` / `python -m ah delivery resolve`，按「cron 目标时刻」解析时段与报告日期并记录延迟秒数；`_bj_date()` 优先读 `AH_DATE`（此前工作流设置了 `AH_DATE`，delivery 却从未读取）；时段 1 不再被其它时段的兜底记录吞掉（`morning_edition_not_delivered`）。
+- `.github/workflows/daily.yml`：两个 job 的时段/日期解析改用上述命令；采集跳过条件改为「本时段已送达带推荐」才跳过，凌晨兜底不再抑制早间版的新鲜采集。
+- `tests/test_delivery_slots.py`：新增 5 个用例，复现 18:44 UTC 事故与跨午夜场景。
+
+**仍存在（【未验证】/需你处理）**
+- GitHub cron 延迟本身无法在仓库内消除。要让 11/16/22 点准点，需外部定时器以 `workflow_dispatch` 触发：
+  `POST /repos/modouxin-dev/ah-predictions/actions/workflows/daily.yml/dispatches`，body `{"ref":"main","inputs":{"slot":"2"}}`（slot 取 1/2/3/4），令牌需 `actions:write`。可用 cron-job.org 或 Cloudflare Workers Cron。
+- 延迟后的更新推送消息里写的是**实际发送时间**（「第 N 次更新（北京 HH:MM）」），不会假装准点。

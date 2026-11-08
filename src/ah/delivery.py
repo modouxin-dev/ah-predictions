@@ -35,9 +35,51 @@ def _utc_date() -> str:
 
 
 def _bj_date() -> str:
-    """报告日期按北京时间：一天 4 次推送（北京 07/11/16/22 点）共用同一个日期键。"""
+    """报告日期按北京时间：一天 4 次推送（北京 07/11/16/22 点）共用同一个日期键。
+
+    优先用工作流在启动时按「定时目标时刻」解析出的 AH_DATE。GitHub cron 经常延迟数小时，
+    若按实际运行时刻取日期，延迟到北京次日凌晨的 22 点班次会被误判成「次日」并触发整轮重采、凌晨推送。"""
+    env = os.environ.get("AH_DATE", "").strip()
+    if env:
+        try:
+            datetime.strptime(env, "%Y-%m-%d")
+            return env
+        except ValueError:
+            raise RuntimeError(f"AH_DATE 格式无效：{env!r}（应为 YYYY-MM-DD）") from None
     from datetime import timedelta
     return (datetime.now(timezone.utc) + timedelta(hours=8)).strftime("%Y-%m-%d")
+
+
+# cron 表达式(UTC) -> (时段, UTC 小时)。与 .github/workflows/daily.yml 的 schedule 保持一致。
+CRON_SLOTS = {"0 22 * * *": ("1", 22), "0 3 * * *": ("2", 3), "0 8 * * *": ("3", 8), "0 14 * * *": ("4", 14)}
+
+
+def resolve_slot(event: str, schedule: str = "", input_slot: str = "",
+                 now: datetime | None = None) -> tuple[str, str, int]:
+    """解析 (slot, 报告日期, 延迟秒数)。
+
+    定时触发：以「最近一次不晚于现在的 cron 目标时刻」为准，报告日期取该时刻的北京日期；
+    因此延迟到过了北京午夜的班次仍归属原日期，且延迟秒数可审计。
+    手动/外部触发：slot 取输入（缺省 manual），日期取当前北京日期。"""
+    from datetime import timedelta
+    now = now or datetime.now(timezone.utc)
+    if event == "schedule":
+        if schedule not in CRON_SLOTS:
+            raise RuntimeError(f"未知的 cron 表达式，无法解析时段：{schedule!r}")
+        slot, hour = CRON_SLOTS[schedule]
+        target = now.replace(hour=hour, minute=0, second=0, microsecond=0)
+        if target > now:
+            target -= timedelta(days=1)
+        return slot, (target + timedelta(hours=8)).strftime("%Y-%m-%d"), int((now - target).total_seconds())
+    slot = (input_slot or "").strip() or "manual"
+    return slot, (now + timedelta(hours=8)).strftime("%Y-%m-%d"), 0
+
+
+def cmd_resolve() -> None:
+    slot, date, late = resolve_slot(os.environ.get("GITHUB_EVENT_NAME", ""),
+                                    os.environ.get("AH_SCHEDULE", ""), os.environ.get("AH_INPUT_SLOT", ""))
+    print(f"AH_SLOT={slot}\nAH_DATE={date}\nAH_LATE_S={late}")
+    print(f"[resolve] slot={slot} date_bj={date} late_s={late}", file=sys.stderr)
 
 
 REFRESH_SLOTS = ("2", "3", "4")
@@ -143,6 +185,9 @@ def delivery_mode(date: str, sha: str, chat: str, path: Path | None = None,
         return "skip", "already_delivered_today"
     if slot in REFRESH_SLOTS:
         return "refresh", "refresh_slot_not_delivered"
+    if slot == "1":
+        # 早间版（北京 07:00）不因后续时段的兜底/更新记录而被吞掉。
+        return "primary", "morning_edition_not_delivered"
     last_picks = rows[-1].get("picks_count")
     if last_picks is not None and int(last_picks) == 0 and picks_count > 0:
         return "primary", "upgrade_zero_pick_report"
@@ -353,10 +398,10 @@ def cmd_show() -> None:
 
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description="Telegram 发布对账（preflight|check|send|show）")
-    ap.add_argument("action", choices=["preflight", "check", "send", "show"])
+    ap.add_argument("action", choices=["preflight", "check", "send", "show", "resolve"])
     a = ap.parse_args(argv)
     {"preflight": cmd_preflight, "check": cmd_check, "send": cmd_send,
-     "show": cmd_show}[a.action]()
+     "show": cmd_show, "resolve": cmd_resolve}[a.action]()
 
 
 if __name__ == "__main__":

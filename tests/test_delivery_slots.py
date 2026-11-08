@@ -70,3 +70,45 @@ def test_bj_date_is_utc_plus_8(monkeypatch):
             return datetime(2026, 11, 6, 23, 5, tzinfo=timezone.utc)
     monkeypatch.setattr(delivery, "datetime", FakeDT)
     assert delivery._bj_date() == "2026-11-07"
+
+
+def _utc(*a):
+    return datetime(*a, tzinfo=timezone.utc)
+
+
+def test_resolve_slot_uses_cron_target_not_run_time():
+    # 22:00 UTC 的第 1 次：北京次日 06:00 起 → 日期为北京次日
+    assert delivery.resolve_slot("schedule", "0 22 * * *", "", _utc(2026, 11, 7, 22, 5)) == ("1", "2026-11-08", 300)
+    # 实测事故：14:00 UTC 的第 4 次延迟到 18:44 UTC（北京已是 11-08 02:44）→ 仍归属 11-07
+    slot, date, late = delivery.resolve_slot("schedule", "0 14 * * *", "", _utc(2026, 11, 7, 18, 44))
+    assert (slot, date) == ("4", "2026-11-07") and late == 4 * 3600 + 44 * 60
+    # 03:00 UTC 的第 2 次延迟到 09:51 UTC：仍是北京同日
+    assert delivery.resolve_slot("schedule", "0 3 * * *", "", _utc(2026, 11, 7, 9, 51))[:2] == ("2", "2026-11-07")
+    # 第 1 次延迟到跨 UTC 午夜
+    assert delivery.resolve_slot("schedule", "0 22 * * *", "", _utc(2026, 11, 8, 1, 0))[:2] == ("1", "2026-11-08")
+
+
+def test_resolve_slot_dispatch_and_unknown_cron():
+    import pytest
+    assert delivery.resolve_slot("workflow_dispatch", "", "3", _utc(2026, 11, 7, 8, 0)) == ("3", "2026-11-07", 0)
+    assert delivery.resolve_slot("workflow_dispatch", "", "", _utc(2026, 11, 7, 17, 0))[:2] == ("manual", "2026-11-08")
+    with pytest.raises(RuntimeError):
+        delivery.resolve_slot("schedule", "5 5 * * *", "", _utc(2026, 11, 7, 8, 0))
+
+
+def test_ah_date_env_overrides_clock(monkeypatch):
+    import pytest
+    monkeypatch.setenv("AH_DATE", "2026-11-07")
+    assert delivery._bj_date() == "2026-11-07"
+    monkeypatch.setenv("AH_DATE", "bad")
+    with pytest.raises(RuntimeError):
+        delivery._bj_date()
+
+
+def test_morning_edition_not_swallowed_by_earlier_fallback_slot(tmp_path):
+    """实测事故：延迟的第 4 次先兜底发出后，当日 07:00 早间版不能被吞掉。"""
+    led = tmp_path / "l.json"
+    sent(led, "4", picks=6)
+    assert delivery.delivery_mode(D, "s", CHAT, led, 6, force=False, slot="1") == ("primary", "morning_edition_not_delivered")
+    sent(led, "1", picks=6)
+    assert delivery.delivery_mode(D, "s", CHAT, led, 6, force=False, slot="1")[0] == "skip"
