@@ -1,6 +1,6 @@
 {
  "report_date": "2026-11-08",
- "updated_at": "2026-11-08T13:11:48Z",
+ "updated_at": "2026-11-08T22:49:18Z",
  "csv": "2026-11-08.csv",
  "matches_screened": 32,
  "skipped": [],
@@ -41,9 +41,8 @@
    "missing": 1
   },
   "close": {
-   "single": 10,
-   "missing": 2,
-   "pending": 20
+   "single": 28,
+   "missing": 4
   }
  },
  "matches": [
@@ -238,12 +237,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 33162,
+      "stale_age_s": 67518,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 33162
+        "age_s": 67518
        }
       ],
       "freshness": "stale_withdraw",
@@ -432,12 +431,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 32926,
+      "stale_age_s": 67282,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 32926
+        "age_s": 67282
        }
       ],
       "freshness": "stale_withdraw",
@@ -627,12 +626,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 29411,
+      "stale_age_s": 63767,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 29411
+        "age_s": 63767
        }
       ],
       "freshness": "stale_withdraw",
@@ -838,12 +837,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 29374,
+      "stale_age_s": 63730,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 29374
+        "age_s": 63730
        }
       ],
       "freshness": "stale_withdraw",
@@ -1046,12 +1045,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 29373,
+      "stale_age_s": 63729,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 29373
+        "age_s": 63729
        }
       ],
       "freshness": "stale_withdraw",
@@ -1241,12 +1240,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 29351,
+      "stale_age_s": 63707,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 29351
+        "age_s": 63707
        }
       ],
       "freshness": "stale_withdraw",
@@ -1450,12 +1449,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 29317,
+      "stale_age_s": 63673,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 29317
+        "age_s": 63673
        }
       ],
       "freshness": "stale_withdraw",
@@ -1645,12 +1644,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 29331,
+      "stale_age_s": 63687,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 29331
+        "age_s": 63687
        }
       ],
       "freshness": "stale_withdraw",
@@ -1854,12 +1853,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 25725,
+      "stale_age_s": 60081,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 25725
+        "age_s": 60081
        }
       ],
       "freshness": "stale_withdraw",
@@ -2065,12 +2064,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 25815,
+      "stale_age_s": 60171,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 25815
+        "age_s": 60171
        }
       ],
       "freshness": "stale_withdraw",
@@ -2489,7 +2488,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 8,
+     "sources": {
+      "oddspapi": {
+       "line": 0.5,
+       "books": 8
+      }
+     },
+     "book_status": {
+      "single": 8
+     }
     }
    },
    "cross_verification": {
@@ -2597,23 +2606,45 @@
       "main_line": 0.5
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "3et",
+       "dafabet",
+       "pinnacle",
+       "ps3838",
+       "sabasports",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 31270,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 31270
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": 0.5
      }
     },
-    "active_stage": "report",
-    "verdict": "ok",
-    "advisory": "ok"
+    "active_stage": "close",
+    "verdict": "review",
+    "advisory": "review"
    },
    "deep_line": false
   },
@@ -2668,7 +2699,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 8,
+     "sources": {
+      "oddspapi": {
+       "line": 0.5,
+       "books": 8
+      }
+     },
+     "book_status": {
+      "single": 8
+     }
     }
    },
    "cross_verification": {
@@ -2767,23 +2808,45 @@
       "main_line": 0.25
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "3et",
+       "dafabet",
+       "pinnacle",
+       "ps3838",
+       "sabasports",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 31279,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 31279
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": 0.5
      }
     },
-    "active_stage": "report",
-    "verdict": "ok",
-    "advisory": "ok"
+    "active_stage": "close",
+    "verdict": "review",
+    "advisory": "review"
    },
    "deep_line": false
   },
@@ -2823,7 +2886,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 8,
+     "sources": {
+      "oddspapi": {
+       "line": -0.25,
+       "books": 8
+      }
+     },
+     "book_status": {
+      "single": 8
+     }
     }
    },
    "cross_verification": {
@@ -2889,21 +2962,43 @@
       "main_line": -0.25
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "3et",
+       "dafabet",
+       "pinnacle",
+       "ps3838",
+       "sabasports",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 31594,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 31594
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": -0.25
      }
     },
-    "active_stage": "report",
+    "active_stage": "close",
     "verdict": "review",
     "advisory": "review"
    },
@@ -2959,7 +3054,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 8,
+     "sources": {
+      "oddspapi": {
+       "line": 1.0,
+       "books": 8
+      }
+     },
+     "book_status": {
+      "single": 8
+     }
     }
    },
    "cross_verification": {
@@ -3070,21 +3175,43 @@
       "main_line": 1.0
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "3et",
+       "dafabet",
+       "pinnacle",
+       "ps3838",
+       "sabasports",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 31274,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 31274
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": 1.0
      }
     },
-    "active_stage": "report",
+    "active_stage": "close",
     "verdict": "review",
     "advisory": "review"
    },
@@ -3140,7 +3267,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 8,
+     "sources": {
+      "oddspapi": {
+       "line": 0.25,
+       "books": 8
+      }
+     },
+     "book_status": {
+      "single": 8
+     }
     }
    },
    "cross_verification": {
@@ -3251,21 +3388,43 @@
       "main_line": 0.5
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "3et",
+       "dafabet",
+       "pinnacle",
+       "ps3838",
+       "sabasports",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 31267,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 31267
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": 0.25
      }
     },
-    "active_stage": "report",
+    "active_stage": "close",
     "verdict": "review",
     "advisory": "review"
    },
@@ -3321,7 +3480,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 8,
+     "sources": {
+      "oddspapi": {
+       "line": 0.5,
+       "books": 8
+      }
+     },
+     "book_status": {
+      "single": 8
+     }
     }
    },
    "cross_verification": {
@@ -3432,21 +3601,43 @@
       "main_line": 0.5
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "3et",
+       "dafabet",
+       "pinnacle",
+       "ps3838",
+       "sabasports",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 31275,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 31275
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": 0.5
      }
     },
-    "active_stage": "report",
+    "active_stage": "close",
     "verdict": "review",
     "advisory": "review"
    },
@@ -3502,7 +3693,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 7,
+     "sources": {
+      "oddspapi": {
+       "line": -0.75,
+       "books": 7
+      }
+     },
+     "book_status": {
+      "single": 7
+     }
     }
    },
    "cross_verification": {
@@ -3613,21 +3814,42 @@
       "main_line": -0.5
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "dafabet",
+       "pinnacle",
+       "ps3838",
+       "sabasports",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 31278,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 31278
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": -0.75
      }
     },
-    "active_stage": "report",
+    "active_stage": "close",
     "verdict": "review",
     "advisory": "review"
    },
@@ -3683,7 +3905,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 8,
+     "sources": {
+      "oddspapi": {
+       "line": -0.25,
+       "books": 8
+      }
+     },
+     "book_status": {
+      "single": 8
+     }
     }
    },
    "cross_verification": {
@@ -3789,21 +4021,43 @@
       "main_line": -0.25
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "3et",
+       "dafabet",
+       "pinnacle",
+       "ps3838",
+       "sabasports",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 31594,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 31594
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": -0.25
      }
     },
-    "active_stage": "report",
+    "active_stage": "close",
     "verdict": "review",
     "advisory": "review"
    },
@@ -3860,7 +4114,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 7,
+     "sources": {
+      "oddspapi": {
+       "line": 1.0,
+       "books": 7
+      }
+     },
+     "book_status": {
+      "single": 7
+     }
     }
    },
    "cross_verification": {
@@ -3951,21 +4215,42 @@
       "main_line": 0.5
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "3et",
+       "pinnacle",
+       "ps3838",
+       "sabasports",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 29479,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 29479
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": 1.0
      }
     },
-    "active_stage": "report",
+    "active_stage": "close",
     "verdict": "review",
     "advisory": "review"
    },
@@ -4011,7 +4296,10 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
     }
    },
    "cross_verification": {
@@ -4179,7 +4467,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 8,
+     "sources": {
+      "oddspapi": {
+       "line": 1.0,
+       "books": 8
+      }
+     },
+     "book_status": {
+      "single": 8
+     }
     }
    },
    "cross_verification": {
@@ -4283,21 +4581,43 @@
       "main_line": 0.75
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "3et",
+       "dafabet",
+       "pinnacle",
+       "ps3838",
+       "sabasports",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 23199,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 23199
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": 0.75
      }
     },
-    "active_stage": "report",
+    "active_stage": "close",
     "verdict": "review",
     "advisory": "review"
    },
@@ -4339,7 +4659,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 8,
+     "sources": {
+      "oddspapi": {
+       "line": 0.0,
+       "books": 8
+      }
+     },
+     "book_status": {
+      "single": 8
+     }
     }
    },
    "cross_verification": {
@@ -4405,21 +4735,43 @@
       "main_line": 0.0
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "3et",
+       "dafabet",
+       "pinnacle",
+       "ps3838",
+       "sabasports",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 23174,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 23174
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": 0.0
      }
     },
-    "active_stage": "report",
+    "active_stage": "close",
     "verdict": "review",
     "advisory": "review"
    },
@@ -4475,7 +4827,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 8,
+     "sources": {
+      "oddspapi": {
+       "line": 0.25,
+       "books": 8
+      }
+     },
+     "book_status": {
+      "single": 8
+     }
     }
    },
    "cross_verification": {
@@ -4579,21 +4941,43 @@
       "main_line": 0.25
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "3et",
+       "dafabet",
+       "pinnacle",
+       "ps3838",
+       "sabasports",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 23196,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 23196
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": 0.25
      }
     },
-    "active_stage": "report",
+    "active_stage": "close",
     "verdict": "review",
     "advisory": "review"
    },
@@ -4649,7 +5033,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 8,
+     "sources": {
+      "oddspapi": {
+       "line": 0.5,
+       "books": 8
+      }
+     },
+     "book_status": {
+      "single": 8
+     }
     }
    },
    "cross_verification": {
@@ -4757,21 +5151,43 @@
       "main_line": 0.5
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "3et",
+       "dafabet",
+       "pinnacle",
+       "ps3838",
+       "sabasports",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 23223,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 23223
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": 0.5
      }
     },
-    "active_stage": "report",
+    "active_stage": "close",
     "verdict": "review",
     "advisory": "review"
    },
@@ -4823,7 +5239,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 8,
+     "sources": {
+      "oddspapi": {
+       "line": 0.0,
+       "books": 8
+      }
+     },
+     "book_status": {
+      "single": 8
+     }
     }
    },
    "cross_verification": {
@@ -4922,21 +5348,43 @@
       "main_line": 0.0
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "3et",
+       "dafabet",
+       "pinnacle",
+       "ps3838",
+       "sabasports",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 23174,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 23174
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": 0.0
      }
     },
-    "active_stage": "report",
+    "active_stage": "close",
     "verdict": "review",
     "advisory": "review"
    },
@@ -4992,7 +5440,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 8,
+     "sources": {
+      "oddspapi": {
+       "line": -0.5,
+       "books": 8
+      }
+     },
+     "book_status": {
+      "single": 8
+     }
     }
    },
    "cross_verification": {
@@ -5100,21 +5558,43 @@
       "main_line": -0.25
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "3et",
+       "dafabet",
+       "pinnacle",
+       "ps3838",
+       "sabasports",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 22294,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 22294
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": -0.5
      }
     },
-    "active_stage": "report",
+    "active_stage": "close",
     "verdict": "review",
     "advisory": "review"
    },
@@ -5170,7 +5650,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "oddspapi": {
+       "line": -1.25,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
     }
    },
    "cross_verification": {
@@ -5260,21 +5750,41 @@
       "main_line": -1.25
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "3et",
+       "pinnacle",
+       "ps3838",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 22306,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 22306
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": -1.25
      }
     },
-    "active_stage": "report",
+    "active_stage": "close",
     "verdict": "review",
     "advisory": "review"
    },
@@ -5302,7 +5812,10 @@
      "book_status": {}
     },
     "close": {
-     "verification": "pending"
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
     }
    },
    "cross_verification": {
@@ -5408,7 +5921,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 8,
+     "sources": {
+      "oddspapi": {
+       "line": -0.25,
+       "books": 8
+      }
+     },
+     "book_status": {
+      "single": 8
+     }
     }
    },
    "cross_verification": {
@@ -5518,21 +6041,43 @@
       "main_line": -0.5
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "3et",
+       "dafabet",
+       "pinnacle",
+       "ps3838",
+       "sabasports",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 20469,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 20469
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": -0.25
      }
     },
-    "active_stage": "report",
+    "active_stage": "close",
     "verdict": "review",
     "advisory": "review"
    },
@@ -5588,7 +6133,17 @@
      }
     },
     "close": {
-     "verification": "pending"
+     "verification": "single",
+     "books": 8,
+     "sources": {
+      "oddspapi": {
+       "line": -0.75,
+       "books": 8
+      }
+     },
+     "book_status": {
+      "single": 8
+     }
     }
    },
    "cross_verification": {
@@ -5696,21 +6251,43 @@
       "main_line": -0.5
      },
      "close": {
-      "status": "pending",
-      "passed": null,
-      "reasons": [],
-      "sources": [],
-      "bookmakers_on_main": [],
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>1800s"
+      ],
+      "sources": [
+       "oddspapi"
+      ],
+      "bookmakers_on_main": [
+       "198bet",
+       "3et",
+       "dafabet",
+       "pinnacle",
+       "ps3838",
+       "sabasports",
+       "sbobet",
+       "singbet"
+      ],
       "verified_books": [],
-      "pinnacle_or_asian": false,
-      "stale_age_s": null,
-      "freshness": "pending",
+      "pinnacle_or_asian": true,
+      "stale_age_s": 18673,
+      "stale_detail": [
+       {
+        "book": "pinnacle",
+        "source": "oddspapi",
+        "age_s": 18673
+       }
+      ],
+      "freshness": "stale_withdraw",
       "deep_line": false,
       "shared_book": false,
-      "main_line": null
+      "main_line": -0.75
      }
     },
-    "active_stage": "report",
+    "active_stage": "close",
     "verdict": "review",
     "advisory": "review"
    },
@@ -5725,6 +6302,23 @@
    ],
    "calls": {
     "oddspapi_free": 30
+   },
+   "quota_after": {
+    "oddspapi": {
+     "used": 181,
+     "remaining": 69,
+     "limit": 250,
+     "month": "2026-11"
+    }
+   }
+  },
+  {
+   "at": "2026-11-08T22:49:18Z",
+   "phases": [
+    "close"
+   ],
+   "calls": {
+    "oddspapi_free": 84
    },
    "quota_after": {
     "oddspapi": {
