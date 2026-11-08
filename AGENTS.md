@@ -143,3 +143,15 @@ data/telegram_delivery.json
 - 冻结清单内仍待单独授权：`render_observation()` 统一渲染、recheck/daily 统一幂等键、报告新鲜度 SLO 转阻断策略、阈值/评分/盘口核验调整、概率校准。
 - 证据：`pytest 894 passed, 1 skipped`（本地 3.10）；10 个 workflow YAML 解析与并发/超时契约通过；`GROUNDING_OK`；新鲜度 dry-run 两条告警未阻断。CI 3.12 与 daily 实跑见交付说明。
 - 是否触碰冻结清单：否。
+
+
+## 2026-11-08 数据源依赖与零注册自愈执行记录（不触碰模型算法）
+
+- 用户要求「信息源采集升级，不要太依赖需要注册 api」；令牌按要求**保留**，未注销、未轮换。
+- 仅新增 `src/ah/source_audit.py`、`src/ah/delivery_gaps.py`、`docs/source-dependency.md`、`tests/test_source_upgrades.py`；改 `.github/workflows/daily.yml` / `source-probe.yml`、`src/ah/__main__.py`、`docs/external-timer.md`、README/AGENTS 追加章节。
+- **未改** `config/sources.yaml` 开关、任何 provider 客户端、`analyze.py` / `policy.py` / `daily.py` / `odds_snapshots.py` / `settle.py` / `stats.py` / `config/settings.yaml` / `research/**` / `schema/**` / 展示与推送渲染；未新增任何需注册数据源。
+- 硬约束：密钥只记布尔、绝不回显值；缺 key 只告警不阻断采集；公开源探测只记 HTTP 状态/字节数/异常类型，**不解析成赛程、盘口、水位、比分**，不写报告；`titan007` 需特殊参数不探、`oddsportal/okooo` partial 不探、`spl.com.sa` 条款禁止自动化永不探；连通 ≠ 数据充足，不得写成「已恢复」。
+- 漏发盘点：只读台账，未到点不报；`picks_count=0` / 空 `message_ids` 不算送达；未到点却已有记录标 `DELIVERED_BEFORE_TARGET` 并给 info 告警，**不推断为误发或正常**；给建议补发 body 但**不自动触发**、不写台账、不发消息。外部定时降级为可选增强。
+- 真正把注册源替换为免注册主源、按 `credential_present` 动态跳过 provider、改核验口径或结算真值源，均属冻结清单，须单独 `DATA SOURCE:` 授权与提交，本轮**未做**。
+- 证据：`pytest 910 passed, 1 skipped`（本地 3.10）；真实配置 dry-run `registered=5/configured=0/keyless=11`（本地无 Secrets，不等于线上缺 key）；真实台账盘点 `slot=1 已送达 / slot=2,3 漏发 / slot=4 离档`，只告警不触发；10 个 workflow YAML 解析与并发/超时契约通过。CI 3.12 与 Actions 实跑见交付说明。
+- 是否触碰冻结清单：否。

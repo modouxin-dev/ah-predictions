@@ -26,6 +26,12 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: pip install -r requirements.txt
+      - name: Keyless source health (facts only, no registration needed)
+        continue-on-error: true
+        run: |
+          # 注册源自检之外，也看一眼免注册公开源是否可连通；只记 HTTP 状态，
+          # 不解析内容、不生成赛程/盘口/水位、不写报告、不推断失败原因。
+          python -m ah source-audit --probe-keyless | tee keyless_source_facts.txt
       - name: Record observable facts only
         continue-on-error: true
         run: |
@@ -38,4 +44,5 @@ jobs:
           path: |
             source_probe_facts.txt
             source_probe_facts.json
+            keyless_source_facts.txt
           if-no-files-found: ignore

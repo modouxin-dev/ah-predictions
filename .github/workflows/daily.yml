@@ -56,6 +56,13 @@ jobs:
           # 把运行时代理自检的结构化事实写入仓库；失败也保留事实，不推断原因
           python -m ah source-probe --json data/source_probe_facts.json
 
+      - name: Source dependency audit (keyless-first, warn but never block)
+        continue-on-error: true
+        run: |
+          # 把「哪些源免注册、哪些需要 key、当前缺哪些」写成事实，缺 key 只告警不阻断采集。
+          # --probe-keyless 只探已评估合规的公开 URL，不解析内容、不生成赛程或盘口。
+          python -m ah source-audit --json data/source_dependency.json --probe-keyless
+
       - name: Skip collection when not needed
         id: skip
         run: |
@@ -143,7 +150,7 @@ jobs:
         run: |
           D="$AH_DATE"
           [ -f var/source_status.json ] && cp var/source_status.json data/source_status.json || true
-          paths=(reports data/predictions.csv data/snapshots/odds data/samples data/feature_coverage data/source_status.json data/source_probe_facts.json)
+          paths=(reports data/predictions.csv data/snapshots/odds data/samples data/feature_coverage data/source_status.json data/source_probe_facts.json data/source_dependency.json)
           if [ -d data/history ]; then paths+=(data/history); fi
           scripts/safe_commit.sh --skip-tests -m "daily report $D" "${paths[@]}"
 
@@ -211,6 +218,13 @@ jobs:
             echo "::warning::本次运行未取得采集产物；沿用 main 上已存在的报告，来源写入台账，不标记为新采集"
           fi
 
+      - name: Delivery gap check (zero-registration self-healing visibility)
+        continue-on-error: true
+        run: |
+          # 不依赖任何外部定时账号：每次运行自己核对当天已到点却漏发的班次。
+          # 只报告、不自动补发，避免误发与递归触发。
+          python -m ah delivery-gaps --date "$AH_DATE" --out data/delivery_gaps.json
+
       - name: Fail closed if report missing
         run: |
           D="$AH_DATE"
@@ -273,5 +287,5 @@ jobs:
         if: always()
         run: |
           scripts/safe_commit.sh --skip-tests -m "run facts $AH_DATE slot $AH_SLOT" \
-            data/run_facts.json data/report_freshness.json \
+            data/run_facts.json data/report_freshness.json data/delivery_gaps.json \
             || echo "::warning::运行事实提交失败，见上方日志；不影响本次推送结论"

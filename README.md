@@ -383,3 +383,22 @@ PYTHONPATH=src python -m ah delivery preflight
 **【未验证】**：`daily.yml` 新增打点步骤在真实定时运行里的表现（要等下一次自动/手动触发）；外部定时 job 是否创建；Telegram 接收端；结算积压根因；令牌轮换。
 
 **是否触碰冻结清单：否。** 令牌按用户要求**保留**，等全部升级验证过关后再注销。
+
+## SOURCE（2026-11-08）：降低对需注册 API 的依赖
+
+**用户诉求**：信息源采集别太依赖「要注册才能拿 key 的 API」。
+
+**先划边界**：本轮**没改** `config/sources.yaml` 开关、没改任何 provider 客户端、没改核验口径/阈值/评分、没新增需注册数据源。真正把注册源换成免注册主源属冻结清单，需单独 `DATA SOURCE:` 授权。本轮做的是编排/事实层的地基。
+
+**新增（冻结清单外）**
+- `src/ah/source_audit.py` + `docs/source-dependency.md`：把 5 个需注册源与 11 个免注册源分级，每次运行写 `data/source_dependency.json`；缺 key 输出 warning 明确「本次仅依赖免注册源」，**不推断原因、不阻断采集**；`--probe-keyless` 只探合规公开 URL 的 HTTP 状态/字节数，**不解析成赛程盘口水位**、不写报告。密钥只记布尔、绝不回显值。
+- `src/ah/delivery_gaps.py`：**零注册依赖的仓库内自愈盘点**，每次运行核对当天四个目标时刻与台账，只报「已过时刻却漏发」的 slot；未到点不报；`picks_count=0`/空 `message_ids` 不算送达；未到点却已有记录标 `DELIVERED_BEFORE_TARGET`（如实标注历史凌晨误发，不推断）。给建议补发 body 但**不自动触发**。
+- `daily.yml`：collect 跑源依赖审计、publish 跑漏发盘点，产物落盘；`source-probe.yml` 也探一次免注册源。全部 `continue-on-error`，**不会因为没 key 让日报发不出去**。
+- `docs/external-timer.md`：改为「零注册优先」，外部定时降级为**可选增强**，不建账号也能看见漏发。
+- `tests/test_source_upgrades.py`：15 个回归用例（密钥不回显、缺 key 告警不阻断、探测失败写未取得不推断、未到点不报、0 场不算送达、离档班次如实标注、不自动补发）。
+
+**【已验证】**：本地 `pytest 910 passed, 1 skipped`（3.10）；对真实配置 dry-run 得 `registered=5 / configured=0 / keyless=11`（本地沙盒未注入 Secrets，**不代表线上缺 key**）；真实台账盘点 `slot=1 已送达、slot=2/3 漏发、slot=4 离档提前送达`，输出 2 条 warning + 1 条 info，**没有自动触发任何推送**；10 个 workflow YAML 解析与并发/超时契约全通过。
+
+**【未验证】**：Actions Secrets 里 5 个 key 是否配置；免注册源是否返回足够覆盖（连通 ≠ 数据充足）；采集实际用了哪个源；Telegram 接收端；外部定时准时率；结算积压成因。
+
+**是否触碰冻结清单：否。** 令牌按用户要求**保留**，等全部验证过关再注销。
