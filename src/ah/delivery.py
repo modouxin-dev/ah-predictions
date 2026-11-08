@@ -237,8 +237,12 @@ def delivery_mode(date: str, sha: str, chat: str, path: Path | None = None,
             and r.get("status") == "sent" and r.get("message_ids")]
     if not rows:
         return "primary", "no_delivery_record"
-    if any(str(r.get("slot", "1")) == str(slot) for r in rows):
-        last_picks = rows[-1].get("picks_count")
+    # 幂等键 = (date, chat_id, slot)。「0 场升级」只能看**本 slot** 的最后一条记录；
+    # 此前取 rows[-1]（当日全部送达记录的末条）会被别时段的 0 场兜底记录触发，
+    # 导致 slot=1 明明已发过 7 场又重发一次完整日报。
+    same = [r for r in rows if str(r.get("slot", "1")) == str(slot)]
+    if same:
+        last_picks = same[-1].get("picks_count")
         if last_picks is not None and int(last_picks) == 0 and picks_count > 0 and slot not in REFRESH_SLOTS:
             return "primary", "upgrade_zero_pick_report"
         return "skip", "already_delivered_today"
@@ -247,9 +251,8 @@ def delivery_mode(date: str, sha: str, chat: str, path: Path | None = None,
     if slot == "1":
         # 早间版（北京 07:00）不因后续时段的兜底/更新记录而被吞掉。
         return "primary", "morning_edition_not_delivered"
-    last_picks = rows[-1].get("picks_count")
-    if last_picks is not None and int(last_picks) == 0 and picks_count > 0:
-        return "primary", "upgrade_zero_pick_report"
+    # 本 slot 未送达、当日已有其它时段送达，且 slot 不是 1/2/3/4：
+    # 不再用跨时段末条记录判断「0 场升级」，保守跳过，避免未知时段误发。
     return "skip", "already_delivered_today"
 
 

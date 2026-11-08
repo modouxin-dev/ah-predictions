@@ -1,0 +1,191 @@
+{
+ "source": "jleague",
+ "site_match_id": "acle/2026/110331",
+ "match_id": 1629968,
+ "competition": "acle",
+ "competition_name": "AFC Champions League Elite",
+ "round": "League Stage Matchday 4 - East",
+ "status": "post-game",
+ "kickoff_utc": "2026-11-03T10:01:00Z",
+ "kickoff_bjt": "2026-11-03T18:01:00+08:00",
+ "home": {
+  "name": "Vissel Kobe",
+  "site_name": "Vissel Kobe",
+  "site_team_id": "136",
+  "alias_matched": false
+ },
+ "away": {
+  "name": "Ratchaburi FC",
+  "site_name": "Ratchaburi FC",
+  "site_team_id": "32354",
+  "alias_matched": false
+ },
+ "score": {
+  "home": 3,
+  "away": 2
+ },
+ "lineups": {
+  "home": {
+   "starting_xi": [
+    {
+     "name": "ARAI Shota",
+     "number": 21,
+     "pos": "GK",
+     "site_player_id": "1100216"
+    },
+    {
+     "name": "CAETANO",
+     "number": 16,
+     "pos": "DF",
+     "site_player_id": "1650732"
+    },
+    {
+     "name": "IWANAMI Takuya",
+     "number": 31,
+     "pos": "DF",
+     "site_player_id": "1101309"
+    },
+    {
+     "name": "NAGATO Katsuya",
+     "number": 41,
+     "pos": "DF",
+     "site_player_id": "1607075"
+    },
+    {
+     "name": "IINO Nanasei",
+     "number": 2,
+     "pos": "MF",
+     "site_player_id": "1611254"
+    },
+    {
+     "name": "GOKE Yuta",
+     "number": 5,
+     "pos": "MF",
+     "site_player_id": "1504456"
+    },
+    {
+     "name": "WATANABE Kota",
+     "number": 20,
+     "pos": "MF",
+     "site_player_id": "1503650"
+    },
+    {
+     "name": "KUWASAKI Yuya",
+     "number": 25,
+     "pos": "MF",
+     "site_player_id": "1632201"
+    },
+    {
+     "name": "HAMASAKI Kento",
+     "number": 28,
+     "pos": "MF",
+     "site_player_id": "1646560"
+    },
+    {
+     "name": "JEAN PATRIC",
+     "number": 26,
+     "pos": "FW",
+     "site_player_id": "1636320"
+    },
+    {
+     "name": "KOMATSU Ren",
+     "number": 29,
+     "pos": "FW",
+     "site_player_id": "1601839"
+    }
+   ],
+   "substitutes": null,
+   "absences": null
+  },
+  "away": {
+   "starting_xi": [
+    {
+     "name": "KAMPOL PATHOMAKKAKUL",
+     "number": 99,
+     "pos": "GK",
+     "site_player_id": null
+    },
+    {
+     "name": "DANIEL TING",
+     "number": 5,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "ADISON PROMRAK",
+     "number": 15,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "SIDCLEY",
+     "number": 17,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "SANCHAI NONTHASILA",
+     "number": 20,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "PABLO INSUA",
+     "number": 44,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "TANA",
+     "number": 6,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "EKANIT PANYA",
+     "number": 21,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "PHONGSAKON SANGKASOPHA",
+     "number": 22,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "THOSSAWAT LIMWANASATHIAN",
+     "number": 28,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "SCOTT ALLARDICE",
+     "number": 48,
+     "pos": "MF",
+     "site_player_id": null
+    }
+   ],
+   "substitutes": null,
+   "absences": null
+  }
+ },
+ "field_status": {
+  "starting_xi": {
+   "status": "已获取",
+   "reason": "官网比赛页服务端数据（首发公布后才有）"
+  },
+  "substitutes": {
+   "status": "暂无",
+   "reason": "J.League 官网的控え（替补）在 Lineup 标签页由前端 JS 加载，服务端 HTML 不含；不做 JS 渲染抓取"
+  },
+  "absences": {
+   "status": "暂无",
+   "reason": "J.League 官网不公布伤病名单；出場停止（停赛）在 Lineup 标签页由前端 JS 加载，服务端 HTML 不含"
+  }
+ },
+ "source_url": "https://www.jleague.jp/en/match/acle/2026/110331/",
+ "fetched_at": "2026-11-04T13:20:58Z",
+ "raw_cache": "/workspace/ah-data/data/cache/scrapers/jleague/62aa887556a36950.body",
+ "structure_signature": "4b56e669b7aa"
+}

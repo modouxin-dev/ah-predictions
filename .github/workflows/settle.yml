@@ -12,7 +12,7 @@ permissions:
   contents: write
 concurrency:
   group: settle
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   settle:

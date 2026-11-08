@@ -7,6 +7,7 @@ permissions:
   contents: write
 concurrency:
   group: publish-recheck
+  # 涉及临场消息发送：不取消在途 run，避免漏发
   cancel-in-progress: false
 jobs:
   recheck:

@@ -7,7 +7,7 @@ permissions:
   contents: read
 concurrency:
   group: source-probe
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   probe:

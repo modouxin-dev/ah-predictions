@@ -9,7 +9,7 @@ permissions:
   contents: write
 concurrency:
   group: research-backtest
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   research:

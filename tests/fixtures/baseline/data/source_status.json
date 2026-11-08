@@ -1,0 +1,79 @@
+{
+ "sources": {
+  "api_football": {
+   "quota": {
+    "used": 0,
+    "remaining": 99,
+    "limit": 100,
+    "period": "日",
+    "as_of": "2026-11-07T23:02:54Z"
+   },
+   "last_ok_at": "2026-11-04T12:36:23Z",
+   "last_call_at": "2026-11-07T23:02:54Z",
+   "last_error_at": "2026-11-07T23:02:54Z",
+   "last_error": "status errors: {\"access\": \"Your account is suspended, check on https://dashboard.api-football.com.\"}"
+  },
+  "odds_api": {
+   "quota": {
+    "used": 195,
+    "remaining": 305,
+    "limit": 500,
+    "period": "月",
+    "as_of": "2026-11-07T23:11:20Z"
+   },
+   "last_call_at": "2026-11-07T23:11:20Z",
+   "last_ok_at": "2026-11-07T23:11:20Z"
+  },
+  "oddspapi": {
+   "quota": {
+    "used": 168,
+    "remaining": 82,
+    "limit": 250,
+    "period": "月",
+    "month": "2026-11",
+    "as_of": "2026-11-07T23:14:03Z"
+   },
+   "last_call_at": "2026-11-07T23:14:03Z",
+   "last_ok_at": "2026-11-07T23:14:03Z",
+   "last_error_at": "2026-11-07T23:04:33Z",
+   "last_error": "fixtures HTTP 404",
+   "note": "odds_snapshots: historical-odds 免费；Kuching-Gangwon(id1000066873835336) historical 404"
+  },
+  "fivedollar": {
+   "quota": {
+    "remaining": 50,
+    "limit": 60,
+    "period": "小时",
+    "as_of": "2026-11-07T23:18:36Z"
+   },
+   "last_call_at": "2026-11-07T23:18:36Z",
+   "last_ok_at": "2026-11-07T23:18:36Z"
+  },
+  "titan007": {
+   "last_call_at": "2026-11-07T23:04:40Z",
+   "last_ok_at": "2026-11-07T23:04:40Z"
+  },
+  "football_data": {
+   "last_call_at": "2026-11-07T23:18:33Z",
+   "last_ok_at": "2026-11-07T23:18:33Z",
+   "quota": {
+    "remaining": 0,
+    "limit": 10,
+    "period": "分钟",
+    "as_of": "2026-11-07T23:18:33Z"
+   }
+  },
+  "infersports": {
+   "last_call_at": "2026-11-07T23:14:23Z",
+   "last_ok_at": "2026-11-07T23:14:23Z",
+   "quota": {
+    "used": 68,
+    "remaining": 132,
+    "limit": 200,
+    "period": "日(UTC)",
+    "as_of": "2026-11-07T23:14:23Z"
+   }
+  }
+ },
+ "updated_at": "2026-11-07T23:18:36Z"
+}

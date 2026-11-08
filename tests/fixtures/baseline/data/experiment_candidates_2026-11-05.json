@@ -1,0 +1,8 @@
+{"date":"2026-11-05","generated_at":"2026-11-05T06:55:00Z","track":"experiment","note":"Model A = Pinnacle no-vig fair p x best price among books (API-Football /odds). Not written to experiment_picks.csv. B/C skip (not wired).",
+"candidates":[
+ {"model_id":"A","market":"1x2","match_id":"apif-1630402","home":"古晋城","away":"江原FC","kickoff_utc":"2026-11-05T12:15:00Z","pick":"Home","odds":4.33,"book":"Betfair","fair_p":0.247,"ev":0.068,"confidence":"low"},
+ {"model_id":"A","market":"1x2","match_id":"apif-1630403","home":"BG巴吞联","away":"大埔","kickoff_utc":"2026-11-05T12:15:00Z","pick":"Draw","odds":7.41,"book":"1xBet","fair_p":0.143,"ev":0.06,"confidence":"low"},
+ {"model_id":"A","market":"1x2","match_id":"apif-1630399","home":"杰志","away":"金边皇冠","kickoff_utc":"2026-11-05T10:00:00Z","pick":"Draw","odds":3.75,"book":"Bet365","fair_p":0.276,"ev":0.036,"confidence":"low"}
+],
+"excluded":[{"match_id":"apif-1630403","market":"1x2","pick":"Away","odds":17.5,"book":"1xBet","ev":0.51,"reason":"outlier price vs Pinnacle, likely stale/erroneous; not trusted"}],
+"ah":"no candidate with EV>0 at best price (all <= 0)","ou":"no candidate with EV>0","models_B_C":"skip: not ready on main"}

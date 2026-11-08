@@ -1,0 +1,61 @@
+name: Generate requirements.lock
+# 手动触发：在真实 Python 3.12 runner 上生成带 hash 的依赖锁，避免本地 3.10 凭空造版本号。
+# 产物与生成事实写回 main；失败也落事实，绝不伪造 hash 或版本。
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: requirements-lock
+  cancel-in-progress: true
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main, fetch-depth: 0}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Compile locked requirements with hashes
+        id: compile
+        continue-on-error: true
+        run: |
+          python -m pip install -q "pip-tools>=7,<8"
+          python -m piptools compile requirements.txt --generate-hashes \
+            --output-file requirements.lock
+      - name: Record generation fact (never invent hashes)
+        if: always()
+        env:
+          OUTCOME: ${{ steps.compile.outcome }}
+        run: |
+          mkdir -p data
+          python - <<'PY'
+          import json, os, hashlib
+          from pathlib import Path
+          outcome = os.environ.get("OUTCOME", "未取得")
+          p = Path("requirements.lock")
+          fact = {
+              "schema": 1,
+              "status": "OK" if outcome == "success" and p.exists() else "LOCK_NOT_GENERATED",
+              "compile_outcome": outcome,
+              "lock_exists": p.exists(),
+              "lock_bytes": p.stat().st_size if p.exists() else None,
+              "lock_sha256": hashlib.sha256(p.read_bytes()).hexdigest() if p.exists() else "未取得",
+              "generated_on_python": "3.12",
+              "note": "只记录生成结果；失败时保留事实，不伪造任何版本或 hash，不推断失败原因",
+              "unverified": ["pip-compile 失败的具体原因（本会话日志下载可能受网络策略限制）"],
+          }
+          Path("data/lock_generation.json").write_text(
+              json.dumps(fact, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          print("LOCK_FACT", json.dumps(fact, ensure_ascii=False))
+          PY
+      - name: Commit lock and fact
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add requirements.lock data/lock_generation.json 2>/dev/null || true
+          if git diff --cached --quiet; then echo "NO_CHANGE"; exit 0; fi
+          git commit -m "DEPS: generated requirements.lock on Python 3.12 (facts only)"
+          git push origin HEAD:main

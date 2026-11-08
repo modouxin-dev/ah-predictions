@@ -416,3 +416,22 @@ PYTHONPATH=src python -m ah delivery preflight
 - 代码侧收紧：`source_audit` 新增 `declared_secrets()` 静态接线事实、`wired` 字段、`REGISTERED_CREDENTIALS_NOT_INJECTED` 告警（纯事实、不推断）；`tests/test_source_upgrades.py` +4 例，全套 `913 passed / 1 skipped`。
 - 线上有 key → 采集照常使用这 5 个注册源；免注册源是兜底、可见性与零注册自愈，**不是替换**。真正降依赖仍需单独 `DATA SOURCE:` 授权。
 - 是否触碰冻结清单：否。令牌保留，未注销、未轮换。
+
+## UPGRADE ROUND 2（2026-11-08）：深度检查后的第一梯队全部落地
+
+详见 `docs/upgrade-2026-11-08-round2.md`。**只读诊断后的修复，不触碰模型评分/阈值/核验口径/展示生成/推送渲染；未发送 Telegram；令牌保留。**
+
+- **A1 真 Bug 已修**：`delivery.py` 幂等分支不再用「当日全部记录末条」判断 0 场升级，改为只看本 slot；修复了「slot=1 已发 7 场却因别时段 0 场末条重发完整日报」的复现场景。
+- **A2 日期分叉事实化**：新增 `date_consistency.py`，比对编排 `AH_DATE` 与采集入口 allowed，分叉只告警、不绕过 `daily.py` 的保护、不改其一行。
+- **数据质量事实**：新增 `data_quality.py`，落 `data/data_quality.json`。真实 11-08 实测：上限 32 / 窗口 51 / 19 场未进候选；`final_line` 仅 2/24、`line_open` 0/24、`price_ts` 0/24、快照可 join 22/24；7 场 picks 全部 oddspapi+pinnacle 单源；报告写明 `verified:0<1 6场`、`stale>7200s 20场`；`decided=14`、Wilson 95% 区间宽度 0.416（明确不构成结论）。
+- **失败事实**：新增 `ops_failures.py`，collect/publish 失败时结构化落盘，不推断、不回显密钥。
+- **工程**：`requirements.txt` 加上界 + `requirements-dev.txt` + `lock.yml`（3.12 runner 生成带 hash 的 `requirements.lock`，失败只落事实不伪造）；`tests/fixtures/baseline/` 57 个静态快照 + `conftest` 只补齐缺失路径，删掉 `data/`+`reports/` 的精简副本仍 **944 passed**；8 个幂等 workflow 改 `cancel-in-progress: true`，`daily.yml`/`publish-recheck.yml` 保持 false 防漏发并加注释。
+- **新增回归**：`test_idempotency_fix.py` / `test_date_consistency.py` / `test_data_quality.py` / `test_ops_failures.py` / `test_workflow_contracts.py`，共 31 例。
+
+**【已验证】**：本地 `pytest 944 passed, 1 skipped`（3.10）；精简副本自包含验证通过；A1 复现返回 skip；`GROUNDING_OK`；12 个 workflow YAML 解析与并发/超时契约全过；未触发 dispatch、未发 Telegram。
+
+**【未验证】**：`lock.yml` 在 3.12 实跑是否成功；新增事实步骤在真实定时班次表现；Actions Secrets 有效性（403 边界）；Telegram 接收端；结算积压成因；CLV / 校准 / 线上规则独立回测。
+
+**仍需单独授权（`MODEL CHANGE` / `DATA SOURCE:`）**：CLV 正式写回台账并出分桶、第三比分真值源、线上规则 walk-forward 回测与概率校准、观察块统一渲染、provider 内 22 处静默降级改造、时区常量统一、注册源降为可选增强。**本轮一项都没做。**
+
+是否触碰冻结清单：否。令牌保留，未注销、未轮换、未外传。

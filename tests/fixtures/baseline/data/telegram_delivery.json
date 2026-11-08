@@ -1,0 +1,155 @@
+{
+  "schema": 1,
+  "deliveries": [
+    {
+      "date": "2026-11-06",
+      "report_sha": "84e06eae17acfc39",
+      "chat_id": "-1004312560482",
+      "status": "sent",
+      "message_ids": [
+        527
+      ],
+      "sent_at": "2026-11-06T13:13:03Z",
+      "run_id": "42223521469",
+      "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-06.json",
+      "evidence": "Telegram sendMessage HTTP 200 / ok=true / message_id"
+    },
+    {
+      "date": "2026-11-06",
+      "report_sha": "c50277a8125a65c9",
+      "chat_id": "-1004312560482",
+      "status": "sent",
+      "message_ids": [
+        528
+      ],
+      "sent_at": "2026-11-06T13:44:10Z",
+      "run_id": "42225738676",
+      "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-06.json",
+      "evidence": "Telegram sendMessage HTTP 200 / ok=true / message_id"
+    },
+    {
+      "date": "2026-11-06",
+      "report_sha": "d36bd5794a91d098",
+      "chat_id": "-1004312560482",
+      "status": "sent",
+      "message_ids": [
+        529,
+        530
+      ],
+      "sent_at": "2026-11-06T14:22:56Z",
+      "run_id": "42230782260",
+      "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-06.json",
+      "evidence": "Telegram sendMessage HTTP 200 / ok=true / message_id"
+    },
+    {
+      "date": "2026-11-06",
+      "report_sha": "033140b87529a630",
+      "chat_id": "-1004312560482",
+      "status": "sent",
+      "message_ids": [
+        534,
+        535
+      ],
+      "picks_count": 5,
+      "sent_at": "2026-11-06T15:29:07Z",
+      "run_id": "42240019817",
+      "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-06.json",
+      "evidence": "Telegram sendMessage HTTP 200 / ok=true / message_id"
+    },
+    {
+      "date": "2026-11-07",
+      "report_sha": "c899369ba444b4a4",
+      "chat_id": "-1004312560482",
+      "status": "sent",
+      "message_ids": [
+        537,
+        538
+      ],
+      "picks_count": 7,
+      "slot": "1",
+      "sent_at": "2026-11-06T23:00:03Z",
+      "run_id": "42306132678",
+      "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-07.json",
+      "evidence": "Telegram sendMessage HTTP 200 / ok=true / message_id"
+    },
+    {
+      "date": "2026-11-07",
+      "report_sha": "74c8059b65e5f6a1",
+      "chat_id": "-1004312560482",
+      "status": "sent",
+      "message_ids": [
+        540,
+        541
+      ],
+      "picks_count": 7,
+      "slot": "manual",
+      "sent_at": "2026-11-06T23:49:49Z",
+      "run_id": "42312342739",
+      "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-07.json",
+      "evidence": "Telegram sendMessage HTTP 200 / ok=true / message_id"
+    },
+    {
+      "date": "2026-11-07",
+      "report_sha": "74c8059b65e5f6a1",
+      "chat_id": "-1004312560482",
+      "status": "sent",
+      "message_ids": [
+        542,
+        543
+      ],
+      "picks_count": 7,
+      "slot": "2",
+      "sent_at": "2026-11-07T09:51:13Z",
+      "run_id": "42361355220",
+      "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-07.json",
+      "evidence": "Telegram sendMessage HTTP 200 / ok=true / message_id"
+    },
+    {
+      "date": "2026-11-07",
+      "report_sha": "74c8059b65e5f6a1",
+      "chat_id": "-1004312560482",
+      "status": "sent",
+      "message_ids": [
+        544
+      ],
+      "picks_count": 5,
+      "slot": "3",
+      "sent_at": "2026-11-07T14:34:12Z",
+      "run_id": "42382091917",
+      "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-07.json",
+      "evidence": "Telegram sendMessage HTTP 200 / ok=true / message_id"
+    },
+    {
+      "date": "2026-11-08",
+      "report_sha": "3f3ea3665814a39a",
+      "chat_id": "-1004312560482",
+      "status": "sent",
+      "message_ids": [
+        545,
+        546
+      ],
+      "picks_count": 6,
+      "slot": "4",
+      "sent_at": "2026-11-07T18:45:43Z",
+      "run_id": "42401470416",
+      "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-08.json",
+      "evidence": "Telegram sendMessage HTTP 200 / ok=true / message_id"
+    },
+    {
+      "date": "2026-11-08",
+      "report_sha": "a3f8bc03d91faf69",
+      "chat_id": "-1004312560482",
+      "status": "sent",
+      "message_ids": [
+        547,
+        548
+      ],
+      "picks_count": 7,
+      "slot": "1",
+      "sent_at": "2026-11-08T06:37:31Z",
+      "run_id": "42454260099",
+      "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-08.json",
+      "evidence": "Telegram sendMessage HTTP 200 / ok=true / message_id"
+    }
+  ]
+}

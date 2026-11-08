@@ -14,7 +14,7 @@ permissions:
   contents: write
 concurrency:
   group: accuracy-review
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   review:
@@ -34,6 +34,12 @@ jobs:
           D="${{ github.event.inputs.date }}"
           if [ -z "$D" ]; then D="$(date -u +%F)"; fi
           python -m ah review --date "$D" --run-id "${{ github.run_id }}"
+      - name: Data quality facts (read-only, no ledger/report writes)
+        continue-on-error: true
+        run: |
+          D="${{ github.event.inputs.date }}"
+          if [ -z "$D" ]; then D="$(date -u +%F)"; fi
+          python -m ah data-quality --date "$D" --out data/data_quality.json
       # 失败可见：即使上一步异常，也把对账/告警结果以只读方式再打一次，不静默跳过。
       - name: Review reconciliation check (facts only)
         if: always()
@@ -41,5 +47,5 @@ jobs:
       - name: Commit review artifacts
         run: |
           scripts/safe_commit.sh --skip-tests -m "accuracy review $(date -u +%F)" \
-            data/accuracy_review.json docs/review \
+            data/accuracy_review.json data/data_quality.json docs/review \
             || echo "::warning::复盘产物提交失败，见上方日志"

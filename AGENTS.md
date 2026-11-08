@@ -167,3 +167,17 @@ data/telegram_delivery.json
 - 未改 `config/sources.yaml` 开关、任何 provider 客户端、核验口径/阈值/评分/展示/推送渲染；未新增需注册数据源；未触发任何 Telegram 推送。令牌按用户要求**保留**。
 - 证据：本地 `pytest 913 passed, 1 skipped`（3.10）；`GROUNDING_OK`；10 个 workflow YAML 解析与并发/超时契约通过；真实 dry-run `registered_wired=5`。CI 3.12 见交付说明。
 - 是否触碰冻结清单：否。
+
+
+## 2026-11-08 第二轮升级执行记录（深度检查后的第一梯队，不触碰模型算法）
+
+- 用户要求「一次性修复升级」；按上一轮深度检查报告的第一梯队全量落地，**第二梯队（需单独授权）一项未做**，令牌按要求**保留**。
+- 改动文件：`src/ah/delivery.py`（A1 幂等）、`src/ah/__main__.py`（命令注册）、新增 `src/ah/date_consistency.py` / `data_quality.py` / `ops_failures.py`、`.github/workflows/daily.yml` / `review.yml`、`requirements.txt`、新增 `requirements-dev.txt` 与 `.github/workflows/lock.yml`、8 个 workflow 的 `cancel-in-progress`、`tests/conftest.py` + 5 个新测试 + `tests/fixtures/baseline/**`、README/AGENTS/docs 追加章节。
+- **未改** `config/sources.yaml`、任何 provider 客户端、`analyze.py` / `policy.py` / `daily.py` / `settle.py` / `stats.py` / `review.py` / `config/settings.yaml` / `publish_telegram.py` 的评分与展示生成逻辑；未新增需注册数据源。
+- 硬约束：A1 只看本 slot 记录；A2 分叉只告警、不绕过 `daily.py` 日期保护、不自动改日期；`data_quality` 纯只读、不写回台账/报告、缺字段写「未取得」、样本精度明确「不构成命中率或优势结论」、`verification_facts` 只抄录报告原文数字不解释成因；`ops_failures` 只记异常类型、不回显密钥或 URL、不推断、不阻断；`lock.yml` 失败只落事实，**绝不伪造版本或 hash**。
+- 并发策略：`daily.yml` / `publish-recheck.yml` 保持 `cancel-in-progress: false`（涉及发送与 07:00 等待，取消会漏发），其余幂等/只读任务改 true，由 `tests/test_workflow_contracts.py` 锁定。
+- 测试基线：`tests/fixtures/baseline/` 为 2026-11-08 main 上 `reports/` + `data/` 静态快照原样副本，`conftest.py::pytest_sessionstart` **只补齐缺失路径、不覆盖已有文件**，不生成任何赛程盘口水位比分。
+- 证据：本地 `pytest 944 passed, 1 skipped`（3.10）；删掉 `data/`+`reports/` 的精简副本由 conftest 补齐 57 个文件后子集 65 passed、全量 944 passed；A1 复现返回 `skip/already_delivered_today`；`GROUNDING_OK`；12 个 workflow YAML 解析与并发/超时契约通过；真实 `data-quality` dry-run 数字见 `docs/upgrade-2026-11-08-round2.md`。CI 3.12 与 lock 实跑见交付说明。
+- 真实数据事实（不推断）：上限 32 / 窗口 51 / 19 场未进候选；`final_line 2/24`、`line_open 0/24`、`price_ts 0/24`、快照可 join 22/24；picks 全 oddspapi+pinnacle 单源；报告写明 `verified:0<1 6场`、`stale>7200s 20场`；`decided=14`、Wilson 95% 宽度 0.416。
+- 【未验证】lock 在 3.12 实跑结果、新增事实步骤的真实定时表现、Actions Secrets 有效性（`/actions/secrets` 403）、Telegram 接收端、结算积压成因、CLV/校准/线上规则回测。
+- 是否触碰冻结清单：否。

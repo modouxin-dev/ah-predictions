@@ -1,0 +1,37 @@
+{
+  "probe": "data-source-runtime-selfcheck",
+  "checked_at": "2026-11-07T23:02:54Z",
+  "evidence_grade": "【运行时代理自检】",
+  "sources": [
+    {
+      "source": "api_football",
+      "key_env_present": true,
+      "kill_env_set": false,
+      "disabled_flag_present": false,
+      "kill_switch_reason": null,
+      "status_checked": false,
+      "http_status": null,
+      "subscription_active": null,
+      "account_active": null,
+      "quota": null,
+      "error_type": "ApiFootballError",
+      "note": "远端 /status 未成功；不推断为密钥无效，也不推断为账号停用"
+    },
+    {
+      "source": "oddspapi",
+      "key_env_present": true,
+      "account_checked": true,
+      "http_status": 200,
+      "active_subscriptions": 1,
+      "monthly_remaining_local": 250,
+      "error_type": null,
+      "note": "仅记录 /account 返回字段；HTTP 404 的赛程端点需由日报采集另行确认"
+    }
+  ],
+  "unverified": [
+    "Secrets 明文与仓库 settings.yaml 的一致性（进程只能读到运行时环境变量）",
+    "赛程/盘口端点是否返回足够覆盖（/status 与 /account 不等于数据充足）",
+    "Telegram 目标群是否收到消息（本命令不发送任何消息）"
+  ],
+  "assertions": "本输出不包含任何『已恢复 / 已验证 / 已送达 / 已命中』结论"
+}

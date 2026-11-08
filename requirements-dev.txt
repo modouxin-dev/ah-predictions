@@ -1,0 +1,4 @@
+# 开发/测试专用。CI runner 只装 requirements.txt；本文件供本地复现完整工具链。
+-r requirements.txt
+pytest>=8.0,<9
+pip-tools>=7.0,<8

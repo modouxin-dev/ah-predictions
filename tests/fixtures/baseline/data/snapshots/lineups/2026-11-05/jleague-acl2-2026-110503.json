@@ -1,0 +1,188 @@
+{
+ "source": "jleague",
+ "site_match_id": "acl2/2026/110503",
+ "match_id": null,
+ "competition": "acl2",
+ "competition_name": "AFC Champions League Two",
+ "round": "Group Stage Matchday 4 - East",
+ "status": "pre-game",
+ "kickoff_utc": "2026-11-05T10:00:00Z",
+ "kickoff_bjt": "2026-11-05T18:00:00+08:00",
+ "home": {
+  "name": "FC Machida Zelvia",
+  "site_name": "FC Machida Zelvia",
+  "site_team_id": "30532",
+  "alias_matched": false
+ },
+ "away": {
+  "name": "Shanghai Shenhua FC",
+  "site_name": "Shanghai Shenhua FC",
+  "site_team_id": "455",
+  "alias_matched": false
+ },
+ "score": null,
+ "lineups": {
+  "home": {
+   "starting_xi": [
+    {
+     "name": "TANI Kosei",
+     "number": 1,
+     "pos": "GK",
+     "site_player_id": "1602204"
+    },
+    {
+     "name": "SHOJI Gen",
+     "number": 3,
+     "pos": "DF",
+     "site_player_id": "1100212"
+    },
+    {
+     "name": "DRESEVIC",
+     "number": 5,
+     "pos": "DF",
+     "site_player_id": "1645998"
+    },
+    {
+     "name": "MOCHIZUKI Henry Heroki",
+     "number": 6,
+     "pos": "DF",
+     "site_player_id": "1635501"
+    },
+    {
+     "name": "NAKAMURA Hotaka",
+     "number": 88,
+     "pos": "DF",
+     "site_player_id": "1627745"
+    },
+    {
+     "name": "SENTO Keiya",
+     "number": 8,
+     "pos": "MF",
+     "site_player_id": "1607204"
+    },
+    {
+     "name": "SHIMODA Hokuto",
+     "number": 18,
+     "pos": "MF",
+     "site_player_id": "1400049"
+    },
+    {
+     "name": "NISHIMURA Takuma",
+     "number": 20,
+     "pos": "MF",
+     "site_player_id": "1500452"
+    },
+    {
+     "name": "SHIRASAKI Ryohei",
+     "number": 23,
+     "pos": "MF",
+     "site_player_id": "1200059"
+    },
+    {
+     "name": "TOKUMURA Futa",
+     "number": 34,
+     "pos": "MF",
+     "site_player_id": "1654126"
+    },
+    {
+     "name": "MITCHELL DUKE",
+     "number": 15,
+     "pos": "FW",
+     "site_player_id": "1300318"
+    }
+   ],
+   "substitutes": null,
+   "absences": null
+  },
+  "away": {
+   "starting_xi": [
+    {
+     "name": "MA Zhen",
+     "number": 24,
+     "pos": "GK",
+     "site_player_id": null
+    },
+    {
+     "name": "JIN Shunkai",
+     "number": 3,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "JIANG Shenglong",
+     "number": 4,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "WILSON MANAFA",
+     "number": 13,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "YANG Zexiang",
+     "number": 16,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "YANG Shuai",
+     "number": 26,
+     "pos": "DF",
+     "site_player_id": null
+    },
+    {
+     "name": "JOAO CARLOS TEIXEIRA",
+     "number": 10,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "XU Haoyang",
+     "number": 21,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "WANG Haijian",
+     "number": 33,
+     "pos": "MF",
+     "site_player_id": null
+    },
+    {
+     "name": "RAFAEL RATAO",
+     "number": 9,
+     "pos": "FW",
+     "site_player_id": null
+    },
+    {
+     "name": "LUIS ASUE",
+     "number": 19,
+     "pos": "FW",
+     "site_player_id": null
+    }
+   ],
+   "substitutes": null,
+   "absences": null
+  }
+ },
+ "field_status": {
+  "starting_xi": {
+   "status": "已获取",
+   "reason": "官网比赛页服务端数据（首发公布后才有）"
+  },
+  "substitutes": {
+   "status": "暂无",
+   "reason": "J.League 官网的控え（替补）在 Lineup 标签页由前端 JS 加载，服务端 HTML 不含；不做 JS 渲染抓取"
+  },
+  "absences": {
+   "status": "暂无",
+   "reason": "J.League 官网不公布伤病名单；出場停止（停赛）在 Lineup 标签页由前端 JS 加载，服务端 HTML 不含"
+  }
+ },
+ "source_url": "https://www.jleague.jp/en/match/acl2/2026/110503/",
+ "fetched_at": "2026-11-05T09:19:30Z",
+ "raw_cache": "/workspace/ah-main/data/cache/scrapers/jleague/dc16fd7932cdb945.body",
+ "structure_signature": "87e35bbbe104"
+}
