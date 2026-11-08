@@ -120,3 +120,15 @@ data/telegram_delivery.json
 - 样本不足时回测一律 `INSUFFICIENT_SAMPLE`，禁止输出命中率/校准/「模型更准」类断言；Brier 与可靠性曲线无校准概率时 `NOT_COMPUTED`。
 - 赛果只来自 `predictions.csv`；`未取得` 不得改写为「无伤停 / 无影响 / 已结算」；回填归因只按开球时间做事实分类，不推断数据源失败原因。
 - 因子转 scoring 必须通过连续覆盖验收 + 离线重放零场保护；未达标不得自动改 `settings.yaml`。
+
+
+## 2026-11-08 自动复盘执行记录（不触碰模型算法）
+
+- 用户授权「按策划实现预测准确率自动统计和复盘」。仅新增 `src/ah/review.py`、`.github/workflows/review.yml`、`tests/test_review.py`，改 `src/ah/__main__.py` 命令注册、README/AGENTS.md 追加章节；**未改** `stats.py` / `settle.py` / `analyze.py` / `policy.py` / `daily.py` / `odds_snapshots.py` / `config/**` / `research/**` / `schema/**` / 展示与推送渲染。
+- 命中率唯一权威仍是 `data/stats.json`；复盘层从 `predictions.csv` **独立复算仅用于对账**，不另立口径、不对外当结论。对账不一致时写「未取得」。
+- 赛果只来自 `predictions.csv`；`result` 空写「未取得」，不补造比分、不推断未结算原因；`track=official` 才计入；`void/cancelled` 不进分母。
+- 样本不足（总体 < 30 场 / 分桶 < 10 场）一律 `INSUFFICIENT_SAMPLE`；窗口、分桶命中率与盈亏同时留空，禁止自相矛盾；禁止「准确率提升 / 模型更准 / ROI 改善」类断言，生成后自检命中即拒绝输出。
+- 复盘**不发送 Telegram**；`::warning::` / `::error::` 注解与 `alerts[]` 是唯一告警通道，避免重复推送与「已推送 = 已送达」混淆。
+- 界面必须写「规则档位，未经独立回测；不构成统计预测准确率」；分桶名逐字引用 stats.json，不做译名推断。
+- 证据：`pytest 883 passed, 1 skipped`（本地 3.10）；CI 3.12 与 Actions 首跑结果见交付说明。未验证：settle 积压成因、Telegram 接收端、概率校准、外部定时准时率。
+- 是否触碰冻结清单：否。

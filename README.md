@@ -334,3 +334,27 @@ PYTHONPATH=src python -m ah delivery preflight
 **冻结清单未触碰**：`analyze.py` / `policy.py` / `daily.py build_report·assess` / `odds_snapshots.py` / `config/settings.yaml` / `model/**` / `schema/**` / `templates/report.md.j2` / 盘口采集口径 / 阈值与评分公式 / `publish_telegram.py` 的展示与观察块策略，一律未改。以下只列为建议，需单独评审与回测：观察块统一渲染与 grounding 双检、recheck 与 daily 的统一幂等键（需先回放历史台账）、报告新鲜度 SLO、依赖 lock 文件、把 `GITHUB_TOKEN` 换成最小权限 fine-grained PAT。
 
 **【未验证】**：本次 commit 在真实 3.12 CI 的测试结果（以 `tests.yml` 运行为准）；Telegram 接收端实际到达；外部定时器是否已配置及其准时率；采集失败根因（Actions 步骤日志下载仍被网络策略拦截）；多日 cron 稳定性。台账里 `date=2026-11-08 slot=4` 的凌晨误发记录仍在，未清理或标注。
+
+## REVIEW（2026-11-08）：预测准确率自动统计与复盘
+
+**先说清现状**：命中率/ROI 的「自动统计」早已有 `data/stats.json`（`python -m ah stats`）+ `settle.yml` 每天三次结算写回；本轮不重造统计，而是补上缺失的**复盘层**。
+
+**新增（冻结清单外）**
+- `src/ah/review.py`：`python -m ah review --date YYYY-MM-DD [--check]`。旁路、只读、全标准库，不改评分/阈值/盘口核验/展示/推送，不发送 Telegram。
+- `.github/workflows/review.yml`：UTC 20:00（北京次日 04:00，跟在 settle 18:00 / 19:30 之后）自动跑；也支持手动指定日期。带 `concurrency` 与 `timeout-minutes: 20`。
+- 产物：`data/accuracy_review.json`（累计快照，同日幂等覆盖、原子落盘）、`docs/review/<date>.md`（日复盘）、`docs/review/weekly-YYYY-Www.md`（周复盘）。
+- `tests/test_review.py`：9 个回归用例（对账、篡改拦截、样本不足、void/实验盘排除、未取得与积压暴露、禁用词、原子幂等、dry-run）。
+
+**复盘层做四件 stats.json 没做的事**
+1. **独立对账**：从 `predictions.csv` 按 `stats.json` 公开口径复算，与权威值逐字段比对；不一致 → `RECONCILIATION_MISMATCH`，报告里命中率写「未取得」，不输出结论数字。
+2. **结算完整性 / 防幸存者偏差**：`pending`、`未取得` 赛果、`void/cancelled` 全部单列；已过开球 +110 分钟仍未结算 → `SETTLE_BACKLOG`；标记已结算却无比分 → `MISSING_RESULT`。只看已结算行会让命中率虚高。
+3. **样本门槛**：总体已结算 < 30 场一律 `INSUFFICIENT_SAMPLE`；此时窗口、分桶的命中率与盈亏也留空，禁止「准确率提升 / 模型更准 / ROI 改善」类断言（生成后自检，命中即拒绝输出）。
+4. **可回溯**：日/周报告 + 累计快照，逐场字段来自 CSV；分桶逐字引用 `stats.json`，不做译名推断；标注「规则档位，未经独立回测；不构成统计预测准确率」。
+
+**告警**：`::warning::` / `::error::` 注解 + `alerts[]`，代码含 `RECONCILIATION_MISMATCH` / `SETTLE_BACKLOG` / `MISSING_RESULT` / `INSUFFICIENT_SAMPLE` / `DRAWDOWN` / `STALE_STATS` / `ODDS_ESTIMATED`。复盘不推送 Telegram，避免重复打扰，也避免把「已推送」写成「已送达」。
+
+**【已验证】**：本地 `pytest 883 passed, 1 skipped`（Python 3.10）；对真实数据 dry-run 得 `RECONCILED / INSUFFICIENT_SAMPLE / decided=14`，告警 `SETTLE_BACKLOG + INSUFFICIENT_SAMPLE`；CI 与首次 Actions 实跑结果见本轮交付说明。
+
+**【未验证】**：结算积压的成因（需读 settle 日志，本报告不推断）；Telegram 接收端是否读到复盘结论（本流程不发送）；概率校准与可靠性曲线（无校准概率，`NOT_COMPUTED`）；外部准点触发配置与长期准时率。
+
+**是否触碰冻结清单：否。** 未改 `analyze.py` / `policy.py` / `daily.py` / `odds_snapshots.py` / `settle.py` / `stats.py` / `research/**` / `config/**` / `schema/**` / `templates/report.md.j2` / `publish_telegram.py` 展示逻辑；未改动任何赛程、盘口、水位、比分或推荐倾向。

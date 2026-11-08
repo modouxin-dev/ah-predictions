@@ -1,0 +1,45 @@
+name: accuracy-review
+on:
+  schedule:
+    # 跟在 settle 晚班（UTC 18:00）与备用班（UTC 19:30）之后，北京次日 04:00。
+    # 只读取 predictions.csv / stats.json 已有事实，不重新采集、不发送 Telegram。
+    - cron: "0 20 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: '复盘日期 YYYY-MM-DD（留空=今天 UTC）'
+        required: false
+        default: ''
+permissions:
+  contents: write
+concurrency:
+  group: accuracy-review
+  cancel-in-progress: false
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: src
+      GITHUB_AH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false, ref: main}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - name: Accuracy review (facts only, no push, no model change)
+        run: |
+          D="${{ github.event.inputs.date }}"
+          if [ -z "$D" ]; then D="$(date -u +%F)"; fi
+          python -m ah review --date "$D" --run-id "${{ github.run_id }}"
+      # 失败可见：即使上一步异常，也把对账/告警结果以只读方式再打一次，不静默跳过。
+      - name: Review reconciliation check (facts only)
+        if: always()
+        run: python -m ah review --check || echo "::error::复盘对账检查未能完成，见上方输出"
+      - name: Commit review artifacts
+        run: |
+          scripts/safe_commit.sh --skip-tests -m "accuracy review $(date -u +%F)" \
+            data/accuracy_review.json docs/review \
+            || echo "::warning::复盘产物提交失败，见上方日志"
