@@ -1,4 +1,4 @@
-"""python -m ah <cmd> 便捷入口：render|settle|stats|site|telegram|consensus|prematch-record|backtest-record|sources|tg-bot|delivery|grounding|source-probe|samples|factors|backtest|gaps|review|runfacts|source-audit|delivery-gaps|date-consistency|data-quality|ops-failures"""
+"""python -m ah <cmd> 便捷入口：render|settle|stats|site|telegram|consensus|prematch-record|backtest-record|sources|tg-bot|delivery|grounding|source-probe|samples|factors|backtest|gaps|review|runfacts|source-audit|delivery-gaps|date-consistency|data-quality|ops-failures|clv|score-truth|source-policy"""
 import sys
 
 cmd, sys.argv = (sys.argv[1] if len(sys.argv) > 1 else "help"), [sys.argv[0]] + sys.argv[2:]
@@ -50,5 +50,11 @@ elif cmd == "data-quality":
     from .data_quality import main; main()
 elif cmd == "ops-failures":
     from .ops_failures import main; main()
+elif cmd == "clv":
+    from .clv import main; main()
+elif cmd == "score-truth":
+    from .score_truth import main; main()
+elif cmd == "source-policy":
+    from .source_policy import main; main()
 else:
     print(__doc__)

@@ -37,6 +37,17 @@ jobs:
           scripts/safe_commit.sh --skip-tests -m "settle $(date -u +%F)" data/predictions.csv data/stats.json reports
       # 失败可见：无论成功/失败都写一份事实盘点，列出仍未结算的条目；
       # 只读取 CSV 现有字段，赛果为空写「未取得」，绝不补造比分或假称已补齐。
+      - name: Third score truth cross-check (read-only, keyless)
+        if: always()
+        continue-on-error: true
+        run: |
+          # DATA SOURCE: 免注册第三比分源只读一致性核对。抓不到/认不出写「未取得」；
+          # AGREE 不写真值、DISAGREE 不自动改写结算，真值回填默认关闭。
+          python -m ah score-truth --out data/score_truth_check.json
+      - name: Credential policy facts
+        if: always()
+        continue-on-error: true
+        run: python -m ah source-policy --out data/source_policy.json
       - name: Record settle health (facts only)
         if: always()
         run: |
@@ -50,5 +61,6 @@ jobs:
       - name: Commit settle health
         if: always()
         run: |
-          scripts/safe_commit.sh --skip-tests -m "settle health $(date -u +%F)" data/settle_health.json \
+          scripts/safe_commit.sh --skip-tests -m "settle health $(date -u +%F)" \
+            data/settle_health.json data/score_truth_check.json data/source_policy.json \
             || echo "::warning::健康盘点提交失败，见上方日志"

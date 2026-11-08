@@ -23,7 +23,16 @@ LEGACY_FIELDS = ["date", "match_id", "league", "home", "away", "kickoff_utc", "p
 NEW_FIELDS = ["odds_format", "odds_estimated", "status", "final_line", "final_odds"]
 # v3：模型实验盘。旧行默认 track=official / market=ah，model_id/model_version/overlap 为空
 TRACK_FIELDS = ["track", "model_id", "model_version", "market", "overlap"]
-LEDGER_FIELDS = LEGACY_FIELDS + NEW_FIELDS + TRACK_FIELDS
+# DATA SOURCE: 2026-11-08 授权的 CLV/收盘线/真值留痕列。只是 schema 扩列，
+# 不改 settle / profit / settle_market 的任何结算、评分、核验或阈值逻辑。
+# 口径对齐 src/ah/audit/experiment_track.py：line_move()=line-close_line（正=拿到更好的线），
+# clv()=o_bet×p_fair(收盘去水)-1（仅收盘盘口=下注盘口时），缺数据写「未取得」，不另立口径。
+# 收盘相关列名**复用** src/ah/audit/experiment_track.py 既有 EXTRA_FIELDS，
+# 不另起一套名字；line_move / clv 的计算口径也直接复用该模块的 line_move() / clv()。
+CLV_FIELDS = ["line_open", "price_ts", "open_to_report_move", "close_line", "close_odds",
+              "close_odds_opp", "close_fair_p", "close_captured_at", "line_move", "clv",
+              "clv_basis", "truth_source"]
+LEDGER_FIELDS = LEGACY_FIELDS + NEW_FIELDS + TRACK_FIELDS + CLV_FIELDS
 TRACKS = ("official", "experiment")
 MARKETS = ("ah", "1x2", "ou")
 SIDES = {"ah": ("home", "away"), "ou": ("over", "under"), "1x2": ("home", "draw", "away")}

@@ -435,3 +435,30 @@ PYTHONPATH=src python -m ah delivery preflight
 **仍需单独授权（`MODEL CHANGE` / `DATA SOURCE:`）**：CLV 正式写回台账并出分桶、第三比分真值源、线上规则 walk-forward 回测与概率校准、观察块统一渲染、provider 内 22 处静默降级改造、时区常量统一、注册源降为可选增强。**本轮一项都没做。**
 
 是否触碰冻结清单：否。令牌保留，未注销、未轮换、未外传。
+
+
+<!-- ROUND3 DATA SOURCE -->
+## ROUND 3 · DATA SOURCE（2026-11-08 用户授权）：CLV 台账、第三比分源、注册源可选增强
+
+详见 `docs/upgrade-2026-11-08-round3.md`。**不改任何 provider 的采集/核验算法，不改既有 provider 配置块。**
+
+- **CLV 正式写回台账**：`src/ah/clv.py` + `settle.py` 新增 `CLV_FIELDS`（25→37 列），
+  收盘列名**复用** `experiment_track.py` 既有 `close_*`，`line_move()` / `clv()` **直接复用**
+  该模块函数，不另立口径。`predictions.csv` 真实回填：`line_open 22/24`、`price_ts 19/24`、
+  `open_to_report_move 22/24`；`close_line 2/24`、`line_move 2/24`；
+  **价格型 `clv` 0/24 全部「未取得」**——仓库无 `stage=close` 快照与收盘两侧水位，
+  无法去水，绝不拿线差冒充 CLV。
+- **收盘线采集**：新增 `.github/workflows/close-snapshots.yml`。`config/sources.yaml` 与
+  `odds_snapshots.py` 早有 `close` 能力却无 workflow 跑它；现 UTC 19:00/22:00 用
+  `close --backfill` 补采，真实行数写 `data/close_capture.json`。
+- **第三比分真值源**：`src/ah/score_truth.py`，3 个免注册源（titan007 / the-afc.com /
+  jleague.jp），复用已实测的 `scrapers/afc.py::parse_scores`；只读一致性核对，
+  `DISAGREE` 不自动改写结算，真值回填默认关闭（需 `AH_THIRD_SCORE_FALLBACK=1` 且
+  ≥2 独立源一致）。本会话 dry-run 3 源全部 `NO_EXPLICIT_SCORE_FOUND`、claims=0，
+  **已接线但未取得可用第三真值**。
+- **注册源降级为可选增强**：`config/sources.yaml credential_policy` 声明 5 个接口
+  `mode: optional_enhancement`；`src/ah/source_policy.py` 只判「当前进程是否注入 env var」，
+  并静态校验 5/5 provider 都有凭据闸门。不读值、不判断 key 有效性、不推断线上状态。
+- 接线：`daily.yml`（clv --apply / source-policy）、`settle.yml`（score-truth / source-policy）、
+  `source-probe.yml`（source-policy），全部 `continue-on-error` 或 `if: always()`，不阻断。
+

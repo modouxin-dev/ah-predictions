@@ -58,6 +58,13 @@ jobs:
           # 分叉时 daily.py 的拒绝是保护性行为；这里只落事实、不绕过、不自动改日期。
           python -m ah date-consistency --out data/date_consistency.json
 
+      - name: Credential policy (registered sources are optional enhancements)
+        continue-on-error: true
+        run: |
+          # DATA SOURCE: 5 个需注册源声明为可选增强；只记录当前进程注入决策与
+          # 静态凭据闸门契约，不读值、不判断 key 有效性、不阻断采集。
+          python -m ah source-policy --out data/source_policy.json
+
       - name: Data source runtime selfcheck (facts only)
         continue-on-error: true
         run: |
@@ -130,6 +137,9 @@ jobs:
           fi
           test -f "$F"
           python -m ah grounding --report "$F"
+          # DATA SOURCE: CLV 台账回填。只写报告/快照里真实存在的 line_open / price_ts /
+          # final_line，收盘线缺失写「未取得」；clv 仅两边都真实时计算，绝不补造。
+          python -m ah clv --apply
           # 数据质量事实：候选截断、CLV 字段覆盖、单源分布、盘口核验事实、样本精度。
           # 纯只读，不写回台账/报告，不改评分或核验口径。
           python -m ah data-quality --date "$D" --out data/data_quality.json
@@ -167,7 +177,7 @@ jobs:
         run: |
           D="$AH_DATE"
           [ -f var/source_status.json ] && cp var/source_status.json data/source_status.json || true
-          paths=(reports data/predictions.csv data/snapshots/odds data/samples data/feature_coverage data/source_status.json data/source_probe_facts.json data/source_dependency.json data/date_consistency.json data/data_quality.json)
+          paths=(reports data/predictions.csv data/snapshots/odds data/samples data/feature_coverage data/source_status.json data/source_probe_facts.json data/source_dependency.json data/date_consistency.json data/data_quality.json data/source_policy.json data/clv_backfill.json)
           if [ -d data/history ]; then paths+=(data/history); fi
           scripts/safe_commit.sh --skip-tests -m "daily report $D" "${paths[@]}"
 
@@ -306,6 +316,7 @@ jobs:
           scripts/safe_commit.sh --skip-tests -m "run facts $AH_DATE slot $AH_SLOT" \
             data/run_facts.json data/report_freshness.json data/delivery_gaps.json \
             data/date_consistency.json data/data_quality.json data/ops_failures.json \
+            data/source_policy.json data/clv_backfill.json \
             || echo "::warning::运行事实提交失败，见上方日志；不影响本次推送结论"
       - name: Record publish failure (facts only)
         if: failure()

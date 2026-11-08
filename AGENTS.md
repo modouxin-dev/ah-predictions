@@ -181,3 +181,27 @@ data/telegram_delivery.json
 - 真实数据事实（不推断）：上限 32 / 窗口 51 / 19 场未进候选；`final_line 2/24`、`line_open 0/24`、`price_ts 0/24`、快照可 join 22/24；picks 全 oddspapi+pinnacle 单源；报告写明 `verified:0<1 6场`、`stale>7200s 20场`；`decided=14`、Wilson 95% 宽度 0.416。
 - 【未验证】lock 在 3.12 实跑结果、新增事实步骤的真实定时表现、Actions Secrets 有效性（`/actions/secrets` 403）、Telegram 接收端、结算积压成因、CLV/校准/线上规则回测。
 - 是否触碰冻结清单：否。
+
+
+<!-- ROUND3 DATA SOURCE -->
+## 2026-11-08 第三轮 · DATA SOURCE 执行记录（用户授权）
+
+- 用户明确授权「CLV 正式写回台账、第三比分源、注册源降级」等全部七项；本类单独提交，前缀 `DATA SOURCE:`。
+- 改动：新增 `src/ah/clv.py` / `score_truth.py` / `source_policy.py`；`config/sources.yaml` **追加**
+  `credential_policy` 与 `score_truth` 两个顶层声明块（未改任何既有 provider 块）；
+  `settle.py` 新增 `CLV_FIELDS` 扩列、`audit/experiment_track.py` `EXTRA_FIELDS` 去重；
+  `data/predictions.csv` 25→37 列、`data/experiment_picks.csv` 33→40 列；
+  新增 `.github/workflows/close-snapshots.yml`；`daily.yml` / `settle.yml` / `source-probe.yml` 接线；
+  新增 3 个测试模块 19 例。
+- **口径对齐（重要）**：发现 `experiment_track.py` 早已定义价格型 `clv()` 与 `line_move()`；
+  初版把线差写进 `clv` 属另立口径，已全部改回——收盘列名复用 `close_*`，
+  `line_move` / `clv` 直接调用既有函数，不改其实现。
+- 硬底线：缺收盘两侧水位就写「未取得」，**不拿线差冒充 CLV、不补造盘口**；
+  第三比分源认不出格式返回空，`DISAGREE` 不自动改写结算，真值回填默认关闭；
+  凭据策略只判 env var 是否注入，不读值、不判断有效性、不推断线上状态。
+- 真实事实（不粉饰）：`line_open 22/24`、`price_ts 19/24`、`close_line 2/24`、
+  `line_move 2/24`、**价格型 `clv` 0/24 全「未取得」**；3 个免注册比分源
+  dry-run 全部 `NO_EXPLICIT_SCORE_FOUND`（AFC 页 `SiteUnavailable`）、claims=0；
+  凭据策略本地 `active=0 / skipped=5 / gates=5`（沙盒未注入 Secrets，不代表线上缺 key）。
+- 是否触碰模型算法框架：否（仅 schema 扩列与编排接线）。
+

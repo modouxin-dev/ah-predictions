@@ -1,0 +1,75 @@
+name: Capture closing lines (CLV prerequisite)
+# DATA SOURCE: config/sources.yaml 与 odds_snapshots.py 早已定义 stage=close，
+# 但此前没有 workflow 跑它，导致仓库里只有 open/report 两阶段、CLV 无法计算。
+# 本任务只补采收盘快照，不改任何评分/核验/阈值/展示逻辑；失败只落事实，不补造盘口。
+on:
+  schedule:
+    - cron: "0 19 * * *"   # 北京次日 03:00：覆盖当日晚场完赛后的历史收盘
+    - cron: "0 22 * * *"   # 北京次日 06:00：GitHub cron 延迟兜底
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: close-snapshots
+  cancel-in-progress: true
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: src
+      ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}   # --backfill 只用 OddsPapi 历史（免费）
+      GITHUB_AH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false, ref: main}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - name: Capture stage=close snapshots (facts only, no fabrication)
+        id: snap
+        continue-on-error: true
+        run: |
+          # 只用开赛后历史盘口补跑；缺凭据、接口失败都不补造任何 line/odds。
+          python -m ah.odds_snapshots close --backfill
+      - name: Record capture fact
+        if: always()
+        env:
+          OUTCOME: ${{ steps.snap.outcome }}
+        run: |
+          mkdir -p data
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          from datetime import datetime, timezone
+          outcome = os.environ.get("OUTCOME", "未取得")
+          close_rows = 0
+          for p in sorted(Path("data/snapshots/odds").glob("*.csv")):
+              try:
+                  for line in p.read_text(encoding="utf-8", errors="replace").splitlines():
+                      parts = line.split(",")
+                      if len(parts) > 2 and parts[2].strip() == "close":
+                          close_rows += 1
+              except OSError:
+                  pass
+          fact = {
+              "schema": 1,
+              "checked_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "capture_outcome": outcome,
+              "close_rows_in_repo": close_rows,
+              "note": "只记录真实存在的 stage=close 行数；失败不补造盘口、不推断原因",
+              "unverified": ["收盘快照是否覆盖全部已结算场次", "收盘价是否即该机构最终收盘价"],
+          }
+          Path("data/close_capture.json").write_text(
+              json.dumps(fact, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          print("CLOSE_CAPTURE", json.dumps(fact, ensure_ascii=False))
+          PY
+      - name: Commit close snapshots and fact
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/snapshots/odds data/close_capture.json 2>/dev/null || true
+          if git diff --cached --quiet; then echo "NO_CHANGE"; exit 0; fi
+          git commit -m "DATA SOURCE: captured stage=close odds snapshots (facts only)"
+          git push origin HEAD:main

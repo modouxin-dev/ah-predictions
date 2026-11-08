@@ -344,3 +344,85 @@ cross_verification_draft:
     field: "abs(ah_home_line) >= 1.75 （主盘行）"
     output: "status_detail 追加 deep_line；summary.matches[].deep_line=true；出单侧直接拦截"
     check_stages: [report, close]                              # 任一阶段主线达到深盘即拦截
+
+
+# ============================================================================
+# DATA SOURCE: 2026-11-08 用户授权新增的两个声明块
+# 说明：以下两块是**策略/声明**，不改上面任何 provider 的 enabled、核验或采集算法。
+# ============================================================================
+
+# 5 个需注册接口正式声明为「可选增强」，不是硬依赖。
+# 凭据只从环境变量读取；缺凭据时按 on_missing 跳过并写事实，绝不猜测或补造。
+# as_of / coverage_status 为声明元数据，不代表运行时数据充足。
+credential_policy:
+  default_mode: optional_enhancement
+  on_missing: skip_with_fact
+  note: "声明只代表接线策略；编排里出现 secrets.NAME 不等于 Secret 已配置、密钥有效或数据充足"
+  sources:
+    - source_id: api_football
+      env_var: API_FOOTBALL_KEY
+      client_file: src/ah/api_football.py
+      mode: optional_enhancement
+      on_missing: skip_with_fact
+      as_of: "2026-11-08"
+      coverage_status: "声明；实际覆盖由 source-probe 运行时自检给出，不静态断言"
+    - source_id: the_odds_api
+      env_var: ODDS_API_KEY
+      client_file: src/ah/odds_api.py
+      mode: optional_enhancement
+      on_missing: skip_with_fact
+      as_of: "2026-11-08"
+      coverage_status: "声明；实际覆盖由 source-probe 运行时自检给出，不静态断言"
+    - source_id: football_data
+      env_var: FOOTBALL_DATA_KEY
+      client_file: src/ah/football_data.py
+      mode: optional_enhancement
+      on_missing: skip_with_fact
+      as_of: "2026-11-08"
+      coverage_status: "声明；欧洲联赛第二比分源，覆盖有限，不静态断言"
+    - source_id: fivedollar
+      env_var: FIVEDOLLAR_KEY
+      client_file: src/ah/fivedollar.py
+      mode: optional_enhancement
+      on_missing: skip_with_fact
+      as_of: "2026-11-08"
+      coverage_status: "声明；实际覆盖由运行时给出，不静态断言"
+    - source_id: oddspapi
+      env_var: ODDSPAPI_KEY
+      client_file: src/ah/oddspapi.py
+      mode: optional_enhancement
+      on_missing: skip_with_fact
+      as_of: "2026-11-08"
+      coverage_status: "声明；当前日报 picks 全来自此源，缺凭据时按事实跳过而非替代"
+
+# 第三比分真值源（免注册、只读核对）。
+# 只抽页面里明确写出的「两队 + 全场比分」；认不出格式就返回空，绝不推断或补全。
+# 真值写回默认关闭：需 AH_THIRD_SCORE_FALLBACK=1 且 >=2 个独立 source_id 完全一致。
+score_truth:
+  enabled: true
+  fallback_env: AH_THIRD_SCORE_FALLBACK
+  min_independent_sources: 2
+  note: "只做一致性核对与冲突可见化；AGREE 不等于真值已证明，DISAGREE 不自动改写结算"
+  sources:
+    - source_id: titan007_live_fixtures
+      source_url: "https://live.titan007.com/vbsxml/bfdata_ut.js?r=007"
+      parser: generic
+      enabled: true
+      as_of: "2026-11-08"
+      coverage_status: "保守解析；实际可达性与覆盖由运行时 fetch_facts 给出，不静态断言"
+      headers:
+        Referer: "https://live.titan007.com/"
+    - source_id: afc_official_scores
+      source_url: "https://www.the-afc.com/en/club/afc_champions_league_elite.html"
+      parser: afc_scores
+      enabled: true
+      as_of: "2026-11-08"
+      coverage_status: "仅落地页 SEO 区块列出最近有战报/集锦的亚冠比赛；未列出记暂无"
+      headers: {}
+    - source_id: jleague_acle
+      source_url: "https://www.jleague.jp/en/acle/game/"
+      parser: generic
+      enabled: true
+      as_of: "2026-11-08"
+      coverage_status: "仅日本球队亚冠比赛页；认不出格式返回空"
+      headers: {}

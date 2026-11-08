@@ -32,6 +32,9 @@ jobs:
           # 注册源自检之外，也看一眼免注册公开源是否可连通；只记 HTTP 状态，
           # 不解析内容、不生成赛程/盘口/水位、不写报告、不推断失败原因。
           python -m ah source-audit --probe-keyless | tee keyless_source_facts.txt
+      - name: Credential policy facts (optional enhancement declarations)
+        continue-on-error: true
+        run: python -m ah source-policy --out source_policy_facts.json
       - name: Record observable facts only
         continue-on-error: true
         run: |
@@ -45,4 +48,5 @@ jobs:
             source_probe_facts.txt
             source_probe_facts.json
             keyless_source_facts.txt
+            source_policy_facts.json
           if-no-files-found: ignore

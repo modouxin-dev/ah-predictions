@@ -43,8 +43,9 @@ MIN_SAMPLE = 100         # 满 100 场（有 CLV 的已结算场次）才评定�
 #   close_odds_opp 收盘时其他结果赔率，多个用 ';' 分隔（ah/ou 1 个，1x2 2 个）
 #   close_fair_p   已去水的收盘公平概率（有则优先于 close_odds/close_odds_opp）
 #   close_captured_at 收盘快照时间
-EXTRA_FIELDS = ["generated_at", "model_p", "market_p", "close_line", "close_odds", "close_odds_opp",
-                "close_fair_p", "close_captured_at"]
+# DATA SOURCE: 2026-11-08 —— close_* 五列已并入 settle.LEDGER_FIELDS（官方台账也要用），
+# 这里只保留实验盘独有的 3 列，避免列名重复、避免两套收盘口径。
+EXTRA_FIELDS = ["generated_at", "model_p", "market_p"]
 EXPERIMENT_FIELDS = LEDGER_FIELDS + EXTRA_FIELDS
 PICK_FIELDS = ("date", "match_id", "kickoff_utc", "track", "model_id", "model_version", "market", "pick_side",
                "pick", "line", "odds_if_known", "odds_format", "generated_at", "model_p", "market_p")
