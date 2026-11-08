@@ -1,0 +1,124 @@
+{
+  "schema": 1,
+  "checked_at": "2026-11-08T15:40:35Z",
+  "evidence_grade": "【已验证】环境变量布尔事实 + 静态文件文本事实",
+  "mode": "optional_enhancement",
+  "policy": [
+    {
+      "source_id": "api_football",
+      "env_var": "API_FOOTBALL_KEY",
+      "client_file": "src/ah/api_football.py",
+      "mode": "optional_enhancement",
+      "on_missing": "skip_with_fact",
+      "as_of": "2026-11-08",
+      "coverage_status": "声明；实际覆盖由 source-probe 运行时自检给出，不静态断言",
+      "credential_present": true,
+      "decision": "active",
+      "note": "只判断当前进程是否注入该变量；不代表 Secret 已配置、密钥有效、订阅激活或数据充足"
+    },
+    {
+      "source_id": "the_odds_api",
+      "env_var": "ODDS_API_KEY",
+      "client_file": "src/ah/odds_api.py",
+      "mode": "optional_enhancement",
+      "on_missing": "skip_with_fact",
+      "as_of": "2026-11-08",
+      "coverage_status": "声明；实际覆盖由 source-probe 运行时自检给出，不静态断言",
+      "credential_present": false,
+      "decision": "skipped_no_credential",
+      "note": "只判断当前进程是否注入该变量；不代表 Secret 已配置、密钥有效、订阅激活或数据充足"
+    },
+    {
+      "source_id": "football_data",
+      "env_var": "FOOTBALL_DATA_KEY",
+      "client_file": "src/ah/football_data.py",
+      "mode": "optional_enhancement",
+      "on_missing": "skip_with_fact",
+      "as_of": "2026-11-08",
+      "coverage_status": "声明；欧洲联赛第二比分源，覆盖有限，不静态断言",
+      "credential_present": true,
+      "decision": "active",
+      "note": "只判断当前进程是否注入该变量；不代表 Secret 已配置、密钥有效、订阅激活或数据充足"
+    },
+    {
+      "source_id": "fivedollar",
+      "env_var": "FIVEDOLLAR_KEY",
+      "client_file": "src/ah/fivedollar.py",
+      "mode": "optional_enhancement",
+      "on_missing": "skip_with_fact",
+      "as_of": "2026-11-08",
+      "coverage_status": "声明；实际覆盖由运行时给出，不静态断言",
+      "credential_present": false,
+      "decision": "skipped_no_credential",
+      "note": "只判断当前进程是否注入该变量；不代表 Secret 已配置、密钥有效、订阅激活或数据充足"
+    },
+    {
+      "source_id": "oddspapi",
+      "env_var": "ODDSPAPI_KEY",
+      "client_file": "src/ah/oddspapi.py",
+      "mode": "optional_enhancement",
+      "on_missing": "skip_with_fact",
+      "as_of": "2026-11-08",
+      "coverage_status": "声明；当前日报 picks 全来自此源，缺凭据时按事实跳过而非替代",
+      "credential_present": false,
+      "decision": "skipped_no_credential",
+      "note": "只判断当前进程是否注入该变量；不代表 Secret 已配置、密钥有效、订阅激活或数据充足"
+    }
+  ],
+  "contract": [
+    {
+      "source_id": "api_football",
+      "client_file": "src/ah/api_football.py",
+      "env_var": "API_FOOTBALL_KEY",
+      "file_exists": true,
+      "env_var_referenced": true,
+      "status": "CREDENTIAL_GATE_PRESENT"
+    },
+    {
+      "source_id": "the_odds_api",
+      "client_file": "src/ah/odds_api.py",
+      "env_var": "ODDS_API_KEY",
+      "file_exists": true,
+      "env_var_referenced": true,
+      "status": "CREDENTIAL_GATE_PRESENT"
+    },
+    {
+      "source_id": "football_data",
+      "client_file": "src/ah/football_data.py",
+      "env_var": "FOOTBALL_DATA_KEY",
+      "file_exists": true,
+      "env_var_referenced": true,
+      "status": "CREDENTIAL_GATE_PRESENT"
+    },
+    {
+      "source_id": "fivedollar",
+      "client_file": "src/ah/fivedollar.py",
+      "env_var": "FIVEDOLLAR_KEY",
+      "file_exists": true,
+      "env_var_referenced": true,
+      "status": "CREDENTIAL_GATE_PRESENT"
+    },
+    {
+      "source_id": "oddspapi",
+      "client_file": "src/ah/oddspapi.py",
+      "env_var": "ODDSPAPI_KEY",
+      "file_exists": true,
+      "env_var_referenced": true,
+      "status": "CREDENTIAL_GATE_PRESENT"
+    }
+  ],
+  "summary": {
+    "declared": 5,
+    "active": 2,
+    "skipped_no_credential": 3,
+    "credential_gate_present": 5,
+    "gate_not_verified": 0
+  },
+  "note": "5 个需注册源已声明为可选增强：缺凭据时跳过并留事实，不作为硬依赖；只判断当前进程是否注入变量，不读值、不判断有效性；编排声明 secret 不等于 Secret 已配置；不推断线上状态，不阻断采集",
+  "unverified": [
+    "Actions Secrets 是否真实存在且名字一致（本会话 /actions/secrets 返回 403）",
+    "key 有效性、订阅档位、额度与数据覆盖（静态文件无法核验）",
+    "CI 运行时各 provider 实际是否被跳过（需读运行事实文件）",
+    "Telegram 接收端（本命令不发送任何消息）"
+  ]
+}

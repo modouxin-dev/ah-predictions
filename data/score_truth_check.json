@@ -1,0 +1,305 @@
+{
+  "schema": 1,
+  "checked_at": "2026-11-08T15:40:34Z",
+  "date_filter": "未取得",
+  "evidence_grade": "【已验证】本地解析与声明事实",
+  "ledger_rows": 24,
+  "sources_declared": [
+    "titan007_live_fixtures",
+    "afc_official_scores",
+    "jleague_acle"
+  ],
+  "fetch_facts": [
+    {
+      "source_id": "titan007_live_fixtures",
+      "source_url": "https://live.titan007.com/vbsxml/bfdata_ut.js",
+      "as_of": "2026-11-08",
+      "coverage_status": "保守解析；实际可达性与覆盖由运行时 fetch_facts 给出，不静态断言",
+      "parser": "generic",
+      "status": "NO_EXPLICIT_SCORE_FOUND",
+      "claims": 0,
+      "error_type": "ConnectionError"
+    },
+    {
+      "source_id": "afc_official_scores",
+      "source_url": "https://www.the-afc.com/en/club/afc_champions_league_elite.html",
+      "as_of": "2026-11-08",
+      "coverage_status": "仅落地页 SEO 区块列出最近有战报/集锦的亚冠比赛；未列出记暂无",
+      "parser": "afc_scores",
+      "status": "PARSED",
+      "claims": 3,
+      "error_type": "未取得"
+    },
+    {
+      "source_id": "jleague_acle",
+      "source_url": "https://www.jleague.jp/en/acle/game/",
+      "as_of": "2026-11-08",
+      "coverage_status": "仅日本球队亚冠比赛页；认不出格式返回空",
+      "parser": "generic",
+      "status": "PARSED",
+      "claims": 1,
+      "error_type": "未取得"
+    }
+  ],
+  "claims_total": 4,
+  "verdict_counts": {
+    "AGREE": 0,
+    "DISAGREE": 0,
+    "THIRD_UNAVAILABLE": 15,
+    "PRIMARY_MISSING": 9,
+    "NO_MATCH": 0
+  },
+  "rows": [
+    {
+      "match_id": "titan007-3068888",
+      "home": "武里南联 Buriram United",
+      "away": "鹿岛鹿角 Kashima Antlers",
+      "primary_result": "未取得",
+      "third_claims": [
+        "0-0@afc_official_scores"
+      ],
+      "independent_sources": [
+        "afc_official_scores"
+      ],
+      "verdict": "PRIMARY_MISSING",
+      "note": "主源无比分；不推断、不补造"
+    },
+    {
+      "match_id": "titan007-3073152",
+      "home": "波尔图 Porto",
+      "away": "那不勒斯 Napoli",
+      "primary_result": "4-1",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
+    },
+    {
+      "match_id": "apif-1630401",
+      "home": "町田泽维亚 Machida Zelvia",
+      "away": "上海申花 Shanghai Shenhua",
+      "primary_result": "2-1",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
+    },
+    {
+      "match_id": "fd-560632",
+      "home": "Leeds United FC",
+      "away": "Tottenham Hotspur FC",
+      "primary_result": "1-0",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
+    },
+    {
+      "match_id": "fd-558532",
+      "home": "Torino FC",
+      "away": "US Lecce",
+      "primary_result": "1-1",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
+    },
+    {
+      "match_id": "fd-558534",
+      "home": "Cagliari Calcio",
+      "away": "Frosinone Calcio",
+      "primary_result": "1-0",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
+    },
+    {
+      "match_id": "fd-561932",
+      "home": "Derby County FC",
+      "away": "Bolton Wanderers FC",
+      "primary_result": "3-1",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
+    },
+    {
+      "match_id": "fd-561929",
+      "home": "Queens Park Rangers FC",
+      "away": "Lincoln City FC",
+      "primary_result": "2-1",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
+    },
+    {
+      "match_id": "fd-561937",
+      "home": "Preston North End FC",
+      "away": "Southampton FC",
+      "primary_result": "1-0",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
+    },
+    {
+      "match_id": "fd-560632",
+      "home": "Leeds United FC",
+      "away": "Tottenham Hotspur FC",
+      "primary_result": "1-0",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
+    },
+    {
+      "match_id": "fd-560633",
+      "home": "Fulham FC",
+      "away": "Newcastle United FC",
+      "primary_result": "1-1",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
+    },
+    {
+      "match_id": "fd-561936",
+      "home": "West Bromwich Albion FC",
+      "away": "Millwall FC",
+      "primary_result": "3-0",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
+    },
+    {
+      "match_id": "fd-561930",
+      "home": "Cardiff City FC",
+      "away": "Burnley FC",
+      "primary_result": "5-4",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
+    },
+    {
+      "match_id": "fd-558534",
+      "home": "Cagliari Calcio",
+      "away": "Frosinone Calcio",
+      "primary_result": "1-0",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
+    },
+    {
+      "match_id": "fd-561931",
+      "home": "Charlton Athletic FC",
+      "away": "Sheffield United FC",
+      "primary_result": "2-1",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
+    },
+    {
+      "match_id": "fd-560635",
+      "home": "Crystal Palace FC",
+      "away": "Liverpool FC",
+      "primary_result": "未取得",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "PRIMARY_MISSING",
+      "note": "主源无比分；不推断、不补造"
+    },
+    {
+      "match_id": "fd-558531",
+      "home": "AS Roma",
+      "away": "US Sassuolo Calcio",
+      "primary_result": "3-0",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "THIRD_UNAVAILABLE",
+      "note": "第三源无可用声明；只记事实，不推断缺失原因"
+    },
+    {
+      "match_id": "fd-560639",
+      "home": "Manchester United FC",
+      "away": "Aston Villa FC",
+      "primary_result": "未取得",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "PRIMARY_MISSING",
+      "note": "主源无比分；不推断、不补造"
+    },
+    {
+      "match_id": "fd-560636",
+      "home": "Sunderland AFC",
+      "away": "Chelsea FC",
+      "primary_result": "未取得",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "PRIMARY_MISSING",
+      "note": "主源无比分；不推断、不补造"
+    },
+    {
+      "match_id": "fd-559634",
+      "home": "Angers SCO",
+      "away": "OGC Nice",
+      "primary_result": "未取得",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "PRIMARY_MISSING",
+      "note": "主源无比分；不推断、不补造"
+    },
+    {
+      "match_id": "fd-560637",
+      "home": "Ipswich Town FC",
+      "away": "AFC Bournemouth",
+      "primary_result": "未取得",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "PRIMARY_MISSING",
+      "note": "主源无比分；不推断、不补造"
+    },
+    {
+      "match_id": "fd-559633",
+      "home": "Le Havre AC",
+      "away": "FC Lorient",
+      "primary_result": "未取得",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "PRIMARY_MISSING",
+      "note": "主源无比分；不推断、不补造"
+    },
+    {
+      "match_id": "fd-560638",
+      "home": "Brighton & Hove Albion FC",
+      "away": "Brentford FC",
+      "primary_result": "未取得",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "PRIMARY_MISSING",
+      "note": "主源无比分；不推断、不补造"
+    },
+    {
+      "match_id": "fd-559631",
+      "home": "Le Mans FC",
+      "away": "AS Monaco FC",
+      "primary_result": "未取得",
+      "third_claims": [],
+      "independent_sources": [],
+      "verdict": "PRIMARY_MISSING",
+      "note": "主源无比分；不推断、不补造"
+    }
+  ],
+  "fallback_enabled": false,
+  "note": "只读核对：AGREE 不等于真值已证明，DISAGREE 不自动改写结算；抓不到写未取得，不推断原因、不补造比分、不回显密钥或完整 URL",
+  "unverified": [
+    "免注册源真实可达性与覆盖率（由运行时 fetch_facts 给出，不静态断言）",
+    "页面解析规则是否覆盖目标联赛（保守解析，认不出即返回空）",
+    "Telegram 接收端（本命令不发送任何消息）"
+  ]
+}

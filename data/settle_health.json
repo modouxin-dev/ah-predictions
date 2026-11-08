@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-07T22:55:44Z",
-  "run_id": "42422800134",
+  "checked_at": "2026-11-08T15:40:35Z",
+  "run_id": "42495913407",
   "job_conclusion": "success",
   "event": "schedule",
   "source": "data/predictions.csv",
-  "total_rows": 21,
-  "settled_rows": 15,
-  "unsettled_rows": 6,
+  "total_rows": 24,
+  "settled_rows": 16,
+  "unsettled_rows": 8,
   "unsettled": [
     {
       "date": "2026-11-08",
@@ -19,23 +19,9 @@
       "confidence": "high",
       "track": "official",
       "result": "未取得",
-      "minutes_since_kickoff": -905,
+      "minutes_since_kickoff": 100,
       "autofill_time_eligible": false,
-      "attribution": "尚未开赛，按规则不回填"
-    },
-    {
-      "date": "2026-11-08",
-      "match_id": "fd-558531",
-      "home": "AS Roma",
-      "away": "US Sassuolo Calcio",
-      "kickoff_utc": "2026-11-07T19:45:00Z",
-      "status": "active",
-      "confidence": "high",
-      "track": "official",
-      "result": "未取得",
-      "minutes_since_kickoff": 190,
-      "autofill_time_eligible": true,
-      "attribution": "已满足 110 分钟回填条件，仍未取得赛果；原因见 settle 运行日志，本文件不推断"
+      "attribution": "已开赛但距开球不足 110 分钟，按规则暂不回填"
     },
     {
       "date": "2026-11-08",
@@ -47,7 +33,7 @@
       "confidence": "high",
       "track": "official",
       "result": "未取得",
-      "minutes_since_kickoff": -1055,
+      "minutes_since_kickoff": -50,
       "autofill_time_eligible": false,
       "attribution": "尚未开赛，按规则不回填"
     },
@@ -61,9 +47,9 @@
       "confidence": "high",
       "track": "official",
       "result": "未取得",
-      "minutes_since_kickoff": -905,
+      "minutes_since_kickoff": 100,
       "autofill_time_eligible": false,
-      "attribution": "尚未开赛，按规则不回填"
+      "attribution": "已开赛但距开球不足 110 分钟，按规则暂不回填"
     },
     {
       "date": "2026-11-08",
@@ -75,7 +61,7 @@
       "confidence": "high",
       "track": "official",
       "result": "未取得",
-      "minutes_since_kickoff": -1040,
+      "minutes_since_kickoff": -35,
       "autofill_time_eligible": false,
       "attribution": "尚未开赛，按规则不回填"
     },
@@ -89,13 +75,55 @@
       "confidence": "low",
       "track": "official",
       "result": "未取得",
-      "minutes_since_kickoff": -905,
+      "minutes_since_kickoff": 100,
+      "autofill_time_eligible": false,
+      "attribution": "已开赛但距开球不足 110 分钟，按规则暂不回填"
+    },
+    {
+      "date": "2026-11-08",
+      "match_id": "fd-559633",
+      "home": "Le Havre AC",
+      "away": "FC Lorient",
+      "kickoff_utc": "2026-11-08T16:15:00Z",
+      "status": "active",
+      "confidence": "low",
+      "track": "official",
+      "result": "未取得",
+      "minutes_since_kickoff": -35,
+      "autofill_time_eligible": false,
+      "attribution": "尚未开赛，按规则不回填"
+    },
+    {
+      "date": "2026-11-08",
+      "match_id": "fd-560638",
+      "home": "Brighton & Hove Albion FC",
+      "away": "Brentford FC",
+      "kickoff_utc": "2026-11-08T14:00:00Z",
+      "status": "active",
+      "confidence": "low",
+      "track": "official",
+      "result": "未取得",
+      "minutes_since_kickoff": 100,
+      "autofill_time_eligible": false,
+      "attribution": "已开赛但距开球不足 110 分钟，按规则暂不回填"
+    },
+    {
+      "date": "2026-11-08",
+      "match_id": "fd-559631",
+      "home": "Le Mans FC",
+      "away": "AS Monaco FC",
+      "kickoff_utc": "2026-11-08T16:15:00Z",
+      "status": "active",
+      "confidence": "low",
+      "track": "official",
+      "result": "未取得",
+      "minutes_since_kickoff": -35,
       "autofill_time_eligible": false,
       "attribution": "尚未开赛，按规则不回填"
     }
   ],
   "note": "结算事实盘点：仅读取 predictions.csv 现有字段；赛果字段为空即写『未取得』；不填比分、不推断原因、不假称已补齐；赛果由 settle 任务按已配置数据源回填。 归因仅按开球时间做事实分类，不推断数据源失败原因、不补造比分。",
-  "autofill_eligible_unsettled": 1,
+  "autofill_eligible_unsettled": 0,
   "autofill_minutes_rule": 110,
-  "alert": "SETTLE_BACKLOG 已有 1 场满足回填时间条件但仍未取得赛果；不假称已补齐"
+  "alert": "NO_TIME_ELIGIBLE_BACKLOG 当前无超过回填时限的未结算条目"
 }
