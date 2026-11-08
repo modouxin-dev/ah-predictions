@@ -134,6 +134,22 @@
       "run_id": "42401470416",
       "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-08.json",
       "evidence": "Telegram sendMessage HTTP 200 / ok=true / message_id"
+    },
+    {
+      "date": "2026-11-08",
+      "report_sha": "a3f8bc03d91faf69",
+      "chat_id": "-1004312560482",
+      "status": "sent",
+      "message_ids": [
+        547,
+        548
+      ],
+      "picks_count": 7,
+      "slot": "1",
+      "sent_at": "2026-11-08T06:37:31Z",
+      "run_id": "42454260099",
+      "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-08.json",
+      "evidence": "Telegram sendMessage HTTP 200 / ok=true / message_id"
     }
   ]
 }
