@@ -505,3 +505,12 @@ PYTHONPATH=src python -m ah delivery preflight
 
 三类授权分别记录；为避免每次 push 触发 CI 的中间态不一致，采用**链式 3 个 commit、
 只更新一次 ref**。令牌保留，未注销、未轮换、未外传。
+
+### ROUND 3 首跑复盘（真实 CI）
+
+tests / pages / source-probe / accuracy-review 四个运行 success；`data/rule_lab.json`
+已落 main，证明回测命令在真实 Python 3.12 跑通。`rule-lab.yml` 首跑失败在**提交步骤**
+（裸 `git push` 遇并发 non-fast-forward），事实生成步骤本身 success。已把两个新工作流
+改用 `scripts/safe_commit.sh`（锁 + rebase + 重试），并加契约测试防回退。
+详见 `docs/upgrade-2026-11-08-round3.md` 第 G 节。收盘线采集运行当时仍在 in_progress，
+`stage=close` 是否真采到仍属未验证。令牌保留。

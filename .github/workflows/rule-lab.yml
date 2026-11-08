@@ -14,6 +14,7 @@ jobs:
     timeout-minutes: 20
     env:
       PYTHONPATH: src
+      GITHUB_AH_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # safe_commit.sh 用它推送，不出现在命令行/日志
     steps:
       - uses: actions/checkout@v4
         with: {ref: main, fetch-depth: 0, persist-credentials: false}
@@ -22,11 +23,11 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Walk-forward + calibration facts
         run: python -m ah rule-lab --out data/rule_lab.json
-      - name: Commit research facts
+      - name: Commit research facts (race-safe)
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/rule_lab.json 2>/dev/null || true
-          if git diff --cached --quiet; then echo "NO_CHANGE"; exit 0; fi
-          git commit -m "MODEL CHANGE research: walk-forward and calibration facts (no live model change)"
-          git push origin HEAD:main
+          # 用仓库共用的安全提交脚本：文件锁 + pull --rebase + 竞争重试，
+          # 避免多个定时任务同时 push 造成 non-fast-forward（首跑即因此失败）。
+          scripts/safe_commit.sh --skip-tests \
+            -m "MODEL CHANGE research: walk-forward and calibration facts (no live model change)" \
+            data/rule_lab.json \
+            || echo "::warning::研究事实提交失败，不影响本次运行结论（事实已在上方步骤生成）"

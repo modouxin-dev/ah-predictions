@@ -86,3 +86,13 @@ def test_round3_data_source_and_model_change_wiring():
     rtext = "\n".join((s.get("run") or "") for j in review["jobs"].values() for s in j["steps"])
     assert "rule-lab" in rtext
     assert (WF / "close-snapshots.yml").exists() and (WF / "rule-lab.yml").exists()
+
+
+def test_new_fact_workflows_use_race_safe_commit():
+    """首跑事故复盘：rule-lab 与 close-snapshots 的裸 git push 在并发定时任务下
+    会 non-fast-forward 失败；必须走仓库共用的 safe_commit.sh（锁 + rebase + 重试）。"""
+    for name in ("rule-lab.yml", "close-snapshots.yml"):
+        d = _load(name)
+        text = "\n".join((s.get("run") or "") for j in d["jobs"].values() for s in j["steps"])
+        assert "scripts/safe_commit.sh" in text, name
+        assert "git push origin HEAD:main" not in text, name

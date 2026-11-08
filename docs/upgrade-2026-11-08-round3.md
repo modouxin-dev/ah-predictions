@@ -171,3 +171,34 @@
 `config/settings.yaml` 的阈值与 policy / `config/sources.yaml` 既有 provider 块 /
 任何 provider 的采集与核验算法；未编造任何赛程、盘口、水位、比分、推荐、命中率、
 ROI、CLV 数值或校准概率；未发送 Telegram；令牌保留。
+
+
+## G. 首跑事故与修复（真实 CI，【已验证】）
+
+三类提交上 main 后，我触发了 4 个**只产事实、不发消息**的工作流。真实结论：
+
+| 运行 | 结论 | 说明 |
+|---|---|---|
+| `42481957841` tests | success | 3.12 真实环境全套通过 |
+| `42481957682` pages | success | 站点构建通过 |
+| `42482023855` Source runtime selfcheck | success | 注册源自检 + source-policy 事实 |
+| `42482027896` accuracy-review | success | `data/rule_lab.json` 已落 main |
+| `42482021772` Online-rule research | **failure** | 见下 |
+| `42482025915` Capture closing lines | in_progress（观察时） | `close --backfill` 仍在采集 |
+
+**失败根因（可复核）**：run `42482021772` 的
+`Walk-forward + calibration facts` 步骤 **success**（命令在真实 3.12 跑通），
+失败的是第 6 步 `Commit research facts`——我新写的两个 workflow 用了裸
+`git commit && git push origin HEAD:main`，而多个定时任务同时改 main，
+造成 non-fast-forward。这是**编排缺陷，不是代码或模型缺陷**，也不影响事实生成。
+
+**修复**：`rule-lab.yml` / `close-snapshots.yml` 的提交步骤统一改用仓库已有的
+`scripts/safe_commit.sh --skip-tests`（文件锁 + `pull --rebase` + 竞争退避重试），
+并补 `GITHUB_AH_TOKEN`；提交失败降级为 `::warning::`，不再把整个 run 标红。
+`tests/test_workflow_contracts.py` 新增契约测试，静态断言两个 workflow 不含裸 push。
+修复后本地 `pytest 988 passed, 1 skipped`。
+
+**仍【未验证】**：close 快照本次是否真采到 `stage=close` 行（该 run 观察时仍在跑）、
+第三比分源可用性、5 个 Secret 有效性、价格型 CLV、概率校准、线上规则回测结论、
+Telegram 接收端。事实文件 `data/close_capture.json` / `data/source_policy.json` /
+`data/score_truth_check.json` 在观察时尚未落 main，属「已接线、待定时班次产出」。

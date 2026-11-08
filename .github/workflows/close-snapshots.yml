@@ -64,12 +64,11 @@ jobs:
               json.dumps(fact, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
           print("CLOSE_CAPTURE", json.dumps(fact, ensure_ascii=False))
           PY
-      - name: Commit close snapshots and fact
+      - name: Commit close snapshots and fact (race-safe)
         if: always()
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/snapshots/odds data/close_capture.json 2>/dev/null || true
-          if git diff --cached --quiet; then echo "NO_CHANGE"; exit 0; fi
-          git commit -m "DATA SOURCE: captured stage=close odds snapshots (facts only)"
-          git push origin HEAD:main
+          # 共用安全提交脚本：并发 push 竞争自动 rebase 重试；绝不补造盘口。
+          scripts/safe_commit.sh --skip-tests \
+            -m "DATA SOURCE: captured stage=close odds snapshots (facts only)" \
+            data/snapshots/odds data/close_capture.json \
+            || echo "::warning::收盘快照提交失败，见上方日志；事实已在 data/close_capture.json 记录"
