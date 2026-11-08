@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "checked_at": "2026-11-08T14:01:35Z",
+ "checked_at": "2026-11-08T14:58:12Z",
  "source": "reports/*/*/*.json（只读；不含 rechecks）",
  "report_files": 5,
  "category_buckets": {
@@ -24,7 +24,7 @@
   "timing": "时间窗口",
   "unknown": "复合/未分类（不猜测）"
  },
- "note": "只读取 reports/*/*/*.json 已落盘字段：watchlist[].withheld_category、not_covered、collection_notes、picks、collection_errors。缺字段写『未取得』，不推断未进候选的场次、不补造赛程/盘口/比分/倾向、不改任何评分或阈值。0 场日也照常输出事实行。",
+ "note": "只读取 reports/*/*/*.json 已落盘字段：window_fixtures/screening_cap/outside_screen（新报告结构化）、not_covered、collection_notes、picks、collection_errors。缺字段写『未取得』，不推断未进候选的场次、不补造赛程/盘口/比分/倾向、不改任何评分或阈值。0 场日也照常输出事实行。",
  "days": [
   {
    "date": "2026-11-04",
@@ -46,7 +46,8 @@
     "window_fixtures": "未取得",
     "screening_cap": "未取得",
     "outside_screen": "未取得",
-    "status": "NOT_RECORDED"
+    "status": "NOT_RECORDED",
+    "source": "NOT_RECORDED"
    },
    "verification_facts": [],
    "state_gap_note_count": 0,
@@ -85,7 +86,8 @@
     "window_fixtures": "未取得",
     "screening_cap": "未取得",
     "outside_screen": "未取得",
-    "status": "NOT_RECORDED"
+    "status": "NOT_RECORDED",
+    "source": "NOT_RECORDED"
    },
    "verification_facts": [],
    "state_gap_note_count": 0,
@@ -124,7 +126,8 @@
     "window_fixtures": 64,
     "screening_cap": 32,
     "outside_screen": 32,
-    "status": "RECORDED"
+    "status": "RECORDED",
+    "source": "not_covered 文本正则（旧报告兼容）"
    },
    "verification_facts": [
     "no_quotes 1场",
@@ -184,7 +187,8 @@
     "window_fixtures": 79,
     "screening_cap": 32,
     "outside_screen": 47,
-    "status": "RECORDED"
+    "status": "RECORDED",
+    "source": "not_covered 文本正则（旧报告兼容）"
    },
    "verification_facts": [
     "sources:1<2 1场",
@@ -242,7 +246,8 @@
     "window_fixtures": 51,
     "screening_cap": 32,
     "outside_screen": 19,
-    "status": "RECORDED"
+    "status": "RECORDED",
+    "source": "not_covered 文本正则（旧报告兼容）"
    },
    "verification_facts": [
     "no_quotes 1场",
