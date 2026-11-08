@@ -2,9 +2,10 @@ name: pages
 on:
   push:
     branches: [main]
-    paths: ["reports/**", "data/**", "src/ah/**", "templates/**", "config/settings.yaml", ".github/workflows/pages.yml"]
+    paths: ["reports/**", "data/**", "docs/review/**", "src/ah/**", "templates/**", "config/settings.yaml", ".github/workflows/pages.yml"]
   workflow_run:
-    workflows: [daily-report, settle-and-stats]
+    # 复盘/回测产物由这两个定时任务写回 main；跑完立即重建站点，不必等下一次 push。
+    workflows: [daily-report, settle-and-stats, accuracy-review, research-backtest]
     types: [completed]
   workflow_dispatch:
 permissions:

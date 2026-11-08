@@ -11,6 +11,7 @@ import argparse
 import csv
 import html
 import json
+import re
 import shutil
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -18,13 +19,24 @@ from zoneinfo import ZoneInfo
 
 import yaml
 
-from . import CONFIG, DATA, REPORTS, SITE, TEMPLATES, model_lab, policy, records, source_status
-from .stats import compute, summary_line, window
+from . import CONFIG, DATA, REPORTS, ROOT, SITE, TEMPLATES, model_lab, policy, records, source_status
+from .review import DISCLAIMER as REVIEW_DISCLAIMER, MIN_BUCKET_SAMPLE, MIN_SAMPLE, MISSING
+from .stats import compute, window
 
 from .timeutil import BJT
 CONF = {"high": "高", "medium": "中", "low": "低", "高": "高", "中": "中", "低": "低", "cancelled": "已撤销"}
-NAV = [("index.html", "今日"), ("records.html", "推荐记录"), ("stats.html", "战绩"), ("sources.html", "数据源"),
-       ("rules.html", "规则"), ("model-lab.html", "实验场")]
+NAV = [("index.html", "今日"), ("records.html", "推荐记录"), ("stats.html", "战绩"), ("review.html", "复盘"),
+       ("sources.html", "数据源"), ("rules.html", "规则"), ("model-lab.html", "实验场")]
+
+# 复盘/研究事实文件：只展示仓库里真实落盘的内容，缺失一律写「暂无」，不推断、不补造。
+REVIEW_FACTS = [
+    ("accuracy_review.json", "准确率复盘快照"),
+    ("rule_lab.json", "线上规则滚动回测"),
+    ("backtest_report.json", "时序回测报告"),
+    ("sample_gaps.json", "样本缺口盘点"),
+    ("feature_readiness.json", "因子就绪度"),
+    ("clv_backfill.json", "CLV 回填事实"),
+]
 LOCK = "🔒 VIP 可见，输入密码解锁"
 NONE = "暂无"
 CREDIT = "Football data by 5DollarFootballAPI"
@@ -78,6 +90,42 @@ def pct(x) -> str:
     return NONE if x is None else f"{x:.1%}"
 
 
+# ---------- 命中率结论门槛（与 review.py 的复盘层同一口径） ----------
+
+def quotable(decided, bucket: bool = False) -> bool:
+    """样本不足不展示命中率/ROI 结论数字：总体 30 场、分桶 10 场。"""
+    if decided is None:
+        return False
+    try:
+        return int(decided) >= (MIN_BUCKET_SAMPLE if bucket else MIN_SAMPLE)
+    except (TypeError, ValueError):
+        return False
+
+
+def site_can_quote(s) -> bool:
+    """与 review.py 一致：总体样本不足时，窗口/分桶结论也一律不输出。"""
+    return quotable((s or {}).get("overall", {}).get("decided"))
+
+
+def rate_cell(rate, decided, bucket: bool = False, s=None) -> str:
+    """不足门槛一律写「未取得」，避免把小样本当结论（复盘层同样处理）。"""
+    if s is not None and not site_can_quote(s):
+        return MISSING
+    return pct(rate) if quotable(decided, bucket) and rate is not None else MISSING
+
+
+def site_summary_line(s: dict | None) -> str:
+    """站点专用摘要。stats.py 的 summary_line 供 Telegram 使用，此处不改动、不复用。"""
+    if not s:
+        return "暂无统计数据"
+    o = s.get("overall", {})
+    n = int(o.get("decided") or 0)
+    if quotable(n):
+        return f"📊 历史命中率 {o['hit_rate']:.1%}（{n}场，{o['units']:+.2f}单位）"
+    return (f"📊 历史命中率 {MISSING} · 已结算 {n} 场 < {MIN_SAMPLE} 场门槛，"
+            f"{REVIEW_DISCLAIMER}；详见 <a href='review.html'>复盘页</a>")
+
+
 def lock(inner: str, block: bool = True) -> str:
     return f"<div class='vip'>{inner}</div><div class='vip-lock' role='button' tabindex='0'>{LOCK}</div>"
 
@@ -127,8 +175,10 @@ def page(title: str, body: str, cur: str = "", base: str = "", generated: str = 
 
 def summary_bar(today_n: int | None, today_label: str, s: dict | None, today: str) -> str:
     o = (s or {}).get("overall", {})
-    hit = f"{o['hit_rate']:.1%}" if o.get("decided") else "暂无"
-    hit_sub = f"总体命中率（{o['decided']}场）" if o.get("decided") else "总体命中率（暂无已结算）"
+    decided = o.get("decided")
+    hit = rate_cell(o.get("hit_rate"), decided, s=s)
+    hit_sub = (f"总体命中率（{decided}场）" if quotable(decided)
+               else f"总体命中率 {MISSING}（已结算 {int(decided or 0)}/{MIN_SAMPLE} 场门槛）")
     w = window((s or {}).get("series", []), today, 30)
     u = f"{w['units']:+.2f}" if w["picks"] else "暂无"
     cls = "pos" if w["picks"] and w["units"] > 0 else "neg" if w["picks"] and w["units"] < 0 else ""
@@ -337,14 +387,16 @@ def stats_brief(s: dict | None) -> str:
         return ""
     def rows(d):
         return [f"<tr><td>{e(k)}</td><td class='num'>{v['picks']}</td><td class='num'>{v['decided']}</td>"
-                f"<td class='num'>{pct(v['hit_rate']) if v['decided'] else NONE}</td><td class='num'>{units_html(v['units'])}</td></tr>"
+                f"<td class='num'>{rate_cell(v['hit_rate'], v['decided'], bucket=True, s=s)}</td>"
+                f"<td class='num'>{units_html(v['units'])}</td></tr>"
                 for k, v in d.items()]
     head = ["分组", "场次", "有效", "命中率", "盈亏"]
     body = ("<div class='grid3'>"
             + "<div><h3>总体</h3>" + tbl(head, rows({"全部": s.get("overall", {})}) if s.get("overall") else [], cls="", empty="暂无已结算推荐") + "</div>"
             + "<div><h3>分联赛</h3>" + tbl(head, rows(s.get("by_league", {})), cls="", empty="暂无已结算推荐") + "</div>"
             + "<div><h3>分信心</h3>" + tbl(head, rows(s.get("by_confidence", {})), cls="", empty="暂无已结算推荐") + "</div></div>")
-    return (f"<h2>📊 战绩概览</h2><p class='muted'>{e(summary_line(s))} · 完整图表见 <a href='stats.html'>战绩页</a></p>"
+    return (f"<h2>📊 战绩概览</h2><p class='muted'>{e(site_summary_line(s))} · 完整图表见 <a href='stats.html'>战绩页</a>。"
+            f"分桶结论需 ≥{MIN_BUCKET_SAMPLE} 场，总体结论需 ≥{MIN_SAMPLE} 场。</p>"
             + lock(body))
 
 
@@ -417,8 +469,11 @@ def chart_data(s: dict) -> dict:
     for x in series:
         labels.append(x["date"])
         cum.append(x["cum_units"])
-        h7.append(window(series, x["date"], 7)["hit_rate"])
-        h30.append(window(series, x["date"], 30)["hit_rate"])
+        w7, w30 = window(series, x["date"], 7), window(series, x["date"], 30)
+        # 总体不足 30 场时，滚动命中率一律不画（app.js 已支持 null 断点），与复盘层一致。
+        ok = site_can_quote(s)
+        h7.append(w7["hit_rate"] if ok and quotable(w7["decided"]) else None)
+        h30.append(w30["hit_rate"] if ok and quotable(w30["decided"]) else None)
         notes.append(f"{x['match']} {records.SETTLE_CN.get(x['outcome'], x['outcome'])} {x['units']:+.2f}")
     return {"labels": labels, "cum": cum, "hit7": h7, "hit30": h30, "notes": notes}
 
@@ -426,34 +481,41 @@ def chart_data(s: dict) -> dict:
 def stats_html(s: dict | None, today: str) -> str:
     if not s:
         return "<div class='empty'>暂无统计数据</div>"
-    pub = f"<div class='card'><b>{e(summary_line(s))}</b><div class='muted'>统计更新于 {bjt(s.get('updated_at'))}</div></div>"
+    pub = f"<div class='card'><b>{e(site_summary_line(s))}</b><div class='muted'>统计更新于 {bjt(s.get('updated_at'))} · 结论口径见 <a href='review.html'>复盘页</a></div></div>"
     w7, w30 = window(s.get("series", []), today, 7), window(s.get("series", []), today, 30)
 
     def kpi(w, t):
-        return (f"<div class='kpi'><b>{pct(w['hit_rate']) if w['decided'] else '暂无'}</b><span>{t}命中率"
-                f"（{w['decided']}场）</span></div>")
+        return (f"<div class='kpi'><b>{rate_cell(w['hit_rate'], w['decided'], s=s)}</b><span>{t}命中率"
+                f"（{w['decided']}场，门槛 {MIN_SAMPLE}）</span></div>")
 
     def table(title, d):
         rows = [f"<tr><td>{e(k)}</td><td data-v='{v['picks']}'>{v['picks']}</td><td data-v='{v['decided']}'>{v['decided']}</td>"
                 f"<td>{v['win']}/{v['half_win']}/{v.get('push', 0)}/{v['half_loss']}/{v['loss']}/{v.get('void', 0)}</td>"
-                f"<td data-v='{v['hit_rate'] if v['decided'] else -1}'>{pct(v['hit_rate']) if v['decided'] else NONE}</td>"
-                f"<td data-v='{v['units']}'>{units_html(v['units'])}</td><td data-v='{v['roi']}'>{pct(v['roi']) if v['decided'] else NONE}</td></tr>"
+                f"<td data-v='{v['hit_rate'] if site_can_quote(s) and quotable(v['decided'], True) else -1}'>"
+                f"{rate_cell(v['hit_rate'], v['decided'], bucket=True, s=s)}</td>"
+                f"<td data-v='{v['units']}'>{units_html(v['units'])}</td>"
+                f"<td data-v='{v['roi'] if site_can_quote(s) and quotable(v['decided'], True) else -1}'>"
+                f"{pct(v['roi']) if site_can_quote(s) and quotable(v['decided'], True) else MISSING}</td></tr>"
                 for k, v in d.items()]
         return f"<div><h2>{title}</h2>" + tbl(["分组", "场次", "有效场", "赢/赢半/走/输半/输/取消", "命中率", "盈亏(单位)", "ROI"],
                                               rows, empty="暂无已结算推荐") + "</div>"
     has = bool(s.get("series"))
     cd = chart_data(s)
-    charts = ("<div class='grid2'><div class='card'><h3>累计盈亏（单位，每注 1 单位）</h3>"
+    enough = site_can_quote(s)
+    charts = ("<div class='grid2'><div class='card'><h3>累计盈亏（单位，每注 1 单位 · 过程记录）</h3>"
               + ("<div class='chart' id='chart-units'></div>" if has else "<div class='empty'>暂无已结算推荐，结算后自动生成曲线</div>")
               + "</div><div class='card'><h3>滚动命中率（近7天 / 近30天）</h3>"
-              + ("<div class='chart' id='chart-hit'></div>" if has else "<div class='empty'>暂无已结算推荐，结算后自动生成曲线</div>")
+              + ("<div class='chart' id='chart-hit'></div>" if enough and has
+                 else f"<div class='empty'>样本不足（门槛 {MIN_SAMPLE} 场），滚动命中率 {MISSING}，不构成结论</div>")
               + "</div></div>"
               "<script id='chart-data' type='application/json'>" + json.dumps(cd, ensure_ascii=False).replace("</", "<\\/") + "</script>")
     tables = ("<div class='grid2'>" + table("总体", {"全部": s["overall"]}) + table("按联赛", s.get("by_league", {}))
               + table("按信心等级", s.get("by_confidence", {})) + table("按盘口深度", s.get("by_depth", {}))
               + table("上盘 / 下盘", s.get("by_role", {})) + table("按具体盘口", s.get("by_line", {})) + "</div>")
     note = ("<p class='muted'>命中率 = (赢 + 0.5×赢半) / (场次 − 走水 − 取消)；盈亏按每注 1 单位、港盘水位计算；"
-            "ROI = 盈亏 / 有效场次。赛前撤销的推荐记为「取消」，不计入命中率。</p>")
+            f"ROI = 盈亏 / 有效场次。赛前撤销的推荐记为「取消」，不计入命中率。{e(REVIEW_DISCLAIMER)}；"
+            f"总体结论需 ≥{MIN_SAMPLE} 场、分桶结论需 ≥{MIN_BUCKET_SAMPLE} 场，不足一律写「{MISSING}」，"
+            "与复盘层口径一致。累计盈亏曲线仅作过程记录，不是准确率结论。</p>")
     return pub + lock(f"<div class='summary' style='grid-template-columns:1fr 1fr'>{kpi(w7, '近7天')}{kpi(w30, '近30天')}</div>"
                       + charts + tables + note)
 
@@ -775,7 +837,8 @@ def rules_html(pol: dict, cfg: dict) -> str:
 # ---------- 构建 ----------
 
 def build(site: Path = SITE, reports: Path = REPORTS, data: Path = DATA, now: datetime | None = None,
-          lab: Path | None = None, lab_demo: bool = False) -> list[str]:
+          lab: Path | None = None, lab_demo: bool = False,
+          review_docs: Path | None = None) -> list[str]:
     pol = policy.load()
     cfg = settings()
     vip = str(cfg.get("vip_password_sha256") or "")
@@ -795,6 +858,25 @@ def build(site: Path = SITE, reports: Path = REPORTS, data: Path = DATA, now: da
 
     def write(name, title, body, cur="", base=""):
         (site / name).write_text(page(title, body, cur, base, gen, vip), encoding="utf-8")
+
+    # 复盘产物：读得到就展示 + 导出，读不到写「暂无」，绝不补造。
+    acc = _load_json(data / "accuracy_review.json")
+    facts = {name: _load_json(data / name) for name, _ in REVIEW_FACTS}
+    exported = []
+    for name, _ in REVIEW_FACTS:
+        obj = facts.get(name)
+        if obj is not None:
+            (site / "data" / name).write_text(json.dumps(obj, ensure_ascii=False, indent=1), encoding="utf-8")
+            exported.append(name)
+    (site / "review").mkdir(parents=True, exist_ok=True)
+    doc_links = []
+    rd = review_docs or (ROOT / "docs" / "review")
+    if rd.exists():
+        for f in sorted(rd.glob("*.md"), reverse=True):
+            write(f"review/{f.stem}.html", f"复盘 {f.stem}",
+                  md_html(f.read_text(encoding="utf-8")), "review.html", "../")
+            doc_links.append((f.stem, f.name))
+    write("review.html", "复盘", review_html(acc, facts, doc_links, exported), "review.html")
 
     latest = reps[-1] if reps else None
     n_today = len(policy.published(latest, pol)) if latest else None
@@ -828,6 +910,130 @@ def build(site: Path = SITE, reports: Path = REPORTS, data: Path = DATA, now: da
     return [r["date"] for r in reps]
 
 
+
+# ---------- 复盘页（只展示仓库里真实落盘的事实） ----------
+
+def _load_json(path: Path):
+    """读不到 / 解析失败一律返回 None：页面写「暂无」，绝不补造字段。"""
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
+def _inline_md(x: str) -> str:
+    s = e(str(x))
+    s = re.sub(r"`([^`]+)`", r"<code>\1</code>", s)
+    s = re.sub(r"\*\*([^*]+)\*\*", r"<b>\1</b>", s)
+    return s
+
+
+def md_html(md: str) -> str:
+    """复盘 Markdown -> 轻量 HTML（标题/表格/列表/引用/段落）。
+
+    只做结构转换，不改一个字；外链、图片等复杂语法按纯文本转义输出。"""
+    lines = md.splitlines()
+    out, i = [], 0
+    while i < len(lines):
+        l = lines[i].rstrip()
+        if not l.strip():
+            i += 1
+            continue
+        if l.startswith("|") and i + 1 < len(lines) and re.match(r"^\|[\s:|\-]+\|$", lines[i + 1].strip()):
+            head = [_inline_md(c.strip()) for c in l.strip().strip("|").split("|")]
+            i += 2
+            rows = []
+            while i < len(lines) and lines[i].lstrip().startswith("|"):
+                cells = [_inline_md(c.strip()) for c in lines[i].strip().strip("|").split("|")]
+                rows.append("<tr>" + "".join(f"<td>{c}</td>" for c in cells) + "</tr>")
+                i += 1
+            out.append(tbl(head, rows, cls="", empty="暂无"))
+            continue
+        if l.lstrip().startswith("#"):
+            k = min(len(l) - len(l.lstrip("#")) + 1, 5)
+            out.append(f"<h{k}>{_inline_md(l.lstrip('# ').strip())}</h{k}>")
+            i += 1
+            continue
+        if l.lstrip().startswith("> "):
+            out.append(f"<blockquote>{_inline_md(l.lstrip()[2:])}</blockquote>")
+            i += 1
+            continue
+        if re.match(r"^\s*[-\*] ", l):
+            items = []
+            while i < len(lines) and re.match(r"^\s*[-\*] ", lines[i]):
+                txt = re.sub(r"^\s*[-\*] ", "", lines[i])
+                items.append(f"<li>{_inline_md(txt)}</li>")
+                i += 1
+            out.append("<ul>" + "".join(items) + "</ul>")
+            continue
+        out.append(f"<p>{_inline_md(l.strip())}</p>")
+        i += 1
+    return "".join(out)
+
+
+def _fact_status(obj) -> str:
+    if not isinstance(obj, dict):
+        return "暂无"
+    ev = obj.get("evaluation") or {}
+    wf = (obj.get("walk_forward") or {}).get("overall") or {}
+    pq = obj.get("prediction_quality") or {}
+    for v in (obj.get("sample_status"), obj.get("status"), ev.get("status"),
+              wf.get("status"), pq.get("status"), obj.get("current_mode")):
+        if v:
+            return str(v)
+    return "暂无"
+
+
+def review_html(acc, facts: dict, docs: list, exported: list) -> str:
+    """复盘主页：状态卡 + 日/周复盘存档 + 研究/回测事实 + 原始 JSON 下载。"""
+    snaps = (acc or {}).get("snapshots") or []
+    snap = snaps[-1] if snaps else {}
+    sample = str(snap.get("sample_status") or "暂无复盘快照")
+    # 关键：样本不足时绝不把任何数字当命中率结论展示，与复盘文档口径一致。
+    hr = str(snap.get("hit_rate") or MISSING) if sample == "SUFFICIENT" else MISSING
+    decided = snap.get("decided")
+    need = snap.get("min_sample") or MIN_SAMPLE
+    recon = str(snap.get("reconciliation") or "暂无")
+    alerts = snap.get("alerts") or []
+    head = ("<div class='card'><b>📌 本页只展示仓库已落盘的事实</b>"
+            f"<div class='muted'>{e(REVIEW_DISCLAIMER)}；样本不足写「{MISSING}」，不补造比分、不推断未结算原因、不宣称准确率或 ROI 改善。</div></div>")
+    kpis = ("<div class='summary'>"
+            f"<div class='kpi'><b>{e(hr)}</b><span>历史命中率结论（门槛 {e(str(need))} 场）</span></div>"
+            f"<div class='kpi'><b>{e(str(decided if decided is not None else '暂无'))}</b><span>已结算场次</span></div>"
+            f"<div class='kpi'><b>{e(sample)}</b><span>样本状态</span></div></div>")
+    detail = ("<div class='card'><h3>最新复盘快照</h3><dl class='kv'>"
+              f"<dt>日期</dt><dd>{e(str(snap.get('date') or '暂无'))}</dd>"
+              f"<dt>生成时间</dt><dd>{bjt(snap.get('generated_at'))}</dd>"
+              f"<dt>run_id</dt><dd>{e(str(snap.get('run_id') or '暂无'))}</dd>"
+              f"<dt>对账</dt><dd>{e(recon)}</dd>"
+              f"<dt>未结算</dt><dd>{e(str(snap.get('pending', '暂无')))}</dd>"
+              f"<dt>赛果未取得</dt><dd>{e(str(snap.get('missing_result', '暂无')))}</dd>"
+              "<dt>告警</dt><dd>" + (", ".join(e(str(a)) for a in alerts) or "暂无") + "</dd></dl></div>")
+    links = "".join(f"<li><a href='review/{e(stem)}.html'>{e(name)}</a></li>" for stem, name in docs)
+    docs_html = ("<h2>📄 日 / 周复盘存档</h2>"
+                 + (f"<ul class='src'>{links}</ul>" if links else "<div class='empty'>暂无复盘文档（待 accuracy-review 定时班次产出）</div>"))
+    cards = []
+    for name, title in REVIEW_FACTS:
+        obj = facts.get(name)
+        if obj is None:
+            cards.append(f"<div class='card'><h3>{e(title)}</h3><p class='muted'>暂无（仓库未落盘）</p></div>")
+            continue
+        stamp = obj.get("checked_at") or obj.get("updated_at")
+        raw = json.dumps(obj, ensure_ascii=False, indent=1)
+        cards.append(
+            f"<div class='card'><h3>{e(title)}</h3><dl class='kv'>"
+            f"<dt>状态</dt><dd>{e(_fact_status(obj))}</dd>"
+            f"<dt>生成时间</dt><dd>{bjt(stamp)}</dd>"
+            f"<dt>文件</dt><dd><code>data/{e(name)}</code></dd></dl>"
+            f"<details><summary>查看原始事实 JSON（逐字，不改写）</summary><pre>{e(raw)}</pre></details></div>")
+    facts_html = "<h2>🔬 研究 / 回测 / 数据事实</h2><div class='grid2'>" + "".join(cards) + "</div>"
+    dl = "".join(f"<li><a href='data/{e(n)}' rel='noopener'>{e(n)}</a></li>" for n in exported)
+    dl_html = ("<h2>⬇️ 原始数据（JSON）</h2>"
+               + (f"<ul class='src'>{dl}</ul>" if dl else "<div class='empty'>暂无导出文件</div>")
+               + "<p class='muted'>站点生成物不入库；以上文件随 GitHub Pages 一同发布，字段与仓库逐字一致。</p>")
+    return head + kpis + detail + docs_html + facts_html + dl_html
+
+
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(prog="python -m ah site", description="生成 site/ 静态看板（GitHub Pages）。")
     ap.add_argument("--out", type=Path, default=SITE, help=f"输出目录（默认 {SITE}）")
@@ -835,8 +1041,10 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--data", type=Path, default=DATA, help="数据目录（stats.json、paper_trades.csv 等；默认仓库 data/）")
     ap.add_argument("--lab", type=Path, default=None, help="实验盘 picks CSV（默认 <data>/experiment_picks.csv）")
     ap.add_argument("--lab-demo", action="store_true", help="实验场页面加「示例数据」横幅（用样例数据预览时）")
+    ap.add_argument("--review-docs", type=Path, default=None, help="复盘 Markdown 目录（默认仓库 docs/review/）")
     a = ap.parse_args(argv)
-    print(build(site=a.out, reports=a.reports, data=a.data, lab=a.lab, lab_demo=a.lab_demo))
+    print(build(site=a.out, reports=a.reports, data=a.data, lab=a.lab,
+                lab_demo=a.lab_demo, review_docs=a.review_docs))
 
 
 if __name__ == "__main__":

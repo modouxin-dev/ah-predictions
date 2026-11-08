@@ -6,20 +6,24 @@ from pathlib import Path
 from ah import build_site, policy
 from ah.stats import compute
 
-PAGES = ["index.html", "records.html", "stats.html", "sources.html", "rules.html", "history.html", "reports/2026-11-04.html"]
+PAGES = ["index.html", "records.html", "stats.html", "sources.html", "rules.html", "history.html",
+         "review.html", "reports/2026-11-04.html"]
 
 
-def _build(tmp_path, stats=None, status=None):
+def _build(tmp_path, stats=None, status=None, review_docs=None, facts=None):
     data = tmp_path / "data"
     data.mkdir()
     if stats is not None:
         (data / "stats.json").write_text(json.dumps(stats, ensure_ascii=False))
     if status is not None:
         (data / "source_status.json").write_text(json.dumps(status, ensure_ascii=False))
+    for name, obj in (facts or {}).items():
+        (data / name).write_text(json.dumps(obj, ensure_ascii=False))
     site = tmp_path / "site"
     reports = tmp_path / "reports"  # 固定为 2026-11-04 的报告快照
     shutil.copytree(build_site.REPORTS, reports, ignore=lambda d, fs: [f for f in fs if f[:10] > "2026-11-04" and f[:4] == "2026"])
-    build_site.build(site=site, reports=reports, data=data, now=datetime(2026, 11, 4, 12, 30, tzinfo=timezone.utc))
+    build_site.build(site=site, reports=reports, data=data, now=datetime(2026, 11, 4, 12, 30, tzinfo=timezone.utc),
+                     review_docs=review_docs)
     return site
 
 
@@ -81,7 +85,8 @@ def test_stats_with_series_and_tables(tmp_path):
     h = (_build(tmp_path, stats=s) / "stats.html").read_text()
     assert "chart-units" in h and "按盘口深度" in h and "上盘 / 下盘" in h
     cd = build_site.chart_data(s)
-    assert cd["hit7"] == [1.0, 0.5] and cd["cum"] == [0.9, -0.1]
+    # 总体样本 < 30 场：滚动命中率不画点（与复盘层一致），累计盈亏曲线仍保留。
+    assert cd["hit7"] == [None, None] and cd["hit30"] == [None, None] and cd["cum"] == [0.9, -0.1]
 
 
 def test_source_status_rendering(tmp_path):
@@ -97,3 +102,73 @@ def test_vip_hash_only():
     import yaml
     cfg = yaml.safe_load(Path("config/settings.yaml").read_text())
     assert len(cfg["vip_password_sha256"]) == 64
+
+
+# ---------- 复盘层接入网页 + 命中率结论门槛（2026-11-08 ROUND 4） ----------
+
+def _rows(n, outcome="win"):
+    return [{"date": "2026-11-01", "match_id": "m%d" % i, "league": "J1", "line": "-0.5",
+             "confidence": "high", "ah_outcome": outcome, "units": "0.9" if outcome == "win" else "-1",
+             "settled": "true"} for i in range(n)]
+
+
+def test_hit_rate_not_quoted_below_min_sample(tmp_path):
+    """小样本不得把命中率当结论：站点与复盘层同为「未取得」。"""
+    site = _build(tmp_path, stats=compute(_rows(2, "win") + _rows(2, "loss")))
+    for name in ("index.html", "stats.html"):
+        h = (site / name).read_text()
+        assert "50.0%" not in h and "25.0%" not in h and "未取得" in h
+    assert "门槛" in (site / "index.html").read_text()
+    assert "复盘</a>" in (site / "index.html").read_text()
+    assert build_site.site_can_quote(compute(_rows(4))) is False
+
+
+def test_hit_rate_quoted_when_sample_sufficient(tmp_path):
+    site = _build(tmp_path, stats=compute(_rows(30)))
+    assert "100.0%" in (site / "index.html").read_text()
+    assert "100.0%" in (site / "stats.html").read_text()
+    assert build_site.site_can_quote(compute(_rows(30))) is True
+
+
+def test_telegram_summary_line_unchanged():
+    """Telegram 渲染仍用 stats.summary_line，站点改动不得外溢到推送文本。"""
+    from ah.stats import summary_line
+    s = compute(_rows(2, "win") + _rows(2, "loss"))
+    assert "历史命中率 50.0%" in summary_line(s)
+
+
+def test_review_page_exports_and_no_fabrication(tmp_path):
+    acc = {"schema": 1, "snapshots": [{
+        "date": "2026-11-08", "generated_at": "2026-11-08T12:50:05Z", "run_id": "42482027896",
+        "sample_status": "INSUFFICIENT_SAMPLE", "reconciliation": "RECONCILED", "decided": 14,
+        "pending": 9, "missing_result": 0, "hit_rate": "未取得",
+        "alerts": ["SETTLE_BACKLOG", "INSUFFICIENT_SAMPLE"]}]}
+    lab = {"walk_forward": {"overall": {"status": "INSUFFICIENT_SAMPLE"}},
+           "prediction_quality": {"status": "NOT_COMPUTED"}, "live_model_modified": False,
+           "joined_decided_rows": 9}
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "2026-11-08.md").write_text(
+        "# 预测准确率日复盘 · 2026-11-08\n\n| 项目 | 场数 |\n| --- | --- |\n| 已结算 | 14 |\n\n"
+        "- 样本状态：**INSUFFICIENT_SAMPLE**\n- 历史累计命中率：未取得\n", encoding="utf-8")
+    site = _build(tmp_path, review_docs=docs,
+                  facts={"accuracy_review.json": acc, "rule_lab.json": lab})
+    h = (site / "review.html").read_text()
+    assert "复盘" in h and "INSUFFICIENT_SAMPLE" in h and "NOT_COMPUTED" in h
+    assert "未取得" in h and "42482027896" in h and "RECONCILED" in h
+    assert "review/2026-11-08.html" in h and "原始事实 JSON" in h
+    assert "25.0%" not in h and "准确率提升" not in h          # 不编造结论数字
+    assert "复盘</a>" in h
+    sub = (site / "review" / "2026-11-08.html").read_text()
+    assert "<table" in sub and "已结算" in sub and "未取得" in sub
+    exported = json.loads((site / "data" / "accuracy_review.json").read_text())
+    assert exported == acc                                     # 逐字一致，不改写
+    assert (site / "data" / "rule_lab.json").exists()
+    assert "资料缺失" not in h or "暂无" in h
+
+
+def test_review_page_degrades_when_artifacts_missing(tmp_path):
+    site = _build(tmp_path)
+    h = (site / "review.html").read_text()
+    assert "暂无复盘快照" in h and "暂无（仓库未落盘）" in h and "未取得" in h
+    assert (site / "review").is_dir()

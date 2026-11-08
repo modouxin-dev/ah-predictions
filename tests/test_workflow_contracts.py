@@ -96,3 +96,14 @@ def test_new_fact_workflows_use_race_safe_commit():
         text = "\n".join((s.get("run") or "") for j in d["jobs"].values() for s in j["steps"])
         assert "scripts/safe_commit.sh" in text, name
         assert "git push origin HEAD:main" not in text, name
+
+
+def test_pages_rebuilds_after_review_and_backtest(tmp_path=None):
+    """复盘/回测产物写回 main 后必须重建 Pages；站点源码或复盘文档变更也要触发。"""
+    d = _load("pages.yml")
+    on = d["on"] if "on" in d else d[True]
+    wr = on.get("workflow_run") or {}
+    for name in ("daily-report", "settle-and-stats", "accuracy-review", "research-backtest"):
+        assert name in wr.get("workflows", []), name
+    paths = (on.get("push") or {}).get("paths") or []
+    assert "docs/review/**" in paths and "data/**" in paths
