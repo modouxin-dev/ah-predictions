@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "checked_at": "2026-11-08T12:50:05Z",
+  "evidence_grade": "【已验证】本地文件解析事实",
+  "model_under_test": "线上规则档位（analyze.py / policy.py / config/settings.yaml），未改动任何一行",
+  "live_model_modified": false,
+  "pool_rows": 64,
+  "outcome_rows": 13,
+  "joined_decided_rows": 9,
+  "thresholds": {
+    "min_sample": 30,
+    "min_bucket_sample": 10
+  },
+  "walk_forward": {
+    "method": "chronological walk-forward (no fitted parameters; rule tiers are fixed)",
+    "blocks": [
+      {
+        "block": "2026-11-06",
+        "rows": 2,
+        "in_sample_rows_before": 0,
+        "out_of_sample": {
+          "n": 2,
+          "hits": 0.5,
+          "units": -0.569,
+          "status": "INSUFFICIENT_SAMPLE",
+          "hit_rate": "未取得",
+          "roi": "未取得",
+          "wilson_95_width": "未取得"
+        },
+        "note": "本块为样本外；in_sample_rows_before 仅作历史规模说明，不参与拟合"
+      },
+      {
+        "block": "2026-11-07",
+        "rows": 7,
+        "in_sample_rows_before": 2,
+        "out_of_sample": {
+          "n": 7,
+          "hits": 2.0,
+          "units": -2.86,
+          "status": "INSUFFICIENT_SAMPLE",
+          "hit_rate": "未取得",
+          "roi": "未取得",
+          "wilson_95_width": "未取得"
+        },
+        "note": "本块为样本外；in_sample_rows_before 仅作历史规模说明，不参与拟合"
+      }
+    ],
+    "overall": {
+      "n": 9,
+      "hits": 2.5,
+      "units": -3.429,
+      "status": "INSUFFICIENT_SAMPLE",
+      "hit_rate": "未取得",
+      "roi": "未取得",
+      "wilson_95_width": "未取得"
+    },
+    "note": "不是模型训练；样本不足的块与总体均写 INSUFFICIENT_SAMPLE，命中率/ROI 留空"
+  },
+  "prediction_quality": {
+    "schema": 1,
+    "status": "NOT_COMPUTED",
+    "reason": "官方 predictions.csv 无 model_p（校准概率只存在于实验盘）；档位 high/medium/low 不是概率，不得代入 Brier 公式",
+    "models_with_probability": 0,
+    "brier": "未取得",
+    "brier_skill_vs_market": "未取得",
+    "reliability_bins": [],
+    "log_loss": "未取得",
+    "note": "预测质量层与下注规则层分开；无校准概率时不产出可靠性曲线，不补造概率"
+  },
+  "betting_rule": {
+    "n": 9,
+    "roi": "未取得",
+    "max_drawdown_units": -3.569,
+    "clv_available": false,
+    "clv_note": "价格型 CLV 需收盘两侧水位去水；官方台账当前未采集（见 clv.py），不补造",
+    "note": "与预测质量层分开；ROI/回撤是历史模拟，不是未来保证"
+  },
+  "tier_observation": {
+    "tiers": {
+      "low": {
+        "observed": {
+          "n": 9,
+          "hits": 2.5,
+          "units": -3.429,
+          "status": "INSUFFICIENT_SAMPLE",
+          "hit_rate": "未取得",
+          "roi": "未取得",
+          "wilson_95_width": "未取得"
+        },
+        "note": "规则档位→实际胜率是描述性统计，不是校准概率；不得展示为『高胜率』"
+      }
+    },
+    "status": "DESCRIPTIVE_ONLY",
+    "note": "档位不是概率；样本不足的档位写 INSUFFICIENT_SAMPLE"
+  },
+  "note": "线上规则档位的时序样本外评估：无拟合参数，不是重新训练；样本不足写 INSUFFICIENT_SAMPLE；无 model_p 时 Brier/可靠性曲线 NOT_COMPUTED；预测质量与下注规则分层；不修改任何线上评分/阈值/核验/展示逻辑，不宣称准确率或投资回报改善。",
+  "unverified": [
+    "线上规则的真实独立回测结论（当前样本不足，见 walk_forward.overall.status）",
+    "概率校准与可靠性曲线（无 model_p，NOT_COMPUTED）",
+    "价格型 CLV（需收盘两侧水位去水，尚未采集）",
+    "Telegram 接收端（本命令不发送任何消息）"
+  ]
+}
