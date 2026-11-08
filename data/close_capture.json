@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "checked_at": "2026-11-08T13:11:49Z",
+  "capture_outcome": "success",
+  "close_rows_in_repo": 817,
+  "note": "只记录真实存在的 stage=close 行数；失败不补造盘口、不推断原因",
+  "unverified": [
+    "收盘快照是否覆盖全部已结算场次",
+    "收盘价是否即该机构最终收盘价"
+  ]
+}
