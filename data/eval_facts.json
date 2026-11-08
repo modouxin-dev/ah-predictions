@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "checked_at": "2026-11-08T15:01:02Z",
+ "checked_at": "2026-11-08T23:20:15Z",
  "evidence_grade": "【已验证】本地文件解析事实",
  "model_scope": {
   "boundary": "研究层（离线回测 / 线上规则 walk-forward）与每日实际发布不是同一套可互证结论；两边样本、输入与评估对象不同，任何一边的数字都不能迁移成另一边的准确率或 ROI 声明。",
@@ -51,8 +51,8 @@
     "sample_status": "INSUFFICIENT_SAMPLE"
    },
    "意甲": {
-    "settled_rows": 3,
-    "decided": 3,
+    "settled_rows": 4,
+    "decided": 4,
     "data_gap_withheld": 0,
     "hit_rate_conclusion": "未取得",
     "sample_status": "INSUFFICIENT_SAMPLE"
@@ -71,6 +71,13 @@
     "hit_rate_conclusion": "未取得",
     "sample_status": "INSUFFICIENT_SAMPLE"
    },
+   "法甲": {
+    "settled_rows": 3,
+    "decided": 3,
+    "data_gap_withheld": 0,
+    "hit_rate_conclusion": "未取得",
+    "sample_status": "INSUFFICIENT_SAMPLE"
+   },
    "澳超": {
     "settled_rows": 0,
     "decided": 0,
@@ -86,8 +93,8 @@
     "sample_status": "INSUFFICIENT_SAMPLE"
    },
    "英超": {
-    "settled_rows": 3,
-    "decided": 3,
+    "settled_rows": 8,
+    "decided": 8,
     "data_gap_withheld": 1,
     "hit_rate_conclusion": "未取得",
     "sample_status": "INSUFFICIENT_SAMPLE"
@@ -125,7 +132,7 @@
   {
    "code": "PRICE_CLV_NOT_QUOTED",
    "severity": "info",
-   "message": "价格型 CLV 仍为「未取得」覆盖 24 行；原因是仓库口径要求收盘盘口=下注盘口且两侧水位齐全，线差只写 line_move，绝不冒充 CLV。这是口径事实，不是采集失败。",
+   "message": "价格型 CLV 仍为「未取得」覆盖 23 行；原因是仓库口径要求收盘盘口=下注盘口且两侧水位齐全，线差只写 line_move，绝不冒充 CLV。这是口径事实，不是采集失败。",
    "evidence": "data/clv_join_facts.json price_clv_status_by_row",
    "action": "notify_only"
   },

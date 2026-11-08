@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-08T15:01:01Z",
+  "checked_at": "2026-11-08T23:20:15Z",
   "evidence_grade": "【已验证】本地文件解析事实",
   "report_date": "2026-11-08",
   "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-08.json",
@@ -26,10 +26,10 @@
     {
       "code": "CLV_CLOSE_FIELDS_SPARSE",
       "severity": "info",
-      "message": "收盘线字段 final_line 有值 2 行，已结算 14 行；只记录覆盖缺口，不推断结算质量",
+      "message": "收盘线字段 final_line 有值 2 行，已结算 23 行；只记录覆盖缺口，不推断结算质量",
       "evidence": {
         "final_line_filled": 2,
-        "decided": 14
+        "decided": 23
       }
     },
     {
@@ -148,11 +148,11 @@
   },
   "sample_precision": {
     "rows": 24,
-    "settled_true": 15,
-    "decided": 14,
-    "hits": 3.5,
-    "point_estimate": 0.25,
-    "wilson_95_width": 0.416,
+    "settled_true": 24,
+    "decided": 23,
+    "hits": 10.0,
+    "point_estimate": 0.4348,
+    "wilson_95_width": 0.3755,
     "note": "点估计与区间宽度只说明精度，不构成命中率或优势结论；区间宽度越大说明样本越不足以支撑结论"
   }
 }

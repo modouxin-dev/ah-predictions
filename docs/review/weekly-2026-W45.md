@@ -1,6 +1,6 @@
 # 预测准确率周复盘 · 截至 2026-11-08
 
-- 生成时间：2026-11-08T15:01:01Z（UTC）
+- 生成时间：2026-11-08T23:20:15Z（UTC）
 - 口径：(win + 0.5*half_win)/(picks - push - void)
 - **规则档位，未经独立回测；不构成统计预测准确率**
 
@@ -8,15 +8,14 @@
 
 | 窗口 | 已结算 | 命中率 | 单位 | 样本状态 |
 |---|---|---|---|---|
-| 近 7 天 | 14 | 未取得 | 未取得 | INSUFFICIENT_SAMPLE |
-| 近 30 天 | 14 | 未取得 | 未取得 | INSUFFICIENT_SAMPLE |
+| 近 7 天 | 23 | 未取得 | 未取得 | INSUFFICIENT_SAMPLE |
+| 近 30 天 | 23 | 未取得 | 未取得 | INSUFFICIENT_SAMPLE |
 
 > 窗口之间样本量不同，**只陈述数值，不写改善类结论**；样本不足的窗口一律标注 INSUFFICIENT_SAMPLE。
 
 ## 本期告警
 
-- SETTLE_BACKLOG〔warning〕有 1 场已过开球 +110 分钟仍未结算；命中率分母不完整
-- INSUFFICIENT_SAMPLE〔warning〕已结算 14 场 < 30 场；不构成统计预测准确率，禁止写准确率变化结论
+- INSUFFICIENT_SAMPLE〔warning〕已结算 23 场 < 30 场；不构成统计预测准确率，禁止写准确率变化结论
 
 ## 待办与未验证
 

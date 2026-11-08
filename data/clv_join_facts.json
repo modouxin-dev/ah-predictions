@@ -1,15 +1,23 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-08T15:01:02Z",
+  "checked_at": "2026-11-08T23:20:15Z",
   "evidence_grade": "【已验证】本地文件解析事实",
-  "close_snapshot_rows_in_repo": 815,
-  "close_snapshot_unique_matches": 26,
+  "close_snapshot_rows_in_repo": 1402,
+  "close_snapshot_unique_matches": 44,
   "ledger_rows": 24,
-  "joined_unique_match_ids": 8,
+  "joined_unique_match_ids": 16,
   "joined_match_ids": [
     "fd-558532",
     "fd-558534",
+    "fd-559631",
+    "fd-559633",
+    "fd-559634",
     "fd-560633",
+    "fd-560635",
+    "fd-560636",
+    "fd-560637",
+    "fd-560638",
+    "fd-560639",
     "fd-561929",
     "fd-561930",
     "fd-561931",
@@ -17,10 +25,11 @@
     "fd-561937"
   ],
   "price_clv_status_by_row": {
-    "收盘盘口≠下注盘口（按口径不算 CLV）": 7,
-    "无收盘快照": 13,
+    "收盘盘口≠下注盘口（按口径不算 CLV）": 12,
+    "无收盘快照": 5,
     "缺收盘两侧水位去水": 1,
-    "有收盘快照但视角未能唯一学习，收盘线未取得": 3
+    "有收盘快照但视角未能唯一学习，收盘线未取得": 5,
+    "已计算价格型 CLV": 1
   },
   "note": "只统计真实 stage=close 行与台账 match_id 的交集；价格型 CLV 严格复用 experiment_track.clv()（仅收盘盘口=下注盘口且两侧水位齐全时计算），线差单列为 line_move，绝不冒充 CLV；不补造任何盘口或水位。",
   "unverified": [

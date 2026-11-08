@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-08T15:01:02Z",
+  "checked_at": "2026-11-08T23:20:15Z",
   "evidence_grade": "【已验证】本地文件解析事实",
   "model_under_test": "线上规则档位（analyze.py / policy.py / config/settings.yaml），未改动任何一行",
   "live_model_modified": false,
   "pool_rows": 64,
-  "outcome_rows": 13,
-  "joined_decided_rows": 9,
+  "outcome_rows": 22,
+  "joined_decided_rows": 17,
   "thresholds": {
     "min_sample": 30,
     "min_bucket_sample": 10
@@ -43,16 +43,31 @@
           "wilson_95_width": "未取得"
         },
         "note": "本块为样本外；in_sample_rows_before 仅作历史规模说明，不参与拟合"
+      },
+      {
+        "block": "2026-11-08",
+        "rows": 8,
+        "in_sample_rows_before": 9,
+        "out_of_sample": {
+          "n": 8,
+          "hits": 5.5,
+          "units": 3.4145,
+          "status": "INSUFFICIENT_SAMPLE",
+          "hit_rate": "未取得",
+          "roi": "未取得",
+          "wilson_95_width": "未取得"
+        },
+        "note": "本块为样本外；in_sample_rows_before 仅作历史规模说明，不参与拟合"
       }
     ],
     "overall": {
-      "n": 9,
-      "hits": 2.5,
-      "units": -3.429,
+      "n": 17,
+      "hits": 8.0,
+      "units": -0.0145,
       "status": "INSUFFICIENT_SAMPLE",
       "hit_rate": "未取得",
       "roi": "未取得",
-      "wilson_95_width": "未取得"
+      "wilson_95_width": 0.4287
     },
     "note": "不是模型训练；样本不足的块与总体均写 INSUFFICIENT_SAMPLE，命中率/ROI 留空"
   },
@@ -68,8 +83,8 @@
     "note": "预测质量层与下注规则层分开；无校准概率时不产出可靠性曲线，不补造概率"
   },
   "betting_rule": {
-    "n": 9,
-    "roi": "未取得",
+    "n": 17,
+    "roi": -0.0009,
     "max_drawdown_units": -3.569,
     "clv_available": false,
     "clv_note": "价格型 CLV 需收盘两侧水位去水；官方台账当前未采集（见 clv.py），不补造",
@@ -77,15 +92,27 @@
   },
   "tier_observation": {
     "tiers": {
-      "low": {
+      "high": {
         "observed": {
-          "n": 9,
+          "n": 4,
           "hits": 2.5,
-          "units": -3.429,
+          "units": 1.5375,
           "status": "INSUFFICIENT_SAMPLE",
           "hit_rate": "未取得",
           "roi": "未取得",
           "wilson_95_width": "未取得"
+        },
+        "note": "规则档位→实际胜率是描述性统计，不是校准概率；不得展示为『高胜率』"
+      },
+      "low": {
+        "observed": {
+          "n": 13,
+          "hits": 5.5,
+          "units": -1.552,
+          "status": "SUFFICIENT",
+          "hit_rate": 0.4231,
+          "roi": -0.1194,
+          "wilson_95_width": 0.4732
         },
         "note": "规则档位→实际胜率是描述性统计，不是校准概率；不得展示为『高胜率』"
       }
