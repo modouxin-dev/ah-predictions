@@ -19,7 +19,7 @@ from zoneinfo import ZoneInfo
 
 import yaml
 
-from . import CONFIG, DATA, REPORTS, ROOT, SITE, TEMPLATES, model_lab, policy, records, source_status
+from . import CONFIG, DATA, REPORTS, ROOT, SITE, TEMPLATES, funnel as funnel_mod, model_lab, policy, records, source_status
 from .review import DISCLAIMER as REVIEW_DISCLAIMER, MIN_BUCKET_SAMPLE, MIN_SAMPLE, MISSING
 from .stats import compute, window
 
@@ -859,6 +859,16 @@ def build(site: Path = SITE, reports: Path = REPORTS, data: Path = DATA, now: da
     def write(name, title, body, cur="", base=""):
         (site / name).write_text(page(title, body, cur, base, gen, vip), encoding="utf-8")
 
+    # 选场漏斗：优先用定时班次落盘的事实文件；没有就即时从本次 reports 自算（不写仓库）。
+    funnel_obj = _load_json(data / "selection_funnel.json")
+    funnel_source = "data/selection_funnel.json（定时班次落盘）"
+    if funnel_obj is None:
+        funnel_obj = funnel_mod.build(reports=reports)
+        funnel_source = "reports/（站点即时自算，未落盘）"
+    (site / "data" / "selection_funnel.json").write_text(
+        json.dumps(funnel_obj, ensure_ascii=False, indent=1), encoding="utf-8")
+    write("funnel.html", "选场漏斗", funnel_html(funnel_obj, funnel_source), "review.html")
+
     # 复盘产物：读得到就展示 + 导出，读不到写「暂无」，绝不补造。
     acc = _load_json(data / "accuracy_review.json")
     facts = {name: _load_json(data / name) for name, _ in REVIEW_FACTS}
@@ -926,6 +936,87 @@ def _inline_md(x: str) -> str:
     s = re.sub(r"`([^`]+)`", r"<code>\1</code>", s)
     s = re.sub(r"\*\*([^*]+)\*\*", r"<b>\1</b>", s)
     return s
+
+
+
+# ---------- 选场漏斗页（为什么没推 / 为什么 0 场） ----------
+
+def funnel_html(obj: dict, source: str) -> str:
+    """只渲染 funnel.build() 已算好的事实；缺值显示「未取得」，不推断。"""
+    s = obj.get("summary") or {}
+    days = obj.get("days") or []
+    labels = obj.get("bucket_labels") or {}
+    b = s.get("buckets") or {}
+
+    def v(x):
+        return MISSING if x is None or x == MISSING else e(str(x))
+
+    head = ("<div class='card'><b>🔎 选场漏斗 · 只读事实</b>"
+            f"<div class='muted'>{e(obj.get('note') or '')}</div>"
+            f"<div class='muted'>数据来源：{e(source)} · 生成于 {bjt(obj.get('checked_at'))} · "
+            f"报告文件 {v(obj.get('report_files'))} 份</div></div>")
+    outside = s.get("max_outside_screen", MISSING)
+    kpis = ("<div class='summary'>"
+            f"<div class='kpi'><b>{v(s.get('total_picks'))}</b><span>累计发布场次（{v(s.get('days'))} 天）</span></div>"
+            f"<div class='kpi'><b>{v(b.get('data_gap'))}</b><span>{e(labels.get('data_gap', '数据缺口'))}（未推）</span></div>"
+            f"<div class='kpi'><b>{v(b.get('model_judgment'))}</b><span>{e(labels.get('model_judgment', '模型判断'))}（未推）</span></div>"
+            f"<div class='kpi'><b>{v(outside)}</b><span>单日最多未进候选</span></div></div>")
+
+    rows = []
+    for d in days:
+        up = d.get("upstream") or {}
+        bk = d.get("buckets") or {}
+        mark = " ⚠️ 0 场" if d.get("zero_pick_day") else ""
+        rows.append(
+            "<tr>" + "".join(f"<td class='num'>{x}</td>" for x in (
+                e(str(d.get('date'))) + mark,
+                v(d.get('picks')), v(d.get('watchlist')),
+                v(bk.get('data_gap')), v(bk.get('verification')), v(bk.get('model_judgment')),
+                v(bk.get('timing')), v(bk.get('unknown')),
+                v(up.get('window_fixtures')), v(up.get('screening_cap')), v(up.get('outside_screen')),
+                v(d.get('collection_errors')))) + "</tr>")
+    day_tbl = ("<h2>📅 按日漏斗</h2>"
+               "<p class='muted'>「未进候选」＝ 窗口总数 − 筛查上限，只从报告 not_covered 文本取数；"
+               "老报告没记这两个数字就写「未取得」，不拿配置倒推。</p>"
+               + tbl(["日期", "发布", "观察", "数据缺口", "盘口核验", "模型判断", "时间窗口", "未分类",
+                      "窗口总数", "筛查上限", "未进候选", "采集错误"], rows, cls="sortable cardify",
+                     tid="funnel", empty="暂无报告"))
+
+    obs = s.get("observations") or []
+    obs_html = ("<h2>🧭 跨天事实</h2>" +
+                ("<ul>" + "".join(f"<li>{e(str(x))}</li>" for x in obs) + "</ul>"
+                 if obs else "<div class='empty'>暂无跨天事实</div>"))
+
+    gl = s.get("data_gap_by_league") or {}
+    gl_rows = [f"<tr><td>{e(k)}</td><td class='num'>{v(n)}</td></tr>" for k, n in gl.items()]
+    gap_html = ("<h2>🏆 数据缺口集中在哪些联赛</h2>"
+                "<p class='muted'>只统计被判为「数据缺口」的观察条目，按联赛累计；不推断原因。</p>"
+                + tbl(["联赛", "场数"], gl_rows, empty="暂无"))
+
+    details = []
+    for d in days:
+        notes = d.get("collection_notes") or []
+        vf = d.get("verification_facts") or []
+        cats = d.get("categories") or {}
+        items = "".join(f"<li>{e(c)} · <b>{v(n)}</b> 场</li>" for c, n in cats.items())
+        facts = "".join(f"<li>{e(str(x))}</li>" for x in vf)
+        raw = "".join(f"<li>{e(str(x))}</li>" for x in notes)
+        details.append(
+            f"<div class='card'><h3>{e(str(d.get('date')))} · 发布 {v(d.get('picks'))} 场</h3>"
+            f"<details><summary>淘汰类别 / 盘口核验 / 采集事实原文（逐字）</summary>"
+            f"<h4>淘汰类别</h4><ul>{items or '<li>暂无</li>'}</ul>"
+            f"<h4>盘口核验明细</h4><ul>{facts or '<li>暂无</li>'}</ul>"
+            f"<h4>collection_notes 原文</h4><ul>{raw or '<li>暂无</li>'}</ul>"
+            f"<h4>not_covered 原文</h4><p>{e(str(d.get('not_covered_text') or MISSING))}</p>"
+            "</details></div>")
+    detail_html = "<h2>🔍 逐日下钻</h2><div class='grid2'>" + "".join(details) + "</div>"
+
+    alerts = s.get("alerts") or []
+    unver = obj.get("unverified") or []
+    tail = ("<h2>⚠️ 仍未验证</h2><ul>" + "".join(f"<li>{e(str(x))}</li>" for x in unver) + "</ul>"
+            f"<p class='muted'>事实标签：{', '.join(e(str(a)) for a in alerts) or '无'} · "
+            "本页不改评分、不改阈值、不发送任何消息。</p>")
+    return head + kpis + day_tbl + obs_html + gap_html + detail_html + tail
 
 
 def md_html(md: str) -> str:
@@ -1037,11 +1128,16 @@ def review_html(acc, facts: dict, docs: list, exported: list) -> str:
             f"<dt>文件</dt><dd><code>data/{e(name)}</code></dd></dl>"
             f"<details><summary>查看原始事实 JSON（逐字，不改写）</summary><pre>{e(raw)}</pre></details></div>")
     facts_html = "<h2>🔬 研究 / 回测 / 数据事实</h2><div class='grid2'>" + "".join(cards) + "</div>"
-    dl = "".join(f"<li><a href='data/{e(n)}' rel='noopener'>{e(n)}</a></li>" for n in exported)
+    dl = "".join(f"<li><a href='data/{e(n)}' rel='noopener'>{e(n)}</a></li>"
+                 for n in exported + ["selection_funnel.json"])
     dl_html = ("<h2>⬇️ 原始数据（JSON）</h2>"
                + (f"<ul class='src'>{dl}</ul>" if dl else "<div class='empty'>暂无导出文件</div>")
                + "<p class='muted'>站点生成物不入库；以上文件随 GitHub Pages 一同发布，字段与仓库逐字一致。</p>")
-    return head + kpis + detail + docs_html + facts_html + dl_html
+    funnel_link = ("<div class='card'><h3>🔎 选场漏斗：为什么只推这几场 / 为什么 0 场</h3>"
+                   "<p class='muted'>按日记录「窗口内多少场 → 多少场没进候选 → 观察名单卡在哪一层 → 最终发布」，"
+                   "把数据缺口和模型判断分开。0 场日也照常出表。</p>"
+                   "<p><a href='funnel.html'>查看选场漏斗 →</a></p></div>")
+    return head + kpis + detail + funnel_link + docs_html + facts_html + dl_html
 
 
 def main(argv: list[str] | None = None) -> None:

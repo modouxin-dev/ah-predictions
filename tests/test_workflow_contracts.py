@@ -107,3 +107,12 @@ def test_pages_rebuilds_after_review_and_backtest(tmp_path=None):
         assert name in wr.get("workflows", []), name
     paths = (on.get("push") or {}).get("paths") or []
     assert "docs/review/**" in paths and "data/**" in paths
+
+
+def test_review_workflow_generates_selection_funnel():
+    """选场漏斗必须每天由复盘班次落盘，且纳入安全提交路径。"""
+    d = _load("review.yml")
+    text = "\n".join((s.get("run") or "") for j in d["jobs"].values() for s in j["steps"])
+    assert "python -m ah funnel" in text
+    assert "data/selection_funnel.json" in text
+    assert "scripts/safe_commit.sh" in text

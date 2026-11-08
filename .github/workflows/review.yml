@@ -40,6 +40,12 @@ jobs:
           D="${{ github.event.inputs.date }}"
           if [ -z "$D" ]; then D="$(date -u +%F)"; fi
           python -m ah data-quality --date "$D" --out data/data_quality.json
+      - name: Selection funnel (facts only, no model change)
+        continue-on-error: true
+        run: |
+          # 把「今天为什么只推这几场 / 为什么 0 场」按日留痕：数据缺口 vs 模型判断分开，
+          # 上游截断只从报告 not_covered 文本取数，缺字段写「未取得」，不推断、不改阈值。
+          python -m ah funnel --out data/selection_funnel.json
       - name: Online-rule walk-forward and calibration (MODEL CHANGE research layer, no live change)
         continue-on-error: true
         run: |
@@ -53,5 +59,6 @@ jobs:
       - name: Commit review artifacts
         run: |
           scripts/safe_commit.sh --skip-tests -m "accuracy review $(date -u +%F)" \
-            data/accuracy_review.json data/data_quality.json data/rule_lab.json docs/review \
+            data/accuracy_review.json data/data_quality.json data/rule_lab.json \
+            data/selection_funnel.json docs/review \
             || echo "::warning::复盘产物提交失败，见上方日志"

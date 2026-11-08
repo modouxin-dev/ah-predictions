@@ -514,3 +514,22 @@ tests / pages / source-probe / accuracy-review 四个运行 success；`data/rule
 改用 `scripts/safe_commit.sh`（锁 + rebase + 重试），并加契约测试防回退。
 详见 `docs/upgrade-2026-11-08-round3.md` 第 G 节。收盘线采集运行当时仍在 in_progress，
 `stage=close` 是否真采到仍属未验证。令牌保留。
+
+## ROUND 5（2026-11-08）：选场漏斗可诊断
+
+「提高门槛就推不出，到底哪里出了问题？」——淘汰原因一直写在报告里，只是散在
+`watchlist[].withheld_category` / `not_covered` / `collection_notes` 三处，跨天看不出瓶颈。
+
+新增 `python -m ah funnel`（只读事实层）与网页「选场漏斗」页：把未推场次分成
+**数据缺口 / 盘口核验 / 模型判断 / 时间窗口 / 复合未分类**，按日留表；上游截断只从报告
+`not_covered` 文本严格取「筛查上限 N 场 / 窗口内共发现 M 场」，缺字段写「未取得」，
+不拿配置倒推；0 场日也照常出表。复合类别不猜测归属，采集原文逐字保留，
+文案出现夸大断言直接 fail-closed。
+
+**5 份真实报告的实测**：连续 3 天「近期状态数据不足」9/10/10 场，集中在日职乙(11)、
+日职联(9)、韩K联(4)、澳超(4)；窗口内最多 47 场因筛查上限 32 未进候选（11-07：79−32）。
+所以当前瓶颈在**采集覆盖与上游截断**，不是发布门槛——调低门槛只会把缺数据的场次推出去。
+本轮不动 `screening_max_fixtures`、不动阈值、不换数据源、不发 Telegram。
+
+`review.yml` 每天落盘 `data/selection_funnel.json`；站点定时文件未到时即时自算兜底。
+详见 `docs/upgrade-2026-11-08-round5.md`。本地 `pytest 1004 passed, 1 skipped`。
