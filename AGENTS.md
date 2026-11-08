@@ -132,3 +132,14 @@ data/telegram_delivery.json
 - 界面必须写「规则档位，未经独立回测；不构成统计预测准确率」；分桶名逐字引用 stats.json，不做译名推断。
 - 证据：`pytest 883 passed, 1 skipped`（本地 3.10）；CI 3.12 与 Actions 首跑结果见交付说明。未验证：settle 积压成因、Telegram 接收端、概率校准、外部定时准时率。
 - 是否触碰冻结清单：否。
+
+
+## 2026-11-08 收尾升级执行记录（不触碰模型算法）
+
+- 用户要求「令牌保留，全部升级过关再注销」；本轮只做冻结清单外、无需外部账号的收尾升级，令牌**未动**。
+- 允许改动范围内新增 `src/ah/runfacts.py`、`docs/external-timer.md`、`tests/test_upgrades.py`，改 `.github/workflows/daily.yml`、`src/ah/delivery.py`（新增 `AH_DELIVERY_MODE` 白名单与 backfill）、`src/ah/grounding.py`（观察块防回退检查）、`src/ah/__main__.py` 命令注册、README/AGENTS 追加章节。
+- 硬约束不变：打点与新鲜度检查**只标注不阻断**，缺字段写「未取得」，不推断延迟原因、不补造盘口水位或比分；观察块检查不改 `publish_telegram.daily()` 的生成逻辑；`backfill` 按 `(date, chat_id, slot)` 幂等，不强制重发；非法 mode 立即失败。
+- 不改 `requirements.txt` 版本 pin、不造 lock 文件（需 3.12 CI 生成）；不清理历史台账里 2026-11-06 的 4 条重复记录（事实数据只读，需单独评审）。
+- 冻结清单内仍待单独授权：`render_observation()` 统一渲染、recheck/daily 统一幂等键、报告新鲜度 SLO 转阻断策略、阈值/评分/盘口核验调整、概率校准。
+- 证据：`pytest 894 passed, 1 skipped`（本地 3.10）；10 个 workflow YAML 解析与并发/超时契约通过；`GROUNDING_OK`；新鲜度 dry-run 两条告警未阻断。CI 3.12 与 daily 实跑见交付说明。
+- 是否触碰冻结清单：否。

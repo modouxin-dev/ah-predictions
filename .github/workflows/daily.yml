@@ -48,6 +48,7 @@ jobs:
           # GitHub cron 常延迟数小时：日期取「定时目标时刻」的北京日期，避免延迟班次跨过北京午夜后
           # 被当成次日而整轮重采、凌晨推送。
           python -m ah delivery resolve >> "$GITHUB_ENV"
+          python -m ah runfacts mark --stage collect_start --run-id "${{ github.run_id }}" --slot "$AH_SLOT"
 
       - name: Data source runtime selfcheck (facts only)
         continue-on-error: true
@@ -172,6 +173,7 @@ jobs:
           # GitHub cron 常延迟数小时：日期取「定时目标时刻」的北京日期，避免延迟班次跨过北京午夜后
           # 被当成次日而整轮重采、凌晨推送。
           python -m ah delivery resolve >> "$GITHUB_ENV"
+          python -m ah runfacts mark --stage publish_start --run-id "${{ github.run_id }}" --slot "$AH_SLOT"
 
       # 关键根因修复：publish 原本只靠 main 上已提交的报告；collect 的 git push 一旦失败，
       # 这里就会拿到旧报告甚至 0 场版本。改为优先使用本次运行采集的 artifact。
@@ -219,6 +221,13 @@ jobs:
           fi
           echo "报告存在：$F"
 
+      - name: Report freshness (facts only, warn but never block)
+        run: |
+          D="$AH_DATE"
+          F="reports/${D:0:4}/${D:5:2}/${D}.json"
+          python -m ah runfacts check-freshness --report "$F"
+          python -m ah runfacts mark --stage freshness_checked --run-id "${{ github.run_id }}" --slot "$AH_SLOT"
+
       - name: Wait until 07:00 Beijing (23:00 UTC) before the first publish of the day
         run: |
           if [ "$AH_SLOT" != "1" ]; then
@@ -251,7 +260,18 @@ jobs:
       - name: Publish Telegram
         if: ${{ steps.gate.outputs.should_send == 'true' }}
         run: python -m ah delivery send
+      - name: Mark publish outcome (facts only)
+        if: always()
+        run: |
+          python -m ah runfacts mark --stage publish_end --run-id "${{ github.run_id }}" --slot "$AH_SLOT" \
+            || echo "::warning::运行事实打点失败，不影响本次推送结论"
       - name: Commit delivery evidence
         if: ${{ steps.gate.outputs.should_send == 'true' }}
         run: |
           scripts/safe_commit.sh --skip-tests -m "telegram delivery $AH_DATE slot $AH_SLOT" data/telegram_delivery.json
+      - name: Commit run facts (always, facts only)
+        if: always()
+        run: |
+          scripts/safe_commit.sh --skip-tests -m "run facts $AH_DATE slot $AH_SLOT" \
+            data/run_facts.json data/report_freshness.json \
+            || echo "::warning::运行事实提交失败，见上方日志；不影响本次推送结论"

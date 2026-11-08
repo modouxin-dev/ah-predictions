@@ -358,3 +358,28 @@ PYTHONPATH=src python -m ah delivery preflight
 **【未验证】**：结算积压的成因（需读 settle 日志，本报告不推断）；Telegram 接收端是否读到复盘结论（本流程不发送）；概率校准与可靠性曲线（无校准概率，`NOT_COMPUTED`）；外部准点触发配置与长期准时率。
 
 **是否触碰冻结清单：否。** 未改 `analyze.py` / `policy.py` / `daily.py` / `odds_snapshots.py` / `settle.py` / `stats.py` / `research/**` / `config/**` / `schema/**` / `templates/report.md.j2` / `publish_telegram.py` 展示逻辑；未改动任何赛程、盘口、水位、比分或推荐倾向。
+
+## UPGRADE（2026-11-08）：收尾升级（令牌保留，等全过关再注销）
+
+本轮把「还能升级的点」里**冻结清单外、不需要外部账号**的部分全部落地。
+
+**新增**
+- `src/ah/runfacts.py`：`mark` 记录各阶段 UTC 时刻 / run_id / slot（只保留最近 30 个 run），`check-freshness` 只读检查 `generated_at` 与 `price_ts`，超阈值输出 `::warning::` 并写 `data/report_freshness.json`，**只标注不阻断**。`show` 查最近事实。
+- `.github/workflows/daily.yml`：collect/publish 开始、新鲜度检查、publish 结束各打点；`always()` 提交 `run_facts.json` / `report_freshness.json`。这是定位 cron 延迟与采集耗时的结构化依据。
+- `src/ah/grounding.py`：新增 `check_observation_markup()` 防回退——若任何入口把观察块渲染进消息，必须带「非正式推荐 / 不计战绩」且不得出现推荐措辞。**不改展示生成逻辑**。
+- `src/ah/delivery.py`：新增 `AH_DELIVERY_MODE=normal|backfill` 白名单；`backfill` 是推荐的补发入口，按 `(date, chat_id, slot)` 幂等，**不会因「手动」二字强制重发**；非法 mode 立即失败。
+- `docs/external-timer.md`：cron-job.org 四个 job 的完整配置与验收清单（204 空响应、幂等、失败通知）。
+- `tests/test_upgrades.py`：11 个回归用例（打点/上限、新鲜度、缺字段不补造、backfill 不强制、非法模式失败、观察块防回退不误拦正常日报）。
+
+**核实后不改的（避免过度改动）**
+- `test_telegram_format.py` 等依赖的是**固定历史报告**（`reports/2026/11/2026-11-04.json` 等），每日运行写的是当日新文件，不会覆盖历史快照；审计里「报告重生成会让测试失效」的推断不成立。
+- `requirements.lock`：需要在 Python 3.12 CI 上生成带 hash 的锁文件，本地 3.10 装不了 `numpy==2.5.4`，不凭空造版本。版本 pin 已核实为真实发布，不改。
+- `publish_telegram.py` 的观察块统一渲染、阈值/评分/盘口核验：属冻结清单，按 AGENTS.md 需 `MODEL CHANGE` 单独评审提交。
+
+**回放发现（【已验证】，只报事实不动数据）**：`data/telegram_delivery.json` 共 10 条，`2026-11-06 / slot=1 / 同一 chat` 有 **4 条重复记录**（历史 `manual` 强制重发所致），`message_ids` 无重复。这是「recheck 与 daily 统一幂等键」的真实影响面证据；统一键需先设计再回放，本轮**未改**。
+
+**【已验证】**：本地 `pytest 894 passed, 1 skipped`（3.10）；10 个 workflow YAML 解析 + 并发/超时契约全通过；`grounding` 当日报告 `GROUNDING_OK`；新鲜度 dry-run 对 11-08 报告输出 `STALE_REPORT(544分钟)` / `PRICE_TS_STALE(8)` 两条告警，**没有阻断**——这正是「只标注不阻断」的预期（下午补发不该被旧报告卡住）。
+
+**【未验证】**：`daily.yml` 新增打点步骤在真实定时运行里的表现（要等下一次自动/手动触发）；外部定时 job 是否创建；Telegram 接收端；结算积压根因；令牌轮换。
+
+**是否触碰冻结清单：否。** 令牌按用户要求**保留**，等全部升级验证过关后再注销。

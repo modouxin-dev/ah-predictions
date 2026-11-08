@@ -193,12 +193,28 @@ def report_fingerprint(report: dict) -> str:
     ).hexdigest()[:16]
 
 
+DELIVERY_MODES = ("", "normal", "backfill")
+
+
+def delivery_mode_env() -> str:
+    """运行模式白名单：normal=日常；backfill=明确补发（按 slot 幂等，不强制重发）。"""
+    m = os.environ.get("AH_DELIVERY_MODE", "").strip()
+    if m not in DELIVERY_MODES:
+        raise RuntimeError(f"非法 AH_DELIVERY_MODE：{m!r}（允许 normal/backfill）")
+    return m
+
+
 def _force() -> bool:
     """仅显式 manual 时段强制重发。
 
-    外部调度以 workflow_dispatch 带具体 slot 触发时必须走正常 slot 幂等，
-    否则会把 2/3/4 次更新变成 primary 完整重发并重复推送。
+    - 外部调度以 workflow_dispatch 带具体 slot 触发时走正常 slot 幂等；
+    - AH_DELIVERY_MODE=backfill 是推荐的补发入口：明确说明在补发，但仍按
+      (date, chat_id, slot) 幂等，不会因「手动」二字把已有记录再推一遍；
+    - 非法 mode 立即失败，不静默兜底。
     """
+    delivery_mode_env()
+    if os.environ.get("AH_DELIVERY_MODE", "").strip() == "backfill":
+        return False
     return os.environ.get("AH_SLOT", "1").strip() == "manual"
 
 
