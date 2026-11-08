@@ -205,3 +205,24 @@ data/telegram_delivery.json
   凭据策略本地 `active=0 / skipped=5 / gates=5`（沙盒未注入 Secrets，不代表线上缺 key）。
 - 是否触碰模型算法框架：否（仅 schema 扩列与编排接线）。
 
+<!-- ROUND3 MODEL CHANGE -->
+## 2026-11-08 第三轮 · MODEL CHANGE 执行记录（用户授权，研究层）
+
+- 用户授权「线上规则回测 + 概率校准」；本类单独提交，前缀 `MODEL CHANGE:`，**写明依据与未回测风险**。
+- **`analyze.py` / `policy.py` / `daily.py` 的 assess/build_report / `config/settings.yaml`
+  阈值与 policy 一行未改**；`live_model_modified=false`。授权的是回测与校准能力，
+  不是把校准结果部署到线上评分；部署需另一次独立决策与独立回测证据。
+- 新增 `src/ah/rule_lab.py` / `.github/workflows/rule-lab.yml` / `tests/test_rule_lab.py`，
+  接入 `review.yml`。按 `kickoff_utc` 时序滚动、样本外评估；明确「线上规则无可拟合参数，
+  不是重新训练模型」。
+- 门槛沿用 `review.py`：总体 30 / 分桶 10；不足 `INSUFFICIENT_SAMPLE`，
+  命中率 / ROI / 分桶数字**留空**，禁止自相矛盾。
+- 官方台账无 `model_p`，Brier / 可靠性曲线 `NOT_COMPUTED`；「档位→实际胜率」明确标注
+  **描述性统计，不是校准概率，不得展示为高胜率**。预测质量层与下注规则层分开。
+- **防幻觉闸门**：生成内容出现「准确率提升 / 模型更准 / ROI 改善 / 已校准 / 显著提升 /
+  稳定盈利」等断言直接 `RuntimeError` 拒绝输出（测试锁住）。
+- 真实 dry-run：候选池 join 上 **9 场**（只有 2 天候选池），
+  `INSUFFICIENT_SAMPLE` / `NOT_COMPUTED`，**不产出任何命中率或 ROI 结论**。
+- 【未验证】线上规则真实独立回测结论、概率校准、价格型 CLV、Telegram 接收端。
+- 是否触碰模型算法框架：否（纯新增研究层，未改任何线上规则文件）。
+

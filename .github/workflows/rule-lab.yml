@@ -1,0 +1,32 @@
+name: Online-rule research (walk-forward / calibration)
+# MODEL CHANGE 授权的**研究层**产物：只做时序评估与校准可得性盘点。
+# 不改任何线上评分/阈值/核验/展示逻辑，不发 Telegram，不写回 predictions.csv。
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: rule-lab
+  cancel-in-progress: true
+jobs:
+  lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: src
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main, fetch-depth: 0, persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - name: Walk-forward + calibration facts
+        run: python -m ah rule-lab --out data/rule_lab.json
+      - name: Commit research facts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/rule_lab.json 2>/dev/null || true
+          if git diff --cached --quiet; then echo "NO_CHANGE"; exit 0; fi
+          git commit -m "MODEL CHANGE research: walk-forward and calibration facts (no live model change)"
+          git push origin HEAD:main

@@ -462,3 +462,22 @@ PYTHONPATH=src python -m ah delivery preflight
 - 接线：`daily.yml`（clv --apply / source-policy）、`settle.yml`（score-truth / source-policy）、
   `source-probe.yml`（source-policy），全部 `continue-on-error` 或 `if: always()`，不阻断。
 
+<!-- ROUND3 MODEL CHANGE -->
+## ROUND 3 · MODEL CHANGE（2026-11-08 用户授权）：线上规则回测与概率校准（研究层）
+
+**`analyze.py` / `policy.py` / `daily.py` 的 assess/build_report / `config/settings.yaml`
+阈值与 policy 一行未改，`live_model_modified=false`。** 授权的是「回测 + 校准」，
+不是悄悄改线上发推荐的规则；真正部署校准结果需另一次独立决策。
+
+- 新增 `src/ah/rule_lab.py` + `.github/workflows/rule-lab.yml`，接入 `review.yml`。
+- 输入开球前候选池 + 已结算真值，按 `kickoff_utc` 排序做**时序样本外**滚动评估；
+  线上规则无可拟合参数，明确写「不是重新训练模型」。
+- 门槛沿用 `review.py`（总体 30 / 分桶 10），不足 `INSUFFICIENT_SAMPLE`，
+  命中率 / ROI / 分桶数字留空。
+- 官方台账无 `model_p`，故 Brier / 可靠性曲线 `NOT_COMPUTED`；「档位→实际胜率」
+  只是描述性统计，**不是校准概率**。预测质量层与下注规则层分开。
+- **防幻觉闸门**：生成内容出现「准确率提升 / 模型更准 / ROI 改善 / 已校准」等断言
+  直接拒绝输出。
+- 真实 dry-run：候选池能 join 上 **9 场**（只有 2 天候选池），
+  `INSUFFICIENT_SAMPLE` / `NOT_COMPUTED`，不产出任何命中率结论。
+

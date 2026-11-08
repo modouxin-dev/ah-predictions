@@ -40,6 +40,12 @@ jobs:
           D="${{ github.event.inputs.date }}"
           if [ -z "$D" ]; then D="$(date -u +%F)"; fi
           python -m ah data-quality --date "$D" --out data/data_quality.json
+      - name: Online-rule walk-forward and calibration (MODEL CHANGE research layer, no live change)
+        continue-on-error: true
+        run: |
+          # 只做时序样本外评估与校准可得性盘点；样本不足写 INSUFFICIENT_SAMPLE，
+          # 无 model_p 写 NOT_COMPUTED；不改 analyze.py / policy.py / settings.yaml 任何一行。
+          python -m ah rule-lab --out data/rule_lab.json
       # 失败可见：即使上一步异常，也把对账/告警结果以只读方式再打一次，不静默跳过。
       - name: Review reconciliation check (facts only)
         if: always()
@@ -47,5 +53,5 @@ jobs:
       - name: Commit review artifacts
         run: |
           scripts/safe_commit.sh --skip-tests -m "accuracy review $(date -u +%F)" \
-            data/accuracy_review.json data/data_quality.json docs/review \
+            data/accuracy_review.json data/data_quality.json data/rule_lab.json docs/review \
             || echo "::warning::复盘产物提交失败，见上方日志"
