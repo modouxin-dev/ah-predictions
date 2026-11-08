@@ -3,20 +3,20 @@
   "snapshots": [
     {
       "date": "2026-11-08",
-      "generated_at": "2026-11-08T07:41:20Z",
-      "run_id": "42459757993",
+      "generated_at": "2026-11-08T07:45:16Z",
+      "run_id": "42460017231",
       "sample_status": "INSUFFICIENT_SAMPLE",
       "reconciliation": "RECONCILED",
       "decided": 14,
       "pending": 9,
       "missing_result": 0,
-      "hit_rate": 0.25,
+      "hit_rate": "未取得",
       "alerts": [
         "SETTLE_BACKLOG",
         "INSUFFICIENT_SAMPLE"
       ]
     }
   ],
-  "updated_at": "2026-11-08T07:41:20Z",
+  "updated_at": "2026-11-08T07:45:16Z",
   "note": "赛果只来自 data/predictions.csv；空值写『未取得』，不补造比分、不推断未结算原因。命中率口径与 data/stats.json 一致；对账不一致时写『未取得』，不输出结论数字。样本不足时写 INSUFFICIENT_SAMPLE，不宣称准确率或 ROI 变化。"
 }
