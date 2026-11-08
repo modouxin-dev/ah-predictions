@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-08T21:37:11Z",
+  "checked_at": "2026-11-08T23:03:10Z",
   "evidence_grade": "【已验证】环境变量布尔事实 + 静态文件文本事实",
   "mode": "optional_enhancement",
   "policy": [
