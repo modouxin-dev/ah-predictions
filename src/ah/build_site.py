@@ -981,7 +981,17 @@ def _fact_status(obj) -> str:
               wf.get("status"), pq.get("status"), obj.get("current_mode")):
         if v:
             return str(v)
-    return "暂无"
+    # 累计型事实文件把状态放在最新快照里；缺口型放在 alert 里。
+    # 有文件但确实没有状态字段时写「事实文件（无状态字段）」，不写成「暂无」以免误读为未落盘。
+    snaps = obj.get("snapshots") or []
+    if snaps and isinstance(snaps[-1], dict):
+        v = snaps[-1].get("sample_status") or snaps[-1].get("reconciliation")
+        if v:
+            return str(v)
+    alert = obj.get("alert")
+    if alert:
+        return str(alert).split()[0]
+    return "事实文件（无状态字段）"
 
 
 def review_html(acc, facts: dict, docs: list, exported: list) -> str:

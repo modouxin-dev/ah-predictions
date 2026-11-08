@@ -159,6 +159,11 @@ def test_review_page_exports_and_no_fabrication(tmp_path):
     assert "review/2026-11-08.html" in h and "原始事实 JSON" in h
     assert "25.0%" not in h and "准确率提升" not in h          # 不编造结论数字
     assert "复盘</a>" in h
+    # 事实卡状态：累计型取最新快照、缺口型取 alert 首词，不误写「暂无」。
+    assert build_site._fact_status(acc) == "INSUFFICIENT_SAMPLE"
+    assert build_site._fact_status({"alert": "SAMPLE_INSUFFICIENT 样本未达门槛"}) == "SAMPLE_INSUFFICIENT"
+    assert build_site._fact_status({"counters": {"clv_price_computed": 0}}) == "事实文件（无状态字段）"
+    assert "事实文件（无状态字段）" not in h            # 本例两个文件都有状态
     sub = (site / "review" / "2026-11-08.html").read_text()
     assert "<table" in sub and "已结算" in sub and "未取得" in sub
     exported = json.loads((site / "data" / "accuracy_review.json").read_text())
