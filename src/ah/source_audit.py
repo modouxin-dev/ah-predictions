@@ -15,6 +15,7 @@
 - 不新增任何需要注册的数据源；缺字段写「未取得」，不补造、不推断。
 """
 from __future__ import annotations
+from ah.degrade import record as _degrade_fact
 
 import argparse
 import json
@@ -105,6 +106,7 @@ def declared_secrets(workflow_dir: Path | None = None) -> dict:
         try:
             txt = f.read_text(encoding="utf-8")
         except OSError:
+            _degrade_fact("source_audit", "workflow_file_read", None)
             continue  # 读不到就跳过，不推断
         for name in set(WORKFLOW_SECRET_RE.findall(txt)):
             out.setdefault(name, []).append(f.name)
@@ -191,6 +193,7 @@ def probe_keyless(fetcher=None, now: datetime | None = None) -> list[dict]:
                 chunk = next(r.iter_content(2048), b"")
                 row["bytes_read"] = len(chunk)
             except Exception:
+                _degrade_fact("source_audit", "keyless_probe_close", None)
                 row["bytes_read"] = MISSING
             try:
                 r.close()

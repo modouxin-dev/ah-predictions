@@ -15,6 +15,7 @@ API-Football 额度：每场最多 2 次 —— fixture 详情（本地赛程缓
         3 来源故障（官网结构变化/不可用、API-Football 报错或额度不足；能写的结果仍会写出）。
 """
 from __future__ import annotations
+from ah.degrade import record as _degrade_fact
 
 import argparse
 import json
@@ -44,6 +45,7 @@ def run_one(fid: int, api: Api, jleague_id: str | None = None, official_ttl: flo
     try:
         fx, origin = api.fixture(fid)
     except Exception as e:  # noqa: BLE001
+        _degrade_fact("lineups", "api_football_fixture", e)
         return None, 3, f"{fid}: API-Football fixture 查询失败 {type(e).__name__}: {e}"
     if not fx:
         return None, 2, f"{fid}: 本地缓存和 API-Football 都找不到这个 fixture（{origin}）"

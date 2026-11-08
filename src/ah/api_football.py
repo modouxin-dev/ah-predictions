@@ -9,6 +9,7 @@
   或 config/sources.yaml api_football.enabled: false。账号 suspended 时自动写 flag，禁止静默重试。
 """
 from __future__ import annotations
+from ah.degrade import record as _degrade_fact
 
 import hashlib
 import json
@@ -70,6 +71,7 @@ def kill_switch_reason(config_path=None, check_yaml: bool = True) -> str | None:
             if cfg.get("api_football", {}).get("enabled") is False:
                 return "sources.yaml api_football.enabled=false"
         except Exception:
+            _degrade_fact("api_football", "config_read", None)
             pass
     return None
 

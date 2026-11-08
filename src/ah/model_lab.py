@@ -25,7 +25,7 @@ log = logging.getLogger("ah.model_lab")
 
 PICKS_FILE = DATA / "experiment_picks.csv"
 STATS_FILE = DATA / "experiment_stats.json"
-BJ = timezone(timedelta(hours=8))
+from .timeutil import BJ
 NONE = "暂无"
 
 MARKET_CN = {"ah": "亚盘", "1x2": "1X2", "ou": "大小球"}

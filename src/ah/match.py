@@ -18,7 +18,7 @@ from . import CONFIG
 
 TOLERANCE = timedelta(minutes=15)
 STOPWORDS = {"fc", "cf", "sc", "afc", "ac", "as", "ssc", "cd", "kv", "fk", "sk", "club", "de", "the", "calcio"}
-BJT = timezone(timedelta(hours=8))
+from .timeutil import BJT
 
 
 @lru_cache(maxsize=1)

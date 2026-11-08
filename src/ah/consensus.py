@@ -6,6 +6,7 @@
 用法：PYTHONPATH=src python -m ah consensus YYYY-MM-DD   （之后再 render）
 """
 from __future__ import annotations
+from ah.degrade import record as _degrade_fact
 
 import argparse
 import json
@@ -86,6 +87,7 @@ def _bet365(fd5, lid, p, aliases):
     try:
         return fivedollar.bet365_movement(fd5, lid, p["home"], p["away"], p["kickoff_utc"], p["pick_side"], aliases)
     except Exception as e:  # noqa: BLE001
+        _degrade_fact("consensus", "fivedollar_consensus", e)
         print(f"[fivedollar] skip {p.get('match_id')}: {e}", file=sys.stderr)
         return None
 

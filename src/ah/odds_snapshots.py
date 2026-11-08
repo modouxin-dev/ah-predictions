@@ -32,6 +32,7 @@
   PYTHONPATH=src .venv/bin/python -m ah.odds_snapshots close --backfill # 开赛后补跑：只用 OddsPapi 历史（免费）
 """
 from __future__ import annotations
+from ah.degrade import record as _degrade_fact
 
 import argparse
 import csv
@@ -154,6 +155,7 @@ def load_cross_verification(path=None) -> dict:
         sec = cfg.get("cross_verification_draft") or {}
         return sec if isinstance(sec, dict) else {"enabled": False}
     except Exception:
+        _degrade_fact("odds_snapshots", "config_read", None)
         return {"enabled": False}
 
 
@@ -767,6 +769,7 @@ class Snapshotter:
                 self._infs_events[day] = event_index(self.infs.events(day))
                 self.calls["infersports"] += self.infs.usage().get("used", 0) - before
         except Exception as ex:  # noqa: BLE001  含 BudgetExceeded
+            _degrade_fact("odds_snapshots", "infersports_events", ex)
             return None, [f"infersports:events_error({type(ex).__name__})"]
         hit = find_event(self._infs_events[day], m["home"], m["away"], m["kickoff_utc"], self.aliases)
         if not hit:

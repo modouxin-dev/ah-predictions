@@ -13,7 +13,7 @@ from .. import CONFIG, SCHEMA, source_status
 from ..match import norm
 from . import StructureChanged
 
-BJT = timezone(timedelta(hours=8))
+from ..timeutil import BJT
 AVAILABLE, MISSING = "已获取", "暂无"
 
 

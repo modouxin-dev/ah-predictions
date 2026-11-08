@@ -37,6 +37,7 @@ CLV（路线图「关键公式」）：
 需要数据官提供第二来源。
 """
 from __future__ import annotations
+from ah.degrade import record as _degrade_fact
 
 import argparse
 import os
@@ -67,7 +68,7 @@ FIELDS = ["date", "match_id", "league", "home", "away", "kickoff_utc", "kickoff_
           "model_p", "brier", "model_margin", "model_margin_flag", "model_note", "note", "updated_at",
           # 产品工程师要求的别名列（与上面同源，便于网站直接读取）
           "pick", "odds_taken", "odds_close", "stake", "pnl", "settled_at"]
-BJ = timezone(timedelta(hours=8))
+from ..timeutil import BJ
 BACKFILL = ["result", "score_sources", "score_note", "settled_at"]  # 收盘/模型每次按最新文件重算
 
 
@@ -315,6 +316,7 @@ def two_source_score(r: dict, api_client, fd_client) -> tuple[str | None, str, s
         if res and res.get("finished") and res.get("home_goals") is not None:
             a = (res["home_goals"], res["away_goals"])
     except Exception as e:  # noqa: BLE001
+        _degrade_fact("paper_trades", "api_football_score", e)
         return None, "", f"API-Football 出错：{type(e).__name__}"
     b = _fd_score(fd_client, r)
     if a and b and a == b:

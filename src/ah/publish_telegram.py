@@ -14,6 +14,8 @@
 --lab-stats JSON（默认与 --lab 同目录的 experiment_stats.json / data/experiment_stats.json）。
 """
 from __future__ import annotations
+from .timeutil import BJT
+from ah.degrade import record as _degrade_fact
 
 import argparse
 import html
@@ -52,6 +54,7 @@ def _default_chat():
         cfg = yaml.safe_load((Path(__file__).resolve().parents[2] / "config" / "settings.yaml").read_text())
         return str((cfg.get("telegram") or {}).get("chat_id") or "") or None
     except Exception:
+        _degrade_fact("publish_telegram", "default_chat_config", None)
         return None
 
 
@@ -61,7 +64,7 @@ def bj(utc: str | None, fmt: str = "%m-%d %H:%M") -> str:
     dt = datetime.fromisoformat(str(utc).replace("Z", "+00:00"))
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
-    return (dt.astimezone(timezone(timedelta(hours=8)))).strftime(fmt)
+    return (dt.astimezone(BJT)).strftime(fmt)
 
 
 def ln(x) -> str:
@@ -564,33 +567,13 @@ DAILY_ITEMS_MAX = 7   # 正式推荐 + 观察分析 每日合计上限；观察�
 
 
 def observation_blocks(rep: dict, n_picks: int | None = None) -> list[str]:
-    """Show real, scored watchlist observations without calling them picks.
+    """统一渲染入口：委托 src/ah/render_observation.py，避免多套措辞各自漂移。
 
-    Fills the daily 4-7 item target only with genuinely scored observations; if fewer
-    qualify, fewer are shown. Nothing is invented to reach the target."""
-    if n_picks is None:
-        n_picks = len(rep.get('picks') or [])
-    candidates = [w for w in rep.get('watchlist') or [] if isinstance(w.get('observation'), dict)]
-    candidates.sort(key=lambda w: -float(w['observation'].get('score', 0)))
-    blocks = []
-    for w in candidates[:max(0, DAILY_ITEMS_MAX - n_picks)]:
-        o = w['observation']
-        reason = w.get('withheld_reason') or w.get('withheld_category') or '未达到正式发布门槛'
-        age = '；报价超过30分钟' if o.get('freshness') == 'stale_downgrade' else ''
-        blocks.append('\n'.join([
-            f"⚽ <b>{e(w['home'])} vs {e(w['away'])}</b>",
-            f"{e(w.get('league', ''))} · {bj(w.get('kickoff_utc'))} 北京时间",
-            f"模型观察：{e(o['pick_team'])} {ln(o['line'])} · 评分 {e(o['score'])}（非正式推荐）",
-            f"{e(o['bookmaker'])} 初盘 {ln(o['line_open'])} → 当前 {ln(o['line'])} @ {e(o['odds'])} 港盘",
-            f"近况（最新在前，W胜/D平/L负）：{e(o['home_form'])} / {e(o['away_form'])}",
-            *(['Football data by 5DollarFootballAPI'] if o.get('form_source') == '5DollarFootballAPI'
-              else ([f"近况来源：{e(o['form_source'])}"] if o.get('form_source') else [])),
-            f"报价：{e(o['source'])} · {bj(o['price_ts'])} 北京时间{age}",
-            f"未正式推荐：{e(reason)}",
-        ]))
-    if not blocks:
-        return []
-    return [sec('🔎', '比赛观察分析', '非正式推荐，不计战绩') + '\n' + '\n\n'.join(blocks)]
+    行为与旧实现一致（同样只展示有真实评分的 watchlist、同样受 DAILY_ITEMS_MAX 限制），
+    但每条观察都带「非正式推荐，不计战绩」标记，不再只靠 section 标题。
+    """
+    from .render_observation import render_observation_section
+    return render_observation_section(rep, n_picks)
 
 
 ANNOUNCE = "🆕\ufe0f 看板已升级"

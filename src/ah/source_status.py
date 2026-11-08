@@ -7,6 +7,7 @@
 需要更新网站时用 scripts/publish_source_status.sh 把它复制成快照并经 safe_commit 提交。
 """
 from __future__ import annotations
+from ah.degrade import record as _degrade_fact
 
 import json
 import os
@@ -67,6 +68,7 @@ def sanitize(msg: str) -> str:
             if v and len(v) >= 6:
                 s = s.replace(v, "***")
     except Exception:  # noqa: BLE001
+        _degrade_fact("source_status", "redact_url", None)
         pass
     s = re.sub(r"(?i)(api_?key|apikey|token|key|authorization|bearer)([=:\s]+)[^&\s,;]+", r"\1\2***", s)
     return s[:300]
@@ -125,6 +127,7 @@ def record(source: str, ok: bool, error: str | None = None, quota: dict | None =
         tmp.write_text(json.dumps(d, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         tmp.replace(p)
     except Exception:  # noqa: BLE001
+        _degrade_fact("source_status", "status_write", None)
         pass
 
 

@@ -117,22 +117,13 @@ def check_ledger(path: Path | None = None) -> list[str]:
 
 
 def check_observation_markup(report: dict, rendered: str) -> list[str]:
-    """防回退：若任何入口把观察块渲染进消息，必须带免责标记且不得冒充推荐。
+    """防回退：委托 src/ah/render_observation.py 的唯一校验器。
 
-    当前群消息已不输出观察分析；本检查只在观察标题/评分确实出现时生效，
-    避免正常日报被误拦。不改任何展示生成逻辑。
+    观察块只由 render_observation_section() 生成，标记与禁止措辞也只在那里定义；
+    本函数不再另写一套字符串，避免「渲染改了、闸门没改」。
     """
-    errors: list[str] = []
-    observed = ("比赛观察分析" in rendered) or ("模型观察" in rendered)
-    if not observed:
-        return errors
-    for marker in ("非正式推荐", "不计战绩"):
-        if marker not in rendered:
-            errors.append(f"观察块缺少免责标记：{marker}")
-    for banned in ("🎯 <b>推荐", "规则档位 🟢", "稳赢", "保证命中"):
-        if banned in rendered:
-            errors.append(f"观察块出现推荐/断言措辞：{banned}")
-    return errors
+    from .render_observation import validate
+    return validate(rendered)
 
 
 def check_all(report: dict, text: str | None = None, ledger: Path | None = None) -> dict:

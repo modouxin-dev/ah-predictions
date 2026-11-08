@@ -17,7 +17,7 @@ from pathlib import Path
 from . import DATA
 
 MISSING = "未取得"
-BJ = timezone(timedelta(hours=8))
+from .timeutil import BJ
 
 NOTE = (
     "只比对 AH_DATE 与采集入口的 allowed 口径；分叉时 daily.py 的日期校验是保护性拒绝，"

@@ -6,6 +6,7 @@
 四分之一盘(±0.25/±0.75...) 拆成相邻两个半盘/整盘各下注一半。
 """
 from __future__ import annotations
+from ah.degrade import record as _degrade_fact
 
 import argparse
 import csv
@@ -300,6 +301,7 @@ def _fd_code(league: str) -> str | None:
     try:
         return CODE_BY_LEAGUE.get(league_id(league or "") or "")
     except Exception:  # noqa: BLE001
+        _degrade_fact("settle", "fd_score_second_source", None)
         return None
 
 
@@ -312,6 +314,7 @@ def _fd_score(fd_client, r) -> tuple[int, int] | None:
     try:
         return score_for(fd_client, code, r["home"], r["away"], r["kickoff_utc"])
     except Exception:  # noqa: BLE001
+        _degrade_fact("settle", "api_football_score", None)
         return None
 
 

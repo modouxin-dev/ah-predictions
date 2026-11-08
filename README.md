@@ -481,3 +481,27 @@ PYTHONPATH=src python -m ah delivery preflight
 - 真实 dry-run：候选池能 join 上 **9 场**（只有 2 天候选池），
   `INSUFFICIENT_SAMPLE` / `NOT_COMPUTED`，不产出任何命中率结论。
 
+<!-- ROUND3 DISPLAY/OPS -->
+## ROUND 3 · DISPLAY/OPS（2026-11-08 用户授权）：观察块统一、降级事实、时区统一
+
+- **观察块统一渲染**：新增 `src/ah/render_observation.py`，渲染 + 校验单一真源；
+  `publish_telegram.observation_blocks()` / `grounding.check_observation_markup()` /
+  `recheck.py` 全部委托它。每条观察逐条带「非正式推荐，不计战绩」，不只靠 section 标题。
+  不改 `daily.py` 的 watchlist/observation 生成、不凑数、不改评分/核验/阈值。
+- **provider 静默降级改造**：新增 `src/ah/degrade.py`，只记模块/阶段/UTC/异常类型，
+  原子落 `data/degradation_facts.json`、进程内去重、上限 200、自身永不抛异常。
+  深度检查列出的 **17 处**静默异常逐处接入，原 `pass / return None / continue` 不变；
+  不回显异常消息、URL、响应体或密钥，不推断原因。
+- **时区统一**：新增 `src/ah/timeutil.py`（`ZoneInfo("Asia/Shanghai")` 优先，安全回退 +8），
+  10 个文件改为引用共享 `BJ/BJT`；`delivery._bj_date()` 保留测试时钟注入能力。
+
+**【已验证】**：本地 `pytest 986 passed, 1 skipped`（3.10）；`GROUNDING_OK`；
+13 个 workflow YAML 解析与并发/超时契约全过；台账扩列后 settle/stats/render/experiment 全套回归通过；
+未触发日报 dispatch、未发送 Telegram。
+
+**【未验证】**：close 快照真实采集、第三比分源可用性、5 个 Secret 有效性（403 边界）、
+价格型 CLV、概率校准、线上规则回测结论（9 场 < 30 场）、Telegram 接收端、外部定时准时率、
+结算积压成因。
+
+三类授权分别记录；为避免每次 push 触发 CI 的中间态不一致，采用**链式 3 个 commit、
+只更新一次 ref**。令牌保留，未注销、未轮换、未外传。

@@ -17,6 +17,7 @@ import json
 import os
 import tempfile
 from datetime import datetime, timedelta, timezone
+from .timeutil import BJT
 from pathlib import Path
 
 from . import DATA
@@ -66,7 +67,7 @@ def _target_utc(date: str, slot: str) -> datetime | None:
     hh, mm, _ = TARGETS[slot]
     try:
         bj = datetime.strptime(date, "%Y-%m-%d").replace(
-            hour=hh, minute=mm, tzinfo=timezone(timedelta(hours=8)))
+            hour=hh, minute=mm, tzinfo=BJT)
         return bj.astimezone(timezone.utc)
     except ValueError:
         return None

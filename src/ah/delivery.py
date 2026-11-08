@@ -52,8 +52,9 @@ def _bj_date() -> str:
             return env
         except ValueError:
             raise RuntimeError(f"AH_DATE 格式无效：{env!r}（应为 YYYY-MM-DD）") from None
-    from datetime import timedelta
-    return (datetime.now(timezone.utc) + timedelta(hours=8)).strftime("%Y-%m-%d")
+    # 统一走 timeutil.bj_date()，同时把 datetime.now() 注入进去，保留测试的时钟替换能力
+    from .timeutil import bj_date
+    return bj_date(datetime.now(timezone.utc))
 
 
 # cron 表达式(UTC) -> (时段, UTC 小时)。与 .github/workflows/daily.yml 的 schedule 保持一致。

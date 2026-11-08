@@ -15,7 +15,9 @@ def collect(path: Path, max_fixtures: int | None = None) -> dict:
     snapshot_dir = DATA / 'snapshots' / 'odds' / 'rechecks' / path.stem
     report = daily.build_report(now.date().isoformat(), max_fixtures=max_fixtures, snapshot_dir=snapshot_dir)
     official = policy.published(report)
-    observations = publish_telegram.observation_blocks(report)
+    # 统一走 render_observation 的唯一渲染入口（publish_telegram 只是薄包装）
+    from .render_observation import render_observation_section
+    observations = render_observation_section(report)
     if not official and not observations:
         # 不再中断：0 场推荐仍如实发布「赛程事实清单」（非推荐、不含预测结论）。
         # 不改动 policy / observation_blocks / 评分与核验算法（见 AGENTS.md 冻结清单）。

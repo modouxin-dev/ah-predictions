@@ -226,3 +226,23 @@ data/telegram_delivery.json
 - 【未验证】线上规则真实独立回测结论、概率校准、价格型 CLV、Telegram 接收端。
 - 是否触碰模型算法框架：否（纯新增研究层，未改任何线上规则文件）。
 
+<!-- ROUND3 DISPLAY/OPS -->
+## 2026-11-08 第三轮 · DISPLAY/OPS 执行记录（用户授权）
+
+- 用户授权「观察块统一渲染、provider 静默降级改造、时区统一」；本类单独提交，前缀 `DISPLAY/OPS:`。
+- 观察块：新增 `src/ah/render_observation.py` 单一真源；`publish_telegram.observation_blocks()`
+  改为薄包装、`grounding.check_observation_markup()` 委托同一 `validate()`、
+  `recheck.py` 直接调规范渲染。每条观察逐条带「非正式推荐，不计战绩」；
+  不改 `daily.py` 的 watchlist/observation 生成、不凑数、不改评分/核验/阈值。
+- 降级事实：新增 `src/ah/degrade.py`（只记模块/阶段/UTC/异常类型、原子落盘、进程内去重、
+  上限 200、自身永不抛异常），**17 处**静默异常逐处接入，原返回值不变；
+  不回显异常消息/URL/响应体/密钥，不推断原因。`tests/test_degrade.py` 静态契约逐个核验。
+- 时区：新增 `src/ah/timeutil.py`（`ZoneInfo` 优先，安全回退 +8），10 个文件引用共享
+  `BJ/BJT`；`delivery._bj_date()` 保留时钟注入能力。
+- 证据：本地 `pytest 986 passed, 1 skipped`（3.10）；`GROUNDING_OK`；13 个 workflow YAML
+  解析与并发/超时契约全过；台账扩列后 settle/stats/render/experiment 全套回归通过；
+  兼容测试（观察块 ⚽ 计数、免责标记、群消息不含观察块、北京跨午夜）全过。
+- 【未验证】close 快照真实采集、第三比分源可用性、5 个 Secret 有效性（403）、
+  价格型 CLV / 校准 / 线上规则回测结论、Telegram 接收端、外部定时准时率、结算积压成因。
+- 提交方式：三类**链式 3 个 commit、只更新一次 ref**，避免每次 push 触发 CI 的中间态不一致。
+- 令牌按用户要求**保留**，未注销、未轮换、未外传。是否触碰冻结清单：否。

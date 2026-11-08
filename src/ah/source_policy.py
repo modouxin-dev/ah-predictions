@@ -23,6 +23,7 @@
   不新增需注册数据源，不发 Telegram。
 """
 from __future__ import annotations
+from ah.degrade import record as _degrade_fact
 
 import argparse
 import json
@@ -97,6 +98,7 @@ def static_contract_check(policy: list[dict], root: Path | None = None) -> list[
                 txt = p.read_text(encoding="utf-8", errors="replace")
                 rec["env_var_referenced"] = item["env_var"] in txt
             except OSError:
+                _degrade_fact("source_policy", "client_file_read", None)
                 pass
         rec["status"] = "CREDENTIAL_GATE_PRESENT" if (rec["file_exists"] and rec["env_var_referenced"]) \
             else "GATE_NOT_VERIFIED"

@@ -8,6 +8,7 @@
 结果库：data/history/results.csv（可入库累积；未入库时每次运行重新回填，受 MAX_FETCH_DATES 限制）。
 """
 from __future__ import annotations
+from ah.degrade import record as _degrade_fact
 
 import csv
 import json
@@ -106,6 +107,7 @@ def refresh_infersports(infs, now, league_by_name: dict, rows: list[dict], max_d
         try:
             events = infs.events(day)
         except Exception as exc:  # noqa: BLE001  单日失败不影响其余日期
+            _degrade_fact("form_history", "infersports_day", exc)
             notes.append(f'InferSports 赛果回填 {day} 失败：{type(exc).__name__}')
             continue
         covered.add(day)

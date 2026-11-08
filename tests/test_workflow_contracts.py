@@ -13,7 +13,7 @@ KEEP_RUNNING = {"daily.yml": "daily-report", "publish-recheck.yml": "publish-rec
 CANCEL_STALE = {"settle.yml", "source-probe.yml", "collection-check.yml",
                 "telegram-preflight.yml", "telegram-group-check.yml",
                 "research-backtest.yml", "review.yml", "tests.yml", "pages.yml",
-                "lock.yml"}
+                "lock.yml", "close-snapshots.yml", "rule-lab.yml"}
 
 
 def _load(name):
@@ -72,3 +72,17 @@ def test_lock_workflow_is_manual_and_never_invents_hashes():
                      for s in d["jobs"]["lock"]["steps"])
     assert "piptools compile" in text and "--generate-hashes" in text
     assert "不伪造" in text or "never invent" in text
+
+
+def test_round3_data_source_and_model_change_wiring():
+    daily = _load("daily.yml")
+    dtext = "\n".join((s.get("run") or "") for j in daily["jobs"].values() for s in j["steps"])
+    for cmd in ("clv --apply", "source-policy", "data-quality", "date-consistency"):
+        assert cmd in dtext, cmd
+    settle = _load("settle.yml")
+    stext = "\n".join((s.get("run") or "") for j in settle["jobs"].values() for s in j["steps"])
+    assert "score-truth" in stext and "source-policy" in stext
+    review = _load("review.yml")
+    rtext = "\n".join((s.get("run") or "") for j in review["jobs"].values() for s in j["steps"])
+    assert "rule-lab" in rtext
+    assert (WF / "close-snapshots.yml").exists() and (WF / "rule-lab.yml").exists()

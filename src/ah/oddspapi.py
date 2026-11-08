@@ -12,6 +12,7 @@
 - 每联赛每天：/fixtures?tournamentId（1 次，缓存当天）+ 每个推荐 /odds?fixtureId（1 次，缓存 30 分钟）。
 """
 from __future__ import annotations
+from ah.degrade import record as _degrade_fact
 
 import hashlib
 import json
@@ -183,6 +184,7 @@ class Client:
                 if isinstance(ms, (int, float)):
                     delay = max(delay, ms / 1000.0)
             except Exception:  # noqa: BLE001
+                _degrade_fact("oddspapi", "backoff_config", None)
                 pass
             self.backoffs.append((path, r.status_code, min(delay, BACKOFF_MAX_S)))
             self.sleep(min(delay, BACKOFF_MAX_S))

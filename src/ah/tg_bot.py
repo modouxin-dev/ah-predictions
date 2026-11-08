@@ -8,6 +8,7 @@
 - 每个 chat 限流；群里的未知命令静默忽略。
 """
 from __future__ import annotations
+from ah.degrade import record as _degrade_fact
 
 import html
 import json
@@ -25,7 +26,7 @@ from . import publish_telegram as pt
 
 SITE_URL = pt.SITE_URL
 BOT_USERNAME = "LYZKYPbot"
-BJ = timezone(timedelta(hours=8))
+from .timeutil import BJ
 e = pt.e
 
 # (command, 中文描述) —— setMyCommands 用
@@ -502,6 +503,7 @@ def run() -> None:
                 OFFSET_FILE.parent.mkdir(parents=True, exist_ok=True)
                 OFFSET_FILE.write_text(str(offset))
             except OSError:
+                _degrade_fact("tg_bot", "state_file_read", None)
                 pass
 
 

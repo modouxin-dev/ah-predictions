@@ -21,7 +21,7 @@ import yaml
 from . import CONFIG, DATA, REPORTS, SITE, TEMPLATES, model_lab, policy, records, source_status
 from .stats import compute, summary_line, window
 
-BJT = ZoneInfo("Asia/Shanghai")
+from .timeutil import BJT
 CONF = {"high": "高", "medium": "中", "low": "低", "高": "高", "中": "中", "低": "低", "cancelled": "已撤销"}
 NAV = [("index.html", "今日"), ("records.html", "推荐记录"), ("stats.html", "战绩"), ("sources.html", "数据源"),
        ("rules.html", "规则"), ("model-lab.html", "实验场")]
