@@ -101,6 +101,12 @@ def test_insufficient_sample_blocks_conclusions(fixture):
     assert all(w["hit_rate"] is None and w["status"] == "INSUFFICIENT_SAMPLE" for w in payload["windows"])
     assert all(v["hit_rate"] == review.MISSING for items in payload["buckets"].values() for v in items.values())
     assert "25.0%" not in md
+    # 精确检查命中率数值；盘口线标签（如 -0.25 / 平半 0.25）是真实数据，不算泄漏
+    assert '"hit_rate": 0.25' not in md, "对账证据不得泄漏命中率数字"
+    section2 = md.split("## 二、与 stats.json 对账")[1].split("## 三")[0]
+    assert "0.25" not in section2
+    weekly = review.render_weekly("2026-11-07", payload)
+    assert "25.0%" not in weekly and '"hit_rate": 0.25' not in weekly
 
 
 def test_void_and_experiment_rows_excluded(tmp_path):
@@ -146,6 +152,7 @@ def test_run_is_idempotent_and_atomic(fixture, tmp_path):
         hist = json.loads(ledger.read_text(encoding="utf-8"))
         assert len(hist["snapshots"]) == 1, "同日快照必须幂等覆盖"
         assert hist["snapshots"][0]["run_id"] == "r2"
+        assert hist["snapshots"][0]["hit_rate"] == review.MISSING, "样本不足时快照不得存命中率数字"
         assert (out / "2026-11-07.md").exists()
         assert len(list(out.glob("weekly-*.md"))) == 1
         assert not list(out.glob(".*.tmp")) and not list((tmp_path / "data").glob(".*.tmp"))

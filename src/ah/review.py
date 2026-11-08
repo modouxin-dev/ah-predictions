@@ -321,6 +321,12 @@ def _line(v) -> str:
     return MISSING if v is None or v == "" else str(v)
 
 
+def _count_fields(b: dict) -> dict:
+    """对账证据只给分母/分子计数；命中率、ROI、盈亏属于结论，样本不足时不输出。"""
+    return {k: b.get(k, MISSING) for k in
+            ("picks", "win", "half_win", "push", "half_loss", "loss", "void", "decided", "hits")}
+
+
 def render_daily(date: str, payload: dict, run_id: str) -> str:
     rec, integ = payload["reconciliation"], payload["settlement_integrity"]
     ok = rec["ok"]
@@ -354,7 +360,7 @@ def render_daily(date: str, payload: dict, run_id: str) -> str:
         "## 二、与 stats.json 对账",
         "",
         f"- 状态：**{rec['status']}**",
-        f"- CSV 独立复算：{json.dumps(rec['independent_from_csv'], ensure_ascii=False)}",
+        f"- CSV 独立复算（仅计数字段）：{json.dumps(_count_fields(rec['independent_from_csv']), ensure_ascii=False)}",
     ]
     if not ok:
         L.append(f"- 不一致字段：{json.dumps(rec['mismatches'], ensure_ascii=False)}")
@@ -548,7 +554,7 @@ def run(date: str, csv_path: Path | None = None, stats_path: Path | None = None,
         "pending": payload["settlement_integrity"]["pending_rows"],
         "missing_result": payload["settlement_integrity"]["missing_result_rows"],
         "hit_rate": (payload["reconciliation"]["authoritative_stats"].get("hit_rate")
-                     if payload["reconciliation"]["ok"] else MISSING),
+                     if payload["quotable"] else MISSING),
         "alerts": [a["code"] for a in payload["alerts"]],
     }
     snaps = [x for x in hist.get("snapshots", []) if x.get("date") != date]
