@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "checked_at": "2026-11-08T14:54:01Z",
+  "evidence_grade": "【已验证】本地文件解析事实",
+  "close_snapshot_rows_in_repo": 815,
+  "close_snapshot_unique_matches": 26,
+  "ledger_rows": 24,
+  "joined_unique_match_ids": 8,
+  "joined_match_ids": [
+    "fd-558532",
+    "fd-558534",
+    "fd-560633",
+    "fd-561929",
+    "fd-561930",
+    "fd-561931",
+    "fd-561936",
+    "fd-561937"
+  ],
+  "price_clv_status_by_row": {
+    "收盘盘口≠下注盘口（按口径不算 CLV）": 7,
+    "无收盘快照": 13,
+    "缺收盘两侧水位去水": 1,
+    "有收盘快照但视角未能唯一学习，收盘线未取得": 3
+  },
+  "note": "只统计真实 stage=close 行与台账 match_id 的交集；价格型 CLV 严格复用 experiment_track.clv()（仅收盘盘口=下注盘口且两侧水位齐全时计算），线差单列为 line_move，绝不冒充 CLV；不补造任何盘口或水位。",
+  "unverified": [
+    "收盘价是否即该机构最终收盘价",
+    "收盘快照是否覆盖全部已结算场次"
+  ]
+}

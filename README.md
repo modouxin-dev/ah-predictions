@@ -533,3 +533,26 @@ tests / pages / source-probe / accuracy-review 四个运行 success；`data/rule
 
 `review.yml` 每天落盘 `data/selection_funnel.json`；站点定时文件未到时即时自算兜底。
 详见 `docs/upgrade-2026-11-08-round5.md`。本地 `pytest 1004 passed, 1 skipped`。
+
+## ROUND 6（2026-11-08）：A 档一次性收敛
+
+按同类项目对照后的「一次性搞定」方案执行 A 档，B 档（放开筛查上限 / 补数据源 / 引概率）
+与 C 档（等时间）均未动。
+
+- **A1 收盘快照 join**：真因是时序——`clv_backfill` 跑在 `close-snapshots` 落盘之前；
+  817 是 naive 逗号切分计数，csv 解析后为 815 行有效 close、26 个唯一场次、
+  与台账只交上 8 场。修掉两个潜在计算 bug（快照 decimal 水位与台账 hk 格式混用、
+  `0.0` 被误判成缺值、`final_odds` 被误减 1），产出 8 行 `close_line`/`line_move`。
+  **价格型 CLV 仍为 0 是口径正确**：仓库 `clv()` 只在收盘盘口=下注盘口且两侧水位齐全时计算；
+  7 行盘口变动、13 行无快照、3 行视角未唯一、1 行缺水位，逐行原因写在 `clv_basis`。
+  线差只写 `line_move`，绝不冒充 CLV。`review.yml` 现在先 join 再复盘，消除时序复发。
+- **A2 上游结构化**：报告新增 `window_fixtures`/`screening_cap`/`outside_screen`；
+  漏斗优先读结构化字段，旧报告降级文本正则，绝不拿配置倒推。
+- **A3 研究层≠线上层**：`data/eval_facts.json` 逐字摆出两边字段并标注「结论不可迁移」。
+- **A4 按联赛事实分桶**：11 个联赛、8 个有数据缺口、连续缺口 3 天；
+  样本 < 30 场一律「未取得」，不输出联赛优劣或漂移结论。
+- **A5 结构化告警**：5 条，全部 `notify_only`，不自动补发、不递归触发、不发 Telegram。
+- 网页复盘页新增评估边界 / 联赛分桶 / 告警 / 收盘 join 四块；`site/data/` 导出事实 JSON。
+
+`pytest 1022 passed, 1 skipped`。详见 `docs/upgrade-2026-11-08-round6.md`。
+台账严格校验：仅 6 个 CLV 回填列变化，未触碰赛程、盘口、赔率、比分、结算等权威字段。

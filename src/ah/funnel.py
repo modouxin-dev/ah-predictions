@@ -64,7 +64,7 @@ FORBIDDEN_CLAIMS = (
 )
 
 NOTE = (
-    "只读取 reports/*/*/*.json 已落盘字段：watchlist[].withheld_category、not_covered、"
+    "只读取 reports/*/*/*.json 已落盘字段：window_fixtures/screening_cap/outside_screen（新报告结构化）、not_covered、"
     "collection_notes、picks、collection_errors。缺字段写『未取得』，不推断未进候选的场次、"
     "不补造赛程/盘口/比分/倾向、不改任何评分或阈值。0 场日也照常输出事实行。"
 )
@@ -81,10 +81,21 @@ def _load_json(path: Path):
         return None
 
 
-def _upstream(text: str) -> dict:
-    """只从 not_covered 文本严格提取上游数字；缺一处就整组写「未取得」。"""
+def _upstream(report: dict) -> dict:
+    """上游数字优先取报告结构化字段；旧报告没有才降级到 not_covered 文本正则。
+
+    已写明的字段照实展示；缺字段写「未取得」，绝不拿 settings.yaml 的配置值倒推，
+    也不在缺任一字段时推算「未进候选」。
+    """
     out = {"window_fixtures": MISSING, "screening_cap": MISSING,
-           "outside_screen": MISSING, "status": "NOT_RECORDED"}
+           "outside_screen": MISSING, "status": "NOT_RECORDED", "source": "NOT_RECORDED"}
+    win, cap = report.get("window_fixtures"), report.get("screening_cap")
+    if isinstance(win, int) and isinstance(cap, int) and win >= 0 and cap >= 0:
+        out.update(window_fixtures=win, screening_cap=cap,
+                   outside_screen=max(0, win - cap), status="RECORDED",
+                   source="report 结构化字段")
+        return out
+    text = report.get("not_covered")
     if not isinstance(text, str) or not text:
         return out
     m_cap = re.search(r"筛查上限\s*(\d+)\s*场", text)
@@ -95,8 +106,8 @@ def _upstream(text: str) -> dict:
         out["window_fixtures"] = int(m_win.group(1))
     if m_cap and m_win:
         cap, win = int(m_cap.group(1)), int(m_win.group(1))
-        out["outside_screen"] = max(0, win - cap)
-        out["status"] = "RECORDED"
+        out.update(outside_screen=max(0, win - cap), status="RECORDED",
+                   source="not_covered 文本正则（旧报告兼容）")
     return out
 
 
@@ -134,7 +145,7 @@ def _day(path: Path) -> dict | None:
         "categories": dict(sorted(cats.items(), key=lambda kv: (-kv[1], kv[0]))),
         "buckets": buckets,
         "data_gap_by_league": dict(sorted(gap_leagues.items(), key=lambda kv: (-kv[1], kv[0]))),
-        "upstream": _upstream(r.get("not_covered")),
+        "upstream": _upstream(r),
         "verification_facts": ver_facts,
         "state_gap_note_count": len(gap_notes),
         "collection_notes": notes,

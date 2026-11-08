@@ -46,6 +46,18 @@ jobs:
           # 把「今天为什么只推这几场 / 为什么 0 场」按日留痕：数据缺口 vs 模型判断分开，
           # 上游截断只从报告 not_covered 文本取数，缺字段写「未取得」，不推断、不改阈值。
           python -m ah funnel --out data/selection_funnel.json
+      - name: CLV join (facts only, strict repository definition)
+        continue-on-error: true
+        run: |
+          # 把真实 stage=close 快照按 match_id join 回台账；价格型 CLV 严格复用
+          # experiment_track.clv()（仅收盘盘口=下注盘口且两侧水位齐全），线差只写 line_move。
+          python -m ah clv --apply
+      - name: Evaluation boundary / league facts / structured alerts (facts only)
+        continue-on-error: true
+        run: |
+          # A3 研究层≠线上层显式标注；A4 按联赛事实分桶（样本不足写未取得）；
+          # A5 结构化告警（notify_only，不自动补发、不递归触发）。
+          python -m ah eval-facts --out data/eval_facts.json
       - name: Online-rule walk-forward and calibration (MODEL CHANGE research layer, no live change)
         continue-on-error: true
         run: |
@@ -60,5 +72,6 @@ jobs:
         run: |
           scripts/safe_commit.sh --skip-tests -m "accuracy review $(date -u +%F)" \
             data/accuracy_review.json data/data_quality.json data/rule_lab.json \
-            data/selection_funnel.json docs/review \
+            data/selection_funnel.json data/eval_facts.json data/clv_join_facts.json \
+            data/predictions.csv docs/review \
             || echo "::warning::复盘产物提交失败，见上方日志"

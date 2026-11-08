@@ -129,3 +129,80 @@ def test_no_pick_facts_does_not_invent(tmp_path):
     assert out["counters"]["line_open_filled"] == 0
     assert out["counters"]["price_ts_filled"] == 0
     assert "不补造" in out["note"]
+
+
+# ---------- ROUND 6 / A1：真实 close 快照 join + 格式归一 + 不拿线差冒充 CLV ----------
+
+def test_align_odds_format_is_mechanical_only():
+    assert clv._align_odds_format(2.0, "decimal", "hk") == 1.0
+    assert clv._align_odds_format(1.0, "hk", "decimal") == 2.0
+    assert clv._align_odds_format(1.9, "hk", "hk") == 1.9
+    assert clv._align_odds_format(None, "decimal", "hk") is None
+    assert clv._align_odds_format(2.0, "unknown", "hk") is None   # 未知组合不猜测
+
+
+def test_close_snapshot_join_writes_line_move_not_fake_clv(tmp_path):
+    """有真实 close 行 -> close_line/line_move 有值；盘口不同 -> 价格型 CLV 必须「未取得」。"""
+    led, rep, snaps = _fixture(tmp_path)
+    snaps.mkdir(parents=True, exist_ok=True)
+    hdr = ["match_id", "captured_at", "stage", "bookmaker", "ah_home_line",
+           "odds_home", "odds_away", "odds_format", "source"]
+    (snaps / "2026-11-08.csv").write_text(
+        ",".join(hdr) + "\n"
+        + "m2,2026-11-08T14:00:00Z,report,pinnacle,-1.0,1.90,1.90,decimal,oddspapi\n"
+        + "m2,2026-11-08T15:00:00Z,close,pinnacle,-0.75,1.80,2.00,decimal,oddspapi\n",
+        encoding="utf-8")
+    out = clv.backfill(led, rep, snaps, apply=True)
+    assert out["snapshot_close_matches"] == 1
+    assert out["counters"]["close_from_snapshot"] == 1
+    assert out["counters"]["clv_price_computed"] == 0
+    _, rows = _read(led)
+    m2 = next(r for r in rows if r["match_id"] == "m2")
+    assert m2["close_line"] == "-0.75" and m2["line_move"] == "-0.25"
+    assert m2["clv"] == "未取得"
+    assert "≠" in m2["clv_basis"] and "不当作 CLV" in m2["clv_basis"]
+    # 收盘水位由 decimal 机械归一到台账 hk，不混用格式
+    assert m2["close_odds"] == "0.8"      # 1.80 decimal -> 0.80 hk
+    jf = json.loads((led.parent / "clv_join_facts.json").read_text(encoding="utf-8"))
+    assert jf["joined_unique_match_ids"] == 1
+    assert jf["close_snapshot_rows_in_repo"] == 1
+
+
+def test_price_clv_only_when_close_line_equals_bet_line(tmp_path):
+    """同一口径闭环：盘口相同 + 两侧水位齐全才允许 clv 有值。"""
+    from ah.audit.experiment_track import clv as price_clv
+    probe = {"market": "ah", "line": -0.5, "close_line": -0.5,
+             "close_odds": 0.9, "close_odds_opp": 0.9,
+             "odds_if_known": 0.95, "odds_format": "hk"}
+    assert price_clv(probe) is not None
+    probe["close_line"] = -0.25
+    assert price_clv(probe) is None
+
+
+def test_join_facts_reasons_cover_every_ledger_row(tmp_path):
+    led, rep, snaps = _fixture(tmp_path)
+    clv.backfill(led, rep, snaps, apply=True)
+    jf = json.loads((led.parent / "clv_join_facts.json").read_text(encoding="utf-8"))
+    assert sum(jf["price_clv_status_by_row"].values()) == jf["ledger_rows"] == 2
+
+
+def test_final_line_odds_not_reformatted_by_snapshot(tmp_path):
+    """台账 final_odds 本来就是台账格式，不能被快照的 decimal 格式误减 1。"""
+    led, rep, snaps = _fixture(tmp_path)
+    snaps.mkdir(parents=True, exist_ok=True)
+    hdr = ["match_id", "captured_at", "stage", "bookmaker", "ah_home_line",
+           "odds_home", "odds_away", "odds_format", "source"]
+    (snaps / "2026-11-08.csv").write_text(
+        ",".join(hdr) + "\n"
+        + "m1,2026-11-08T15:00:00Z,close,pinnacle,-0.25,1.80,2.00,decimal,oddspapi\n",
+        encoding="utf-8")
+    clv.backfill(led, rep, snaps, apply=True)
+    _, rows = _read(led)
+    m1 = next(r for r in rows if r["match_id"] == "m1")
+    assert m1["close_odds"] == "0.92"          # 原样保留，不变成 -0.08
+    assert "final_line" in m1["clv_basis"]
+
+
+def test_zero_hk_water_is_not_treated_as_missing():
+    """decimal 1.0 -> hk 0.0 是合法值，不能被 `or MISSING` 吞掉。"""
+    assert clv._align_odds_format(1.0, "decimal", "hk") == 0.0

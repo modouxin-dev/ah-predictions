@@ -1,0 +1,155 @@
+{
+ "schema": 1,
+ "checked_at": "2026-11-08T14:54:19Z",
+ "evidence_grade": "【已验证】本地文件解析事实",
+ "model_scope": {
+  "boundary": "研究层（离线回测 / 线上规则 walk-forward）与每日实际发布不是同一套可互证结论；两边样本、输入与评估对象不同，任何一边的数字都不能迁移成另一边的准确率或 ROI 声明。",
+  "research_facts": [
+   "rule_lab.model_under_test：线上规则档位（analyze.py / policy.py / config/settings.yaml），未改动任何一行",
+   "rule_lab.live_model_modified：False",
+   "rule_lab.joined_decided_rows：9",
+   "backtest.evaluation.status：INSUFFICIENT_SAMPLE",
+   "backtest 门槛：{\"min_per_tier\": 80, \"min_total\": 300}",
+   "rule_lab 样本状态：INSUFFICIENT_SAMPLE"
+  ],
+  "live_publication_note": "线上发布为规则档位，未经独立回测；不构成统计预测准确率（沿用 review.py 口径）。",
+  "files": [
+   "data/backtest_report.json",
+   "data/rule_lab.json"
+  ],
+  "status": "FACTS_ONLY"
+ },
+ "league_facts": {
+  "min_sample": 30,
+  "by_league": {
+   "AFC Champions League Elite（亚冠精英·东区 第4轮）": {
+    "settled_rows": 1,
+    "decided": 0,
+    "data_gap_withheld": 0,
+    "hit_rate_conclusion": "未取得",
+    "sample_status": "INSUFFICIENT_SAMPLE"
+   },
+   "AFC Champions League Two（亚冠联2 小组赛第4轮）": {
+    "settled_rows": 1,
+    "decided": 1,
+    "data_gap_withheld": 1,
+    "hit_rate_conclusion": "未取得",
+    "sample_status": "INSUFFICIENT_SAMPLE"
+   },
+   "UEFA Champions League（欧冠 联赛阶段第4轮）": {
+    "settled_rows": 1,
+    "decided": 1,
+    "data_gap_withheld": 0,
+    "hit_rate_conclusion": "未取得",
+    "sample_status": "INSUFFICIENT_SAMPLE"
+   },
+   "卡塔尔联": {
+    "settled_rows": 0,
+    "decided": 0,
+    "data_gap_withheld": 1,
+    "hit_rate_conclusion": "未取得",
+    "sample_status": "INSUFFICIENT_SAMPLE"
+   },
+   "意甲": {
+    "settled_rows": 3,
+    "decided": 3,
+    "data_gap_withheld": 0,
+    "hit_rate_conclusion": "未取得",
+    "sample_status": "INSUFFICIENT_SAMPLE"
+   },
+   "日职乙": {
+    "settled_rows": 0,
+    "decided": 0,
+    "data_gap_withheld": 11,
+    "hit_rate_conclusion": "未取得",
+    "sample_status": "INSUFFICIENT_SAMPLE"
+   },
+   "日职联": {
+    "settled_rows": 0,
+    "decided": 0,
+    "data_gap_withheld": 9,
+    "hit_rate_conclusion": "未取得",
+    "sample_status": "INSUFFICIENT_SAMPLE"
+   },
+   "澳超": {
+    "settled_rows": 0,
+    "decided": 0,
+    "data_gap_withheld": 4,
+    "hit_rate_conclusion": "未取得",
+    "sample_status": "INSUFFICIENT_SAMPLE"
+   },
+   "英冠": {
+    "settled_rows": 6,
+    "decided": 6,
+    "data_gap_withheld": 1,
+    "hit_rate_conclusion": "未取得",
+    "sample_status": "INSUFFICIENT_SAMPLE"
+   },
+   "英超": {
+    "settled_rows": 3,
+    "decided": 3,
+    "data_gap_withheld": 1,
+    "hit_rate_conclusion": "未取得",
+    "sample_status": "INSUFFICIENT_SAMPLE"
+   },
+   "韩K联": {
+    "settled_rows": 0,
+    "decided": 0,
+    "data_gap_withheld": 4,
+    "hit_rate_conclusion": "未取得",
+    "sample_status": "INSUFFICIENT_SAMPLE"
+   }
+  },
+  "consecutive_data_gap_days": 3,
+  "note": "「已结算 / 数据缺口」都是字段计数；样本不足一律写「未取得」，不输出联赛优劣、可预测性或漂移结论。持续天数只作事实，不推断数据源原因。",
+  "source": [
+   "data/stats.json",
+   "data/selection_funnel.json"
+  ]
+ },
+ "alerts": [
+  {
+   "code": "PERSISTENT_DATA_GAP",
+   "severity": "warning",
+   "message": "连续 3 天『近期状态数据不足』≥5 场（2026-11-06:9 / 2026-11-07:10 / 2026-11-08:10）；依据：各日报告 watchlist.withheld_category 计数【已验证】报告字段",
+   "evidence": "selection_funnel.json summary.observations",
+   "action": "notify_only"
+  },
+  {
+   "code": "UPSTREAM_SCREEN_CAP",
+   "severity": "info",
+   "message": "单日最多 47 场因筛查上限未进候选池；未进候选的具体场次报告未记录",
+   "evidence": "selection_funnel.json summary.max_outside_screen",
+   "action": "notify_only"
+  },
+  {
+   "code": "PRICE_CLV_NOT_QUOTED",
+   "severity": "info",
+   "message": "价格型 CLV 仍为「未取得」覆盖 24 行；原因是仓库口径要求收盘盘口=下注盘口且两侧水位齐全，线差只写 line_move，绝不冒充 CLV。这是口径事实，不是采集失败。",
+   "evidence": "data/clv_join_facts.json price_clv_status_by_row",
+   "action": "notify_only"
+  },
+  {
+   "code": "MODEL_SCOPE_BOUNDARY",
+   "severity": "info",
+   "message": "研究层回测与线上发布规则不是同一套可互证结论；不得把任一边数字迁移成准确率声明",
+   "evidence": "data/eval_facts.json model_scope.boundary",
+   "action": "notify_only"
+  },
+  {
+   "code": "COLLECTION_SELF_REPORT",
+   "severity": "info",
+   "message": "报告 not_covered 自述「尚未自动采集伤停或首发」；不补造伤停信息",
+   "evidence": "reports/*/*/*.json not_covered 原文",
+   "action": "notify_only"
+  }
+ ],
+ "alert_policy": "notify_only：只落盘与展示，不自动补发、不递归触发、不发送 Telegram",
+ "note": "只读取仓库已落盘 JSON 与报告字段并原样陈列；缺文件写「暂无」，缺字段写「未取得」。研究层与线上发布层的结论不可互证、不可迁移；样本不足不输出命中率或 ROI 结论；告警只通知，不自动补发、不递归触发、不发送 Telegram；不补造任何赛程、盘口、水位、比分或倾向。",
+ "unverified": [
+  "未进候选池的具体场次（报告未逐场记录）",
+  "数据源为何缺失近期状态（需各自运行日志，不推断）",
+  "收盘价是否即该机构最终收盘价",
+  "Telegram 接收端与外部定时执行情况"
+ ]
+}

@@ -61,8 +61,8 @@ def test_upstream_only_from_report_text_never_from_config(tmp_path):
     reports = _report(tmp_path, "2026-11-09", picks=1,
                       not_covered="筛查上限 32 场；窗口内共发现 79 场。其余说明。")
     up = funnel.build(reports=reports)["days"][0]["upstream"]
-    assert up == {"window_fixtures": 79, "screening_cap": 32,
-                  "outside_screen": 47, "status": "RECORDED"}
+    assert up["window_fixtures"] == 79 and up["screening_cap"] == 32
+    assert up["outside_screen"] == 47 and up["status"] == "RECORDED"
     # 只写了一半：整组写「未取得」，不拿 settings 的 32 倒推
     reports = _report(tmp_path, "2026-11-10", picks=1, not_covered="窗口内共发现 60 场。")
     up = funnel.build(reports=reports)["days"][-1]["upstream"]
@@ -163,3 +163,34 @@ def test_site_prefers_fact_file_when_present(tmp_path):
     h = (site / "funnel.html").read_text(encoding="utf-8")
     assert "定时班次落盘" in h and "累计发布场次" in h
     assert json.loads((site / "data" / "selection_funnel.json").read_text(encoding="utf-8")) == fact
+
+
+# ---------- ROUND 6 / A2：结构化字段优先，文本正则只兼容旧报告 ----------
+
+def test_structured_upstream_fields_take_priority(tmp_path):
+    reports = _report(tmp_path, "2026-11-09", picks=2,
+                      not_covered="筛查上限 999 场；窗口内共发现 999 场。旧文本不该被采用。")
+    d = tmp_path / "reports" / "2026" / "11" / "2026-11-09.json"
+    obj = json.loads(d.read_text(encoding="utf-8"))
+    obj.update({"window_fixtures": 51, "screening_cap": 32, "outside_screen": 19})
+    d.write_text(json.dumps(obj, ensure_ascii=False), encoding="utf-8")
+    up = funnel.build(reports=reports)["days"][0]["upstream"]
+    assert up == {"window_fixtures": 51, "screening_cap": 32, "outside_screen": 19,
+                  "status": "RECORDED", "source": "report 结构化字段"}
+
+
+def test_text_regex_still_used_for_legacy_reports(tmp_path):
+    reports = _report(tmp_path, "2026-11-09", picks=1,
+                      not_covered="筛查上限 32 场；窗口内共发现 79 场。")
+    up = funnel.build(reports=reports)["days"][0]["upstream"]
+    assert up["outside_screen"] == 47 and "文本正则" in up["source"]
+
+
+def test_structured_fields_partial_do_not_backderive(tmp_path):
+    reports = _report(tmp_path, "2026-11-09", picks=1)
+    d = tmp_path / "reports" / "2026" / "11" / "2026-11-09.json"
+    obj = json.loads(d.read_text(encoding="utf-8"))
+    obj["window_fixtures"] = 60       # 缺 screening_cap：不拿配置倒推
+    d.write_text(json.dumps(obj, ensure_ascii=False), encoding="utf-8")
+    up = funnel.build(reports=reports)["days"][0]["upstream"]
+    assert up["screening_cap"] == funnel.MISSING and up["outside_screen"] == funnel.MISSING

@@ -177,3 +177,47 @@ def test_review_page_degrades_when_artifacts_missing(tmp_path):
     h = (site / "review.html").read_text()
     assert "暂无复盘快照" in h and "暂无（仓库未落盘）" in h and "未取得" in h
     assert (site / "review").is_dir()
+
+
+# ---------- ROUND 6：收盘 join / 评估边界 / 联赛分桶 / 告警上网页 ----------
+
+def test_review_page_shows_eval_boundary_and_clv_join(tmp_path):
+    facts = {
+        "eval_facts.json": {
+            "model_scope": {"boundary": "研究层与线上发布不是同一套可互证结论；不能迁移",
+                            "research_facts": ["rule_lab.live_model_modified：False"],
+                            "live_publication_note": "规则档位，未经独立回测",
+                            "files": [], "status": "FACTS_ONLY"},
+            "league_facts": {"min_sample": 30, "consecutive_data_gap_days": 3,
+                             "by_league": {"日职乙": {"settled_rows": 1, "decided": 1,
+                                                     "data_gap_withheld": 11,
+                                                     "hit_rate_conclusion": "未取得",
+                                                     "sample_status": "INSUFFICIENT_SAMPLE"}},
+                             "note": "不输出联赛优劣"},
+            "alerts": [{"code": "UPSTREAM_SCREEN_CAP", "severity": "info",
+                        "message": "单日最多 47 场未进候选", "action": "notify_only",
+                        "evidence": "selection_funnel.json"}],
+            "alert_policy": "notify_only：不自动补发"},
+        "clv_join_facts.json": {
+            "close_snapshot_rows_in_repo": 815, "close_snapshot_unique_matches": 26,
+            "joined_unique_match_ids": 8, "joined_match_ids": ["fd-561930"],
+            "price_clv_status_by_row": {"收盘盘口≠下注盘口（按口径不算 CLV）": 7,
+                                       "无收盘快照": 17},
+            "note": "线差只写 line_move，绝不冒充 CLV"},
+    }
+    site = _build(tmp_path, facts=facts)
+    h = (site / "review.html").read_text()
+    assert "研究层 ≠ 线上发布层" in h and "不能迁移" in h
+    assert "按联赛事实分桶" in h and "日职乙" in h and "未取得" in h
+    assert "结构化告警" in h and "UPSTREAM_SCREEN_CAP" in h and "notify_only" in h
+    assert "收盘快照 join 事实" in h and "815" in h and "绝不冒充" in h
+    assert "25.0%" not in h and "准确率提升" not in h
+    assert (site / "data" / "eval_facts.json").exists()
+    assert (site / "data" / "clv_join_facts.json").exists()
+    assert "收盘快照 join" in (site / "funnel.html").read_text()
+
+
+def test_review_page_degrades_when_round6_files_missing(tmp_path):
+    h = (_build(tmp_path) / "review.html").read_text()
+    assert "暂无（待 eval-facts 步骤产出）" in h
+    assert "暂无（待 CLV join 步骤产出）" in h

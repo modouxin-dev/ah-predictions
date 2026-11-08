@@ -56,6 +56,20 @@ NOTE = (
     "不补造盘口/水位/比分/赛程，不改评分或核验口径。"
 )
 
+# 收盘快照的 odds_format 可能与台账不同（快照多为 decimal，台账为 hk）。
+# 只做机械格式归一，绝不改数值含义；未知组合一律不混算、写「未取得」。
+def _align_odds_format(v, snap_fmt: str, ledger_fmt: str):
+    if v is None:
+        return None
+    s, l = (snap_fmt or "").strip().lower(), (ledger_fmt or "hk").strip().lower()
+    if s == l or not s:
+        return v
+    if s == "decimal" and l == "hk":
+        return round(v - 1.0, 6)
+    if s == "hk" and l == "decimal":
+        return round(v + 1.0, 6)
+    return None  # 其它组合不猜测
+
 
 def _now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -165,7 +179,8 @@ def load_close_facts(snapshots_dir: Path | None = None) -> dict[str, dict]:
                                 "captured_at": str(r.get("captured_at") or ""),
                                 "price_ts": str(r.get("price_ts") or ""),
                                 "bookmaker": str(r.get("bookmaker") or ""),
-                                "source": str(r.get("source") or "")})
+                                "source": str(r.get("source") or ""),
+                                "odds_format": str(r.get("odds_format") or "")})
     out: dict[str, dict] = {}
     for mid, rows in by_mid.items():
         close = [r for r in rows if r["stage"] == "close" and r["ah_home_line"] is not None]
@@ -222,6 +237,20 @@ def compute_clv(row: dict, pick: dict, snap: dict | None) -> dict:
             close_odds_pick = pick_o if pick_o is not None else MISSING
             close_odds_opp = opp_o if opp_o is not None else MISSING
             origin = f"snapshot stage=close / bookmaker={c['bookmaker'] or MISSING} / 视角由同场 report 行学习"
+    # 收盘快照水位格式 -> 台账格式（机械换算，不改数值含义；未知组合不混算）
+    ledger_fmt = str(row.get("odds_format") or "hk").strip().lower()
+    # 只有「收盘水位确实来自快照」时才做格式归一；台账 final_odds 本身就是台账格式，不转换。
+    if snap and snap.get("close_rows") and "snapshot stage=close" in str(origin):
+        snap_fmt = str(snap["close_rows"][-1].get("odds_format") or "").strip().lower()
+        a_pick = _align_odds_format(
+            close_odds_pick if isinstance(close_odds_pick, (int, float)) else None,
+            snap_fmt, ledger_fmt)
+        a_opp = _align_odds_format(
+            close_odds_opp if isinstance(close_odds_opp, (int, float)) else None,
+            snap_fmt, ledger_fmt)
+        # 0.0 是合法港盘水位，不能用 `or MISSING` 误判成缺值
+        close_odds_pick = MISSING if a_pick is None else a_pick
+        close_odds_opp = MISSING if a_opp is None else a_opp
     base["close_odds"] = close_odds_pick
     base["close_odds_opp"] = close_odds_opp
     base["close_fair_p"] = MISSING  # 留空，由 close_fair_prob() 用两侧水位去水
@@ -230,16 +259,27 @@ def compute_clv(row: dict, pick: dict, snap: dict | None) -> dict:
     probe = {"line": row.get("line"), "close_line": base["close_line"],
              "close_odds": close_odds_pick, "close_odds_opp": close_odds_opp,
              "close_fair_p": MISSING, "odds_if_known": row.get("odds_if_known"),
-             "odds_format": row.get("odds_format") or "hk",
-             "market": row.get("market") or "ah"}
+             "odds_format": ledger_fmt, "market": row.get("market") or "ah"}
     lm = repo_line_move(probe)
     cv = price_clv(probe)
     base["line_move"] = round(lm, 4) if lm is not None else MISSING
     base["clv"] = round(cv, 4) if cv is not None else MISSING
+
+    # 如实写明价格型 CLV 为什么是「未取得」，绝不拿线差冒充
+    if not _real(origin) and snap:
+        why = "有收盘快照但视角未能唯一学习，收盘线未取得（不猜测）"
+    elif not _real(origin):
+        why = "无收盘快照，收盘线未取得"
+    elif cv is None and _real(base["close_line"]) and line is not None and base["close_line"] != line:
+        why = (f"收盘盘口 {base['close_line']} ≠ 下注盘口 {line}，按仓库既有 clv() 口径"
+               "仅在盘口相同时计算；线差只写 line_move，不当作 CLV")
+    elif cv is None:
+        why = "缺收盘两侧水位去水或下注赔率，按既有口径不计算"
+    else:
+        why = "收盘盘口=下注盘口且两侧水位齐全，按既有 clv() 正常计算"
     base["clv_basis"] = (
-        f"{origin}；line_move/clv 复用 experiment_track.line_move()/clv()；"
-        "clv 缺收盘两侧水位去水时为『未取得』（不推断）"
-    ) if _real(origin) else "clv=未取得（无收盘线，不推断）"
+        f"{origin}；line_move/clv 复用 experiment_track.line_move()/clv()；{why}"
+    ) if _real(origin) else f"clv=未取得（{why}）"
     return base
 
 
@@ -262,6 +302,7 @@ def backfill(ledger: Path | None = None, reports_root: Path | None = None,
                                "close_from_snapshot", "line_move_computed",
                                "open_to_report_move_computed", "clv_price_computed",
                                "no_close_available")}
+    why_rows: list[str] = []
     for r in rows:
         mid = str(r.get("match_id") or "").strip()
         pick = picks.get(mid, {})
@@ -279,9 +320,12 @@ def backfill(ledger: Path | None = None, reports_root: Path | None = None,
         calc = compute_clv(r, pick, snaps.get(mid))
         # 缺字段一律写「未取得」，不留空白（AGENTS.md：缺字段不得留白/推断）
         for col in ("close_line", "close_odds", "close_odds_opp", "close_fair_p",
-                    "close_captured_at", "line_move", "clv", "clv_basis"):
+                    "close_captured_at", "line_move", "clv"):
             if not _real(r.get(col)):
                 r[col] = calc[col] if _real(calc.get(col)) else MISSING
+        # clv_basis 是「本次回填为什么这样算」的说明，每轮如实重算，不沿用旧文本
+        r["clv_basis"] = calc["clv_basis"]
+        why_rows.append(calc["clv_basis"])
         if _real(calc.get("line_move")):
             counters["line_move_computed"] += 1
             if "final_line" in str(calc.get("clv_basis")):
@@ -294,6 +338,39 @@ def backfill(ledger: Path | None = None, reports_root: Path | None = None,
             counters["clv_price_computed"] += 1
         if not _real(r.get("truth_source")):
             r["truth_source"] = MISSING
+    # 收盘快照覆盖事实：行数 / 唯一场次 / 与台账交集（只数真实落盘行，不推断）
+    close_rows_total = sum(len(v["close_rows"]) for v in snaps.values())
+    joined_mids = sorted({str(r.get("match_id") or "").strip() for r in rows
+                          if str(r.get("match_id") or "").strip() in snaps})
+    price_reasons: dict[str, int] = {}
+    for why, r in zip(why_rows, rows):
+        if "盘口" in why and "≠" in why:
+            k = "收盘盘口≠下注盘口（按口径不算 CLV）"
+        elif "视角未能唯一学习" in why:
+            k = "有收盘快照但视角未能唯一学习，收盘线未取得"
+        elif "无收盘快照" in why:
+            k = "无收盘快照"
+        elif "缺收盘两侧水位" in why:
+            k = "缺收盘两侧水位去水"
+        elif _real(r.get("clv")):
+            k = "已计算价格型 CLV"
+        else:
+            k = "无收盘快照"
+        price_reasons[k] = price_reasons.get(k, 0) + 1
+    join_facts = {
+        "schema": 1, "checked_at": _now(),
+        "evidence_grade": "【已验证】本地文件解析事实",
+        "close_snapshot_rows_in_repo": close_rows_total,
+        "close_snapshot_unique_matches": len(snaps),
+        "ledger_rows": len(rows),
+        "joined_unique_match_ids": len(joined_mids),
+        "joined_match_ids": joined_mids,
+        "price_clv_status_by_row": price_reasons,
+        "note": ("只统计真实 stage=close 行与台账 match_id 的交集；价格型 CLV 严格复用 "
+                 "experiment_track.clv()（仅收盘盘口=下注盘口且两侧水位齐全时计算），"
+                 "线差单列为 line_move，绝不冒充 CLV；不补造任何盘口或水位。"),
+        "unverified": ["收盘价是否即该机构最终收盘价", "收盘快照是否覆盖全部已结算场次"],
+    }
     out = {
         "schema": 1, "checked_at": _now(),
         "evidence_grade": "【已验证】本地文件解析事实",
@@ -305,14 +382,15 @@ def backfill(ledger: Path | None = None, reports_root: Path | None = None,
         "applied": apply,
         "note": NOTE,
         "unverified": [
-            "stage=close 快照在真实运行中是否成功采集（当前仓库无 close 行，需 close-snapshots.yml 实跑）",
             "收盘线是否即该机构最终收盘价（不读日志，不推断）",
+            "收盘快照是否覆盖全部已结算场次",
             "Telegram 接收端（本命令不发送任何消息）",
         ],
     }
     if apply:
         _atomic_write(p, header, rows)
         _atomic_json(p.parent / "clv_backfill.json", out)
+        _atomic_json(p.parent / "clv_join_facts.json", join_facts)
     return out
 
 

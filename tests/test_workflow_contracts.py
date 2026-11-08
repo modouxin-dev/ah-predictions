@@ -116,3 +116,13 @@ def test_review_workflow_generates_selection_funnel():
     assert "python -m ah funnel" in text
     assert "data/selection_funnel.json" in text
     assert "scripts/safe_commit.sh" in text
+
+
+def test_review_workflow_runs_clv_join_and_eval_facts():
+    """A1/A3-A5 必须每天由复盘班次落盘，并纳入安全提交路径。"""
+    d = _load("review.yml")
+    text = "\n".join((s.get("run") or "") for j in d["jobs"].values() for s in j["steps"])
+    assert "python -m ah clv --apply" in text
+    assert "python -m ah eval-facts" in text
+    for f in ("data/eval_facts.json", "data/clv_join_facts.json", "data/predictions.csv"):
+        assert f in text

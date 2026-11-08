@@ -36,6 +36,8 @@ REVIEW_FACTS = [
     ("sample_gaps.json", "样本缺口盘点"),
     ("feature_readiness.json", "因子就绪度"),
     ("clv_backfill.json", "CLV 回填事实"),
+    ("clv_join_facts.json", "收盘快照 join 事实"),
+    ("eval_facts.json", "评估边界 / 联赛事实 / 告警"),
 ]
 LOCK = "🔒 VIP 可见，输入密码解锁"
 NONE = "暂无"
@@ -872,6 +874,8 @@ def build(site: Path = SITE, reports: Path = REPORTS, data: Path = DATA, now: da
     # 复盘产物：读得到就展示 + 导出，读不到写「暂无」，绝不补造。
     acc = _load_json(data / "accuracy_review.json")
     facts = {name: _load_json(data / name) for name, _ in REVIEW_FACTS}
+    eval_obj = facts.get("eval_facts.json")
+    clv_obj = facts.get("clv_join_facts.json")
     exported = []
     for name, _ in REVIEW_FACTS:
         obj = facts.get(name)
@@ -886,7 +890,7 @@ def build(site: Path = SITE, reports: Path = REPORTS, data: Path = DATA, now: da
             write(f"review/{f.stem}.html", f"复盘 {f.stem}",
                   md_html(f.read_text(encoding="utf-8")), "review.html", "../")
             doc_links.append((f.stem, f.name))
-    write("review.html", "复盘", review_html(acc, facts, doc_links, exported), "review.html")
+    write("review.html", "复盘", review_html(acc, facts, doc_links, exported, eval_obj, clv_obj), "review.html")
 
     latest = reps[-1] if reps else None
     n_today = len(policy.published(latest, pol)) if latest else None
@@ -1013,7 +1017,11 @@ def funnel_html(obj: dict, source: str) -> str:
 
     alerts = s.get("alerts") or []
     unver = obj.get("unverified") or []
-    tail = ("<h2>⚠️ 仍未验证</h2><ul>" + "".join(f"<li>{e(str(x))}</li>" for x in unver) + "</ul>"
+    clv_note = ("<div class='card'><h3>💹 收盘快照 join 与价格型 CLV</h3>"
+                "<p class='muted'>本页解释「为什么没推」；收盘快照与台账的 join 结果、"
+                "价格型 CLV 为什么按口径仍是「未取得」，见 "
+                "<a href='review.html'>复盘页 · 收盘快照 join 事实</a>。</p></div>")
+    tail = (clv_note + "<h2>⚠️ 仍未验证</h2><ul>" + "".join(f"<li>{e(str(x))}</li>" for x in unver) + "</ul>"
             f"<p class='muted'>事实标签：{', '.join(e(str(a)) for a in alerts) or '无'} · "
             "本页不改评分、不改阈值、不发送任何消息。</p>")
     return head + kpis + day_tbl + obs_html + gap_html + detail_html + tail
@@ -1068,8 +1076,9 @@ def _fact_status(obj) -> str:
     ev = obj.get("evaluation") or {}
     wf = (obj.get("walk_forward") or {}).get("overall") or {}
     pq = obj.get("prediction_quality") or {}
+    ms = obj.get("model_scope") or {}
     for v in (obj.get("sample_status"), obj.get("status"), ev.get("status"),
-              wf.get("status"), pq.get("status"), obj.get("current_mode")):
+              wf.get("status"), pq.get("status"), ms.get("status"), obj.get("current_mode")):
         if v:
             return str(v)
     # 累计型事实文件把状态放在最新快照里；缺口型放在 alert 里。
@@ -1085,7 +1094,60 @@ def _fact_status(obj) -> str:
     return "事实文件（无状态字段）"
 
 
-def review_html(acc, facts: dict, docs: list, exported: list) -> str:
+
+# ---------- 评估边界 / 联赛事实 / 告警 / CLV join ----------
+
+def clv_join_html(obj) -> str:
+    """只展示真实 join 出来的事实；价格型 CLV 为什么仍是「未取得」要写明。"""
+    if not obj:
+        return "<h2>💹 收盘快照 join 事实</h2><div class='empty'>暂无（待 CLV join 步骤产出）</div>"
+    rows = [f"<tr><td>{e(k)}</td><td class='num'>{v}</td></tr>"
+            for k, v in (obj.get("price_clv_status_by_row") or {}).items()]
+    mids = obj.get("joined_match_ids") or []
+    return ("<h2>💹 收盘快照 join 事实</h2>"
+            "<div class='summary'>"
+            f"<div class='kpi'><b>{e(str(obj.get('close_snapshot_rows_in_repo', MISSING)))}</b><span>仓库内 close 行数</span></div>"
+            f"<div class='kpi'><b>{e(str(obj.get('close_snapshot_unique_matches', MISSING)))}</b><span>覆盖唯一场次</span></div>"
+            f"<div class='kpi'><b>{e(str(obj.get('joined_unique_match_ids', MISSING)))}</b><span>与台账 join 上的场次</span></div></div>"
+            + "<p class='muted'>行数 ≠ 可 join 的场次：只有 match_id 对得上、且视角能唯一学习，"
+              "才写 close_line / line_move。价格型 CLV 严格按仓库口径，线差绝不冒充。</p>"
+            + tbl(["逐行 CLV 状态（24 行台账）", "行数"], rows, empty="暂无")
+            + (f"<p class='muted'>join 上的 match_id：{', '.join(e(str(x)) for x in mids)}</p>" if mids else "")
+            + f"<p class='muted'>{e(str(obj.get('note') or ''))}</p>")
+
+
+def eval_boundary_html(obj) -> str:
+    """研究层≠线上层、按联赛事实分桶、结构化告警（notify_only）。"""
+    if not obj:
+        return "<h2>🧭 评估边界与告警</h2><div class='empty'>暂无（待 eval-facts 步骤产出）</div>"
+    ms = obj.get("model_scope") or {}
+    lf = obj.get("league_facts") or {}
+    facts = "".join(f"<li>{e(str(x))}</li>" for x in (ms.get("research_facts") or []))
+    boundary = ("<div class='card'><h3>⚠️ 研究层 ≠ 线上发布层</h3>"
+                f"<p>{e(str(ms.get('boundary') or ''))}</p>"
+                f"<p class='muted'>{e(str(ms.get('live_publication_note') or ''))}</p>"
+                f"<ul>{facts or '<li>暂无研究层事实</li>'}</ul></div>")
+    lrows = [f"<tr><td>{e(k)}</td><td class='num'>{v['settled_rows']}</td>"
+             f"<td class='num'>{v['decided']}</td><td class='num'>{v['data_gap_withheld']}</td>"
+             f"<td class='num'>{e(str(v['hit_rate_conclusion']))}</td>"
+             f"<td>{e(str(v['sample_status']))}</td></tr>"
+             for k, v in (lf.get("by_league") or {}).items()]
+    leagues = ("<h3>🏆 按联赛事实分桶</h3>"
+               f"<p class='muted'>总体结论门槛 {e(str(lf.get('min_sample', MISSING)))} 场；"
+               f"连续数据缺口 {e(str(lf.get('consecutive_data_gap_days', MISSING)))} 天（只计数，不称漂移）。"
+               f"{e(str(lf.get('note') or ''))}</p>"
+               + tbl(["联赛", "已结算", "有效", "数据缺口", "命中率结论", "样本状态"], lrows, empty="暂无"))
+    arows = [f"<tr><td><code>{e(str(a.get('code')))}</code></td><td>{e(str(a.get('severity')))}</td>"
+             f"<td>{e(str(a.get('message')))}</td><td>{e(str(a.get('action')))}</td></tr>"
+             for a in (obj.get("alerts") or [])]
+    alerts = ("<h3>🔔 结构化告警</h3>"
+              f"<p class='muted'>{e(str(obj.get('alert_policy') or ''))}</p>"
+              + tbl(["代码", "级别", "事实说明", "动作"], arows, empty="暂无告警"))
+    return boundary + "<h2>🧭 评估边界与告警</h2>" + leagues + alerts
+
+
+def review_html(acc, facts: dict, docs: list, exported: list,
+                eval_obj=None, clv_obj=None) -> str:
     """复盘主页：状态卡 + 日/周复盘存档 + 研究/回测事实 + 原始 JSON 下载。"""
     snaps = (acc or {}).get("snapshots") or []
     snap = snaps[-1] if snaps else {}
@@ -1137,7 +1199,10 @@ def review_html(acc, facts: dict, docs: list, exported: list) -> str:
                    "<p class='muted'>按日记录「窗口内多少场 → 多少场没进候选 → 观察名单卡在哪一层 → 最终发布」，"
                    "把数据缺口和模型判断分开。0 场日也照常出表。</p>"
                    "<p><a href='funnel.html'>查看选场漏斗 →</a></p></div>")
-    return head + kpis + detail + funnel_link + docs_html + facts_html + dl_html
+    eval_block = eval_boundary_html(eval_obj)
+    clv_block = clv_join_html(clv_obj)
+    return (head + kpis + detail + funnel_link + docs_html + facts_html + dl_html
+            + eval_block + clv_block)
 
 
 def main(argv: list[str] | None = None) -> None:

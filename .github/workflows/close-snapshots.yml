@@ -43,21 +43,31 @@ jobs:
           from pathlib import Path
           from datetime import datetime, timezone
           outcome = os.environ.get("OUTCOME", "未取得")
-          close_rows = 0
+          import csv
+          close_rows, valid_close_rows, close_mids = 0, 0, set()
           for p in sorted(Path("data/snapshots/odds").glob("*.csv")):
               try:
-                  for line in p.read_text(encoding="utf-8", errors="replace").splitlines():
-                      parts = line.split(",")
-                      if len(parts) > 2 and parts[2].strip() == "close":
-                          close_rows += 1
-              except OSError:
+                  with p.open(encoding="utf-8", newline="") as f:
+                      for r in csv.DictReader(f):
+                          if str(r.get("stage") or "").strip().lower() == "close":
+                              close_rows += 1
+                              mid = str(r.get("match_id") or "").strip()
+                              if mid:
+                                  close_mids.add(mid)
+                              if str(r.get("ah_home_line") or "").strip():
+                                  valid_close_rows += 1
+              except (OSError, UnicodeError, csv.Error):
                   pass
           fact = {
               "schema": 1,
               "checked_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
               "capture_outcome": outcome,
               "close_rows_in_repo": close_rows,
-              "note": "只记录真实存在的 stage=close 行数；失败不补造盘口、不推断原因",
+              "close_rows_with_line": valid_close_rows,
+              "close_unique_match_ids": len(close_mids),
+              "note": "用 csv 模块解析 stage 列（不再按逗号切分，避免字段内逗号误数）；"
+                      "只记录真实存在的行数/唯一场次/带盘口行数；失败不补造盘口、不推断原因。"
+                      "行数不等于可 join 的场次，需再与 predictions.csv 的 match_id 求交。",
               "unverified": ["收盘快照是否覆盖全部已结算场次", "收盘价是否即该机构最终收盘价"],
           }
           Path("data/close_capture.json").write_text(

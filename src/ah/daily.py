@@ -411,6 +411,10 @@ def build_report(report_date, now=None, max_fixtures=None, snapshot_dir=None):
               'edition': 'automatic', 'odds_format': 'HK', 'picks': [], 'watched': [], 'watchlist': [],
               'odds_source_note': '赛程、盘口与近期状态自动采集；推荐只用真实盘口，核验未完全通过的场次强制低信心并显式标注。',
               'not_covered': f'筛查上限 {max_fixtures} 场；窗口内共发现 {total} 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。',
+              # 结构化上游事实：此前只有 not_covered 文本，下游靠正则抠数字，脆且旧报告缺字段。
+              # 只加字段，不改文本、不改 picks、不改评分/核验/阈值。
+              'window_fixtures': total, 'screening_cap': max_fixtures,
+              'outside_screen': max(0, total - max_fixtures),
               'collection_errors': errors, 'collection_notes': notes}
     verification_failures = Counter()
     history, apif_done = None, set()
