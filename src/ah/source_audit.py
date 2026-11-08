@@ -19,13 +19,14 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
 
-from . import CONFIG, DATA
+from . import CONFIG, DATA, ROOT
 
 MISSING = "未取得"
 
@@ -54,6 +55,10 @@ KEYLESS_PROBE_URLS = {
     "afc": "https://www.the-afc.com/en/club/afc_champions_league_elite.html",
 }
 
+# 编排层静态接线：只找 `${{ secrets.NAME }}` 的名字，不读取任何值。
+WORKFLOW_SECRET_RE = re.compile(r"secrets\.([A-Z0-9_]+)")
+WORKFLOW_DIR = ROOT / ".github" / "workflows"
+
 PROBE_TIMEOUT_S = 8
 PROBE_UA = "ah-predictions/1.0 (internal source health check; low frequency)"
 
@@ -61,6 +66,8 @@ NOTE = (
     "只做凭据依赖分级与合规公开源连通事实：不回显密钥值、不解析任何赛程/盘口/水位/比分、"
     "不写报告、不新增需注册数据源、不改任何 provider 或核验口径；"
     "缺字段写『未取得』，连通失败只记异常类型，不推断原因；缺 key 只告警不阻断。"
+    "编排层声明了 secrets.NAME 只代表接线，不代表 Secret 已配置、密钥有效、订阅激活或数据充足；"
+    "当前进程未注入也不代表线上未配置。"
 )
 
 
@@ -84,6 +91,26 @@ def _atomic_write(p: Path, obj: dict) -> None:
             os.unlink(tmp)
 
 
+def declared_secrets(workflow_dir: Path | None = None) -> dict:
+    """只读编排层：返回 {secret 名: [声明它的 workflow 文件]}。
+
+    这是【已验证·静态】的「接线事实」，**不等于** Secret 已配置、密钥有效或数据充足；
+    目录不存在时返回空表，不推断原因。
+    """
+    d = Path(workflow_dir) if workflow_dir else WORKFLOW_DIR
+    out: dict[str, list[str]] = {}
+    if not d.is_dir():
+        return out
+    for f in sorted(d.glob("*.yml")):
+        try:
+            txt = f.read_text(encoding="utf-8")
+        except OSError:
+            continue  # 读不到就跳过，不推断
+        for name in set(WORKFLOW_SECRET_RE.findall(txt)):
+            out.setdefault(name, []).append(f.name)
+    return {k: sorted(v) for k, v in sorted(out.items())}
+
+
 def load_sources(path: Path | None = None) -> dict:
     p = Path(path) if path else CONFIG / "sources.yaml"
     if not p.exists():
@@ -94,8 +121,10 @@ def load_sources(path: Path | None = None) -> dict:
     return d
 
 
-def registered_rows(cfg: dict, env: dict | None = None) -> list[dict]:
+def registered_rows(cfg: dict, env: dict | None = None,
+                    wired: dict | None = None) -> list[dict]:
     e = os.environ if env is None else env
+    w = declared_secrets() if wired is None else wired
     rows = []
     for name, var in REGISTERED.items():
         c = cfg.get(name) if isinstance(cfg.get(name), dict) else {}
@@ -109,7 +138,10 @@ def registered_rows(cfg: dict, env: dict | None = None) -> list[dict]:
             "credential_value": "REDACTED" if present else MISSING,
             "base_url": c.get("base_url") or MISSING,
             "enabled": c.get("enabled") if "enabled" in c else MISSING,
-            "note": "仅记录凭据是否存在；不代表密钥有效，也不代表数据充足",
+            "declared_in_workflows": w.get(var, []),
+            "wired": bool(w.get(var)),
+            "note": ("仅记录凭据是否注入当前进程、编排层是否声明；"
+                     "不代表 Secret 已配置、密钥有效、订阅激活或数据充足"),
         })
     return rows
 
@@ -175,9 +207,11 @@ def probe_keyless(fetcher=None, now: datetime | None = None) -> list[dict]:
 
 
 def audit(cfg: dict | None = None, env: dict | None = None,
-          probes: list[dict] | None = None, now: datetime | None = None) -> dict:
+          probes: list[dict] | None = None, now: datetime | None = None,
+          wired: dict | None = None) -> dict:
     c = cfg if cfg is not None else load_sources()
-    reg = registered_rows(c, env)
+    w = declared_secrets() if wired is None else wired
+    reg = registered_rows(c, env, w)
     key = keyless_rows(c)
     p = probes if probes is not None else []
     missing = [r["source"] for r in reg if not r["credential_present"]]
@@ -187,16 +221,21 @@ def audit(cfg: dict | None = None, env: dict | None = None,
 
     alerts = []
     if missing:
+        # 纯事实口径：env 没注入 ≠ Secret 没配置 ≠ 本次只靠免注册源；绝不推断因果。
+        wired_missing = [r["source"] for r in reg
+                         if not r["credential_present"] and r["wired"]]
         alerts.append({
-            "code": "REGISTERED_CREDENTIALS_MISSING", "severity": "warning",
-            "message": (f"{len(missing)} 个需注册源未配置凭据（{', '.join(missing)}）；"
-                        "本次仅依赖免注册源，不推断原因、不阻断采集"),
-            "evidence": {"missing": missing, "configured": configured},
+            "code": "REGISTERED_CREDENTIALS_NOT_INJECTED", "severity": "warning",
+            "message": (f"{len(missing)} 个需注册源在当前进程未注入凭据（{', '.join(missing)}）；"
+                        f"其中 {len(wired_missing)} 个在编排层已声明。"
+                        "不推断原因、不推断为 Secret 未配置、不阻断采集"),
+            "evidence": {"not_injected": missing, "configured": configured,
+                         "wired_but_not_injected": wired_missing},
         })
     if len(configured) == 0:
         alerts.append({
-            "code": "ALL_REGISTERED_UNAVAILABLE", "severity": "info",
-            "message": "所有需注册源均无凭据；免注册源清单与上表为本次可依赖范围",
+            "code": "NO_REGISTERED_CREDENTIAL_IN_PROCESS", "severity": "info",
+            "message": "当前进程没有注入任何需注册源凭据；免注册源清单见上表，不推断线上配置状态",
             "evidence": {"keyless_total": len(key)},
         })
     if p:
@@ -217,12 +256,14 @@ def audit(cfg: dict | None = None, env: dict | None = None,
         "evidence_grade": "【已验证】本地配置与环境变量布尔事实；连通项为【运行时代理自检】",
         "policy": "免注册优先、缺凭据不静默、不阻断、不推断、不改源开关",
         "registered": reg,
+        "workflow_declared_secrets": w,
         "keyless": key,
         "keyless_probes": p,
         "summary": {
             "registered_total": len(reg),
             "registered_configured": len(configured),
             "registered_missing": len(missing),
+            "registered_wired": sum(1 for r in reg if r["wired"]),
             "keyless_total": len(key),
             "keyless_probe_checked": len(p),
             "keyless_probe_reachable": len(probed_ok),
@@ -259,8 +300,10 @@ def main(argv: list[str] | None = None) -> None:
             "error_type": type(exc).__name__,
             "policy": "免注册优先、缺凭据不静默、不阻断、不推断、不改源开关",
             "registered": [], "keyless": [], "keyless_probes": [],
+            "workflow_declared_secrets": {},
             "summary": {"registered_total": 0, "registered_configured": 0,
-                        "registered_missing": 0, "keyless_total": 0,
+                        "registered_missing": 0, "registered_wired": 0,
+                        "keyless_total": 0,
                         "keyless_probe_checked": 0, "keyless_probe_reachable": 0},
             "alerts": [{"code": "AUDIT_FAILED", "severity": "warning",
                         "message": "凭据依赖审计未完成；只记异常类型，不推断原因、不阻断采集",

@@ -28,7 +28,7 @@ CFG = {
 # ---------------------------------------------------------------- source_audit
 
 def test_registered_rows_never_echo_secret_value():
-    rows = source_audit.registered_rows(CFG, {"API_FOOTBALL_KEY": "SUPER_SECRET_123"})
+    rows = source_audit.registered_rows(CFG, {"API_FOOTBALL_KEY": "SUPER_SECRET_123"}, wired={})
     r = next(x for x in rows if x["source"] == "api_football")
     assert r["credential_present"] is True
     assert r["credential_env"] == "API_FOOTBALL_KEY"
@@ -48,21 +48,24 @@ def test_keyless_rows_mark_no_registration():
 
 
 def test_missing_credentials_warn_but_never_block():
-    out = source_audit.audit(CFG, env={}, probes=[])
+    out = source_audit.audit(CFG, env={}, probes=[], wired={})
     assert out["summary"]["registered_configured"] == 0
     assert out["summary"]["registered_missing"] == 5
-    assert any(a["code"] == "REGISTERED_CREDENTIALS_MISSING" for a in out["alerts"])
-    assert any(a["code"] == "ALL_REGISTERED_UNAVAILABLE" for a in out["alerts"])
+    assert any(a["code"] == "REGISTERED_CREDENTIALS_NOT_INJECTED" for a in out["alerts"])
+    assert any(a["code"] == "NO_REGISTERED_CREDENTIAL_IN_PROCESS" for a in out["alerts"])
     assert out["policy"].startswith("免注册优先")
-    # 结论里不得出现「密钥无效」「站点不可用」这类推断
-    assert "密钥无效" not in json.dumps(out, ensure_ascii=False)
+    all_text = json.dumps(out, ensure_ascii=False)
+    # 防断言：env 没注入不得被包装成「线上没配 / 只靠免注册源 / 密钥无效」
+    for banned in ("密钥无效", "本次仅依赖免注册源", "站点不可用", "Secret 未配置；"):
+        assert banned not in all_text
+    assert "不推断" in all_text
 
 
 def test_all_configured_has_no_missing_alert():
     env = {v: "x" for v in source_audit.REGISTERED.values()}
-    out = source_audit.audit(CFG, env=env, probes=[])
+    out = source_audit.audit(CFG, env=env, probes=[], wired={})
     assert out["summary"]["registered_missing"] == 0
-    assert not any(a["code"] == "REGISTERED_CREDENTIALS_MISSING" for a in out["alerts"])
+    assert not any(a["code"] == "REGISTERED_CREDENTIALS_NOT_INJECTED" for a in out["alerts"])
 
 
 class FakeResp:
@@ -95,6 +98,35 @@ def test_probe_failure_is_missing_not_inference():
     assert all(r["error_type"] == "ConnectionError" for r in rows)
     assert "secret-in-url-should-not-leak" not in json.dumps(rows, ensure_ascii=False)
     assert all("不推断" in r["note"] for r in rows)
+
+
+def test_declared_secrets_is_static_fact_only(tmp_path):
+    wf = tmp_path / ".github" / "workflows"
+    wf.mkdir(parents=True)
+    (wf / "a.yml").write_text("env:\n  K1: ${{ secrets.API_FOOTBALL_KEY }}\n  K2: ${{ secrets.ODDSPAPI_KEY }}\n", encoding="utf-8")
+    (wf / "b.yml").write_text("run: echo ${{ secrets.API_FOOTBALL_KEY }}\n", encoding="utf-8")
+    w = source_audit.declared_secrets(wf)
+    assert w["API_FOOTBALL_KEY"] == ["a.yml", "b.yml"]
+    assert w["ODDSPAPI_KEY"] == ["a.yml"]
+    # 只记录名字，绝不回显值
+    assert "SUPER_SECRET" not in json.dumps(w, ensure_ascii=False)
+
+
+def test_wired_but_not_injected_is_not_reported_as_missing_secret():
+    wired = {"API_FOOTBALL_KEY": ["daily.yml"], "ODDSPAPI_KEY": ["daily.yml"]}
+    out = source_audit.audit(CFG, env={}, probes=[], wired=wired)
+    a = next(x for x in out["alerts"] if x["code"] == "REGISTERED_CREDENTIALS_NOT_INJECTED")
+    assert a["evidence"]["wired_but_not_injected"] == ["api_football", "oddspapi"]
+    assert out["summary"]["registered_wired"] == 2
+    assert "不推断为 Secret 未配置" in a["message"]
+    # 编排已声明 ≠ 密钥有效：note 必须明确写「不代表」，而不是把它当结论
+    assert "不代表 Secret 已配置、密钥有效" in out["note"]
+    assert "已验证密钥" not in json.dumps(out, ensure_ascii=False)
+    assert "密钥有效，数据充足" not in json.dumps(out, ensure_ascii=False)
+
+
+def test_missing_workflow_dir_does_not_invent_wiring(tmp_path):
+    assert source_audit.declared_secrets(tmp_path / "none") == {}
 
 
 def test_audit_failure_still_writes_fact_file_and_never_blocks(tmp_path):

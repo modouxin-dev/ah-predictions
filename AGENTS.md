@@ -155,3 +155,15 @@ data/telegram_delivery.json
 - 真正把注册源替换为免注册主源、按 `credential_present` 动态跳过 provider、改核验口径或结算真值源，均属冻结清单，须单独 `DATA SOURCE:` 授权与提交，本轮**未做**。
 - 证据：`pytest 910 passed, 1 skipped`（本地 3.10）；真实配置 dry-run `registered=5/configured=0/keyless=11`（本地无 Secrets，不等于线上缺 key）；真实台账盘点 `slot=1 已送达 / slot=2,3 漏发 / slot=4 离档`，只告警不触发；10 个 workflow YAML 解析与并发/超时契约通过。CI 3.12 与 Actions 实跑见交付说明。
 - 是否触碰冻结清单：否。
+
+
+## 2026-11-08 凭据口径更正执行记录（不触碰模型算法）
+
+- 用户补充「需要注册的 5 个接口凭据都已保存在 git 仓库部署环境」。据此更正：`configured=0` 仅为本地沙盒未注入，**不得写成线上缺 key**；也不得反过来把「用户陈述 + 编排声明」包装成【已验证】。
+- 【已验证·静态】读 main 上 workflow 名字：`daily.yml` / `source-probe.yml` / `collection-check.yml` / `publish-recheck.yml` 均声明 5 个 `${{ secrets.* }}`；`settle.yml` 声明 2 个、`telegram-preflight.yml` 1 个。`registered_wired=5`。**只核名字，不读值**。
+- 【未验证】`GET /actions/secrets` 返回 403（PAT 无列 Secret 名单权限）；唯一 environment 为 `github-pages` 且无 environment secrets；Actions 日志与 artifact 下载被网络策略 403 拦截，读不到 CI stdout 的 `configured`。Secret 实际存在性、有效性、订阅与覆盖均未核验。
+- `source_audit` 收紧为纯事实口径：新增 `declared_secrets()` / `workflow_declared_secrets` / `wired` / `registered_wired`；告警改 `REGISTERED_CREDENTIALS_NOT_INJECTED`，明确「当前进程未注入」，**不推断为 Secret 未配置、不推断「本次仅依赖免注册源」、不阻断采集**；`NO_REGISTERED_CREDENTIAL_IN_PROCESS` 亦不推断线上状态。NOTE 写明「编排声明 ≠ 密钥有效 / 数据充足」。
+- 自证口径：下次 `daily.yml` 实跑后读 `data/source_dependency.json` 的 `summary.registered_configured == 5` 即运行时注入成功，全程不回显值；不足时按 `workflow_declared_secrets` 对照，不推断原因。
+- 未改 `config/sources.yaml` 开关、任何 provider 客户端、核验口径/阈值/评分/展示/推送渲染；未新增需注册数据源；未触发任何 Telegram 推送。令牌按用户要求**保留**。
+- 证据：本地 `pytest 913 passed, 1 skipped`（3.10）；`GROUNDING_OK`；10 个 workflow YAML 解析与并发/超时契约通过；真实 dry-run `registered_wired=5`。CI 3.12 见交付说明。
+- 是否触碰冻结清单：否。

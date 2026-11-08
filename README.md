@@ -397,8 +397,22 @@ PYTHONPATH=src python -m ah delivery preflight
 - `docs/external-timer.md`：改为「零注册优先」，外部定时降级为**可选增强**，不建账号也能看见漏发。
 - `tests/test_source_upgrades.py`：15 个回归用例（密钥不回显、缺 key 告警不阻断、探测失败写未取得不推断、未到点不报、0 场不算送达、离档班次如实标注、不自动补发）。
 
-**【已验证】**：本地 `pytest 910 passed, 1 skipped`（3.10）；对真实配置 dry-run 得 `registered=5 / configured=0 / keyless=11`（本地沙盒未注入 Secrets，**不代表线上缺 key**）；真实台账盘点 `slot=1 已送达、slot=2/3 漏发、slot=4 离档提前送达`，输出 2 条 warning + 1 条 info，**没有自动触发任何推送**；10 个 workflow YAML 解析与并发/超时契约全通过。
+**【已验证】**：本地 `pytest 913 passed, 1 skipped`（3.10）；真实配置 dry-run `registered=5 / configured=0 / keyless=11 / registered_wired=5`（本地沙盒未注入 Secrets）；真实台账盘点 `slot=1 已送达、slot=2/3 漏发、slot=4 离档提前送达`，输出 2 条 warning + 1 条 info，**没有自动触发任何推送**；10 个 workflow YAML 解析与并发/超时契约全通过。
 
-**【未验证】**：Actions Secrets 里 5 个 key 是否配置；免注册源是否返回足够覆盖（连通 ≠ 数据充足）；采集实际用了哪个源；Telegram 接收端；外部定时准时率；结算积压成因。
+**【用户陈述 + 静态核验（2026-11-08 补充）】**：用户确认 5 个需注册接口的凭据都已保存在仓库部署环境。读 main 上 workflow 可验证 `daily.yml` / `source-probe.yml` / `collection-check.yml` / `publish-recheck.yml` 都声明了这 5 个 `${{ secrets.* }}`（只核名字、不读值）；`settle.yml` 只声明 2 个符合用途。审计口径据此收紧：告警改为 `REGISTERED_CREDENTIALS_NOT_INJECTED`，**只说「当前进程未注入」，不再推断「线上没配」或「本次只靠免注册源」**，并新增 `workflow_declared_secrets` 静态接线事实。
+
+**【未验证】**：所持 PAT 读 `/actions/secrets` 返回 403（无列 Secret 名单权限），故无法代为核对 Secret 实际存在性与有效性；即使能列名字也不等于 key 有效/订阅激活/数据充足。CI stdout 与 artifact 下载被网络策略 403 拦截，读不到 `configured` 数字。下次 `daily.yml` 实跑后看 `data/source_dependency.json` 的 `summary.registered_configured` 是否为 5 即可自证（不泄露值）。其余未验证：免注册源覆盖是否足够、采集实际用了哪个源、Telegram 接收端、外部定时准时率、结算积压成因。
 
 **是否触碰冻结清单：否。** 令牌按用户要求**保留**，等全部验证过关再注销。
+
+## CREDENTIALS（2026-11-08）：部署环境凭据口径更正
+
+用户补充：5 个需注册接口（`API_FOOTBALL_KEY` / `ODDS_API_KEY` / `ODDSPAPI_KEY` / `FOOTBALL_DATA_KEY` / `FIVEDOLLAR_KEY`）的凭据**都已保存在仓库部署环境**。
+
+- 因此上一节里「本地 dry-run `configured=0`」只是**本地沙盒没注入**，不是线上缺 key；已按此更正文档口径，不再写成「可能线上没配」。
+- 【已验证·静态】4 个 workflow 都声明这 5 个 secret 名；`registered_wired=5`。声明只代表接线，不代表 Secret 存在或有效。
+- 【未验证】本会话 PAT 读 `/actions/secrets` 返回 403，无列名单权限；日志/artifact 下载亦被网络策略 403 拦截。故不写「已验证 5 个 Secret 有效」。
+- 自证方式：下一次 `daily.yml` 实跑后读 `data/source_dependency.json` → `summary.registered_configured == 5` 即运行时注入成功，全程不回显任何值。
+- 代码侧收紧：`source_audit` 新增 `declared_secrets()` 静态接线事实、`wired` 字段、`REGISTERED_CREDENTIALS_NOT_INJECTED` 告警（纯事实、不推断）；`tests/test_source_upgrades.py` +4 例，全套 `913 passed / 1 skipped`。
+- 线上有 key → 采集照常使用这 5 个注册源；免注册源是兜底、可见性与零注册自愈，**不是替换**。真正降依赖仍需单独 `DATA SOURCE:` 授权。
+- 是否触碰冻结清单：否。令牌保留，未注销、未轮换。
