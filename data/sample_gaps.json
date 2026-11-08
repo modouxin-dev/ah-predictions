@@ -1,15 +1,20 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-07T22:59:28Z",
+  "checked_at": "2026-11-08T23:08:33Z",
   "pool_days": 2,
   "pool_rows": 64,
-  "settled_rows": 7,
-  "unsettled_rows": 57,
-  "ledger_settled_rows": 15,
+  "settled_rows": 15,
+  "unsettled_rows": 49,
+  "ledger_settled_rows": 24,
   "by_tier": {
+    "high": {
+      "settled": 4,
+      "needed": 76,
+      "eligible": false
+    },
     "low": {
-      "settled": 7,
-      "needed": 73,
+      "settled": 11,
+      "needed": 69,
       "eligible": false
     }
   },

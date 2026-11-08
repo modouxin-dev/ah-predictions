@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-07T22:59:28Z",
+  "checked_at": "2026-11-08T23:08:33Z",
   "current_mode": "observation",
   "factors": {
     "home_away": {
       "days_observed": 2,
       "consecutive_full_days": 0,
       "full_rows": 0,
-      "total_rows": 6,
+      "total_rows": 7,
       "coverage_ratio": 0.0,
       "required": {
         "min_consecutive_days": 14,
@@ -20,7 +20,7 @@
       "days_observed": 2,
       "consecutive_full_days": 0,
       "full_rows": 0,
-      "total_rows": 6,
+      "total_rows": 7,
       "coverage_ratio": 0.0,
       "required": {
         "min_consecutive_days": 14,
@@ -32,8 +32,8 @@
     "line_value": {
       "days_observed": 2,
       "consecutive_full_days": 2,
-      "full_rows": 13,
-      "total_rows": 13,
+      "full_rows": 14,
+      "total_rows": 14,
       "coverage_ratio": 1.0,
       "required": {
         "min_consecutive_days": 14,

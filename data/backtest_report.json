@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-07T22:59:28Z",
+  "checked_at": "2026-11-08T23:08:33Z",
   "pool_days": 2,
   "pool_rows": 64,
-  "ledger_rows": 21,
-  "matched_rows": 13,
-  "settled_rows": 7,
-  "ledger_settled_rows": 15,
+  "ledger_rows": 24,
+  "matched_rows": 15,
+  "settled_rows": 15,
+  "ledger_settled_rows": 24,
   "time_split": {
     "dates": [
       "2026-11-07",
@@ -28,13 +28,19 @@
       "min_per_tier": 80,
       "min_total": 300
     },
-    "settled_rows": 7,
+    "settled_rows": 15,
     "tiers": {
+      "high": {
+        "n": 4,
+        "hits": 3,
+        "actual_hit_frequency": 0.75,
+        "units_sum": 1.538
+      },
       "low": {
-        "n": 7,
-        "hits": 2,
-        "actual_hit_frequency": 0.2857,
-        "units_sum": -2.86
+        "n": 11,
+        "hits": 5,
+        "actual_hit_frequency": 0.4545,
+        "units_sum": -0.983
       }
     },
     "brier_score": "NOT_COMPUTED",
