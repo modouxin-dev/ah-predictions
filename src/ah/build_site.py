@@ -100,7 +100,12 @@ def settings() -> dict:
 
 
 def page(title: str, body: str, cur: str = "", base: str = "", generated: str = "", vip_hash: str = "") -> str:
-    nav = "".join(f"<a href='{base}{h}'{' class=\"cur\"' if h == cur else ''}>{t}</a>" for h, t in NAV)
+    # 不含反斜杠的 f-string 表达式：兼容 Python 3.10/3.12，渲染结果不变。
+    nav_items = []
+    for h, t in NAV:
+        cls = ' class="cur"' if h == cur else ''
+        nav_items.append(f"<a href='{base}{h}'{cls}>{t}</a>")
+    nav = "".join(nav_items)
     gen = f" · 页面生成于 {e(generated)}" if generated else ""
     return (
         "<!doctype html><html lang='zh-CN'><head><meta charset='utf-8'>"

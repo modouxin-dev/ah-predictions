@@ -6,6 +6,10 @@ on:
     paths: ['.github/workflows/telegram-preflight.yml']
 permissions:
   contents: read
+concurrency:
+  group: telegram-preflight
+  cancel-in-progress: false
+
 jobs:
   check:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.head_commit.message == 'Check Telegram push readiness' }}

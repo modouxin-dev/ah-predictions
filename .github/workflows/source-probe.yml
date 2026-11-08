@@ -5,6 +5,10 @@ on:
     - cron: "0 1 * * *"   # 09:00 北京时间，先于日报；只输出事实，不发消息、不写报告
 permissions:
   contents: read
+concurrency:
+  group: source-probe
+  cancel-in-progress: false
+
 jobs:
   probe:
     runs-on: ubuntu-latest

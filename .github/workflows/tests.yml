@@ -6,6 +6,10 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: tests
+  cancel-in-progress: false
+
 jobs:
   pytest:
     name: pytest + grounding（AGENTS.md 验收口径）

@@ -14,6 +14,12 @@ import hashlib
 import json
 import os
 import sys
+import tempfile
+
+try:
+    import fcntl  # Actions runner / Linux；非 POSIX 环境回退为无锁
+except ImportError:  # pragma: no cover
+    fcntl = None
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -71,7 +77,7 @@ def resolve_slot(event: str, schedule: str = "", input_slot: str = "",
         if target > now:
             target -= timedelta(days=1)
         return slot, (target + timedelta(hours=8)).strftime("%Y-%m-%d"), int((now - target).total_seconds())
-    slot = (input_slot or "").strip() or "manual"
+    slot = validate_slot(input_slot, from_dispatch=True)
     return slot, (now + timedelta(hours=8)).strftime("%Y-%m-%d"), 0
 
 
@@ -85,9 +91,20 @@ def cmd_resolve() -> None:
 REFRESH_SLOTS = ("2", "3", "4")
 
 
+VALID_SLOTS = ("1", "2", "3", "4", "manual")
+
+
+def validate_slot(slot: str, *, from_dispatch: bool = False) -> str:
+    """归一化并校验时段；非法输入立即失败，不静默落到 manual/skip。"""
+    s = (slot or "").strip() or ("manual" if from_dispatch else "1")
+    if s not in VALID_SLOTS:
+        raise RuntimeError(f"非法 slot：{slot!r}（允许 1/2/3/4/manual）")
+    return s
+
+
 def _slot() -> str:
     """推送时段：1=北京 07:00（完整采集）；2/3/4=11/16/22 点（复用当日采集，仅更新未开赛场次）；manual=手动。"""
-    return os.environ.get("AH_SLOT", "1").strip() or "1"
+    return validate_slot(os.environ.get("AH_SLOT", "1"))
 
 
 def _parse_ko(v):
@@ -139,9 +156,35 @@ def load_ledger(path: Path | None = None) -> dict:
 
 
 def save_ledger(d: dict, path: Path | None = None) -> None:
+    """原子落盘：同目录临时文件 + os.replace，避免并发读到半截 JSON。"""
     p = path or LEDGER_PATH
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps(d, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    payload = json.dumps(d, ensure_ascii=False, indent=2) + "\n"
+    fd, tmp = tempfile.mkstemp(prefix="." + p.name + ".", suffix=".tmp", dir=str(p.parent))
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(payload)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, p)
+        tmp = None
+    finally:
+        if tmp is not None and os.path.exists(tmp):
+            os.unlink(tmp)
+
+
+def _chat_hash(chat: str) -> str:
+    """日志只输出会话指纹，不回显完整 chat_id。"""
+    return hashlib.sha256(str(chat).encode("utf-8")).hexdigest()[:12]
+
+
+def _ledger_lock(p: Path):
+    """独立锁文件（不随台账被 os.replace 换 inode），返回已加排他锁的句柄。"""
+    p.parent.mkdir(parents=True, exist_ok=True)
+    fh = open(p.with_name(p.name + ".lock"), "a+", encoding="utf-8")
+    if fcntl is not None:
+        fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
+    return fh
 
 
 def report_fingerprint(report: dict) -> str:
@@ -207,22 +250,36 @@ def record_sent(date: str, sha: str, chat: str, message_ids: list,
     """仅在 message_ids 非空时调用；否则属于伪造送达证据。"""
     if not message_ids:
         raise RuntimeError("拒绝写入空 message_ids 的送达记录")
-    d = load_ledger(path)
-    row = {
-        "date": date,
-        "report_sha": sha,
-        "chat_id": str(chat),
-        "status": "sent",
-        "message_ids": [int(x) for x in message_ids],
-        "picks_count": int(picks_count),
-        "slot": str(slot),
-        "sent_at": _now(),
-        "run_id": run_id or None,
-        "report_path": report_path,
-        "evidence": "Telegram sendMessage HTTP 200 / ok=true / message_id",
-    }
-    d["deliveries"].append(row)
-    save_ledger(d, path)
+    p = path or LEDGER_PATH
+    fh = _ledger_lock(p)
+    try:
+        d = load_ledger(p)
+        row = {
+            "date": date,
+            "report_sha": sha,
+            "chat_id": str(chat),
+            "status": "sent",
+            "message_ids": [int(x) for x in message_ids],
+            "picks_count": int(picks_count),
+            "slot": str(slot),
+            "sent_at": _now(),
+            "run_id": run_id or None,
+            "report_path": report_path,
+            "evidence": "Telegram sendMessage HTTP 200 / ok=true / message_id",
+        }
+        # 只记录事实来源，不推断采集失败原因；字段缺省时保持旧格式兼容。
+        src = os.environ.get("AH_REPORT_SOURCE", "").strip()
+        cr = os.environ.get("AH_COLLECT_RESULT", "").strip()
+        if src:
+            row["report_source"] = src
+        if cr:
+            row["collect_result"] = cr
+        d["deliveries"].append(row)
+        save_ledger(d, p)
+    finally:
+        if fcntl is not None:
+            fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+        fh.close()
     return row
 
 
@@ -307,7 +364,7 @@ def _report(date: str) -> tuple[Path, dict]:
 def cmd_preflight() -> None:
     chat, source, facts = resolve_chat()
     f = destination_facts(os.environ.get("TELEGRAM_BOT_TOKEN", ""), chat)
-    print("PREFLIGHT_CHAT_ID", chat)
+    print("PREFLIGHT_CHAT_ID_HASH", _chat_hash(chat))
     print("PREFLIGHT_CHAT_SOURCE", source)
     print("PREFLIGHT_CONFIG_FACTS", json.dumps(facts, ensure_ascii=False))
     print("PREFLIGHT_BOT", "@" + str(f.get("bot_username")))
@@ -385,8 +442,8 @@ def cmd_send() -> None:
     row = record_sent(date, sha, chat, ids,
                       run_id=os.environ.get("GITHUB_RUN_ID"), report_path=str(p),
                       picks_count=picks_count, slot=slot)
-    print(f"DELIVERED date={date} slot={slot} mode={mode} message_ids={row['message_ids']} chat={chat} "
-          f"chat_source={source} sha={sha} evidence=sendMessage")
+    print(f"DELIVERED date={date} slot={slot} mode={mode} message_ids={row['message_ids']} "
+          f"chat_hash={_chat_hash(chat)} chat_source={source} sha={sha} evidence=sendMessage")
 
 
 def cmd_show() -> None:

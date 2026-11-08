@@ -79,7 +79,7 @@ def main():
         ids = publish_telegram.send(messages)
         delivery.record_sent(key, sha, chat, ids,
                              run_id=os.environ.get('GITHUB_RUN_ID'), report_path=str(args.path))
-        print(f'DELIVERED recheck message_ids={ids} chat={chat} chat_source={source} evidence=sendMessage')
+        print(f'DELIVERED recheck message_ids={ids} chat_hash={delivery._chat_hash(chat)} chat_source={source} evidence=sendMessage')
 
 
 if __name__ == '__main__':

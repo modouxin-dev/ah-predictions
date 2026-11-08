@@ -195,6 +195,20 @@ jobs:
             echo "ARTIFACT_REPORT_USED=false 本次未上传 artifact（collect 已跳过），沿用 main 上已送达的报告"
           fi
 
+      - name: Record report provenance (facts only)
+        id: provenance
+        env:
+          COLLECT_RESULT: ${{ needs.collect.result }}
+        run: |
+          echo "AH_COLLECT_RESULT=$COLLECT_RESULT" >> "$GITHUB_ENV"
+          if [ -f "_artifact/report.json" ]; then
+            echo "AH_REPORT_SOURCE=fresh-artifact" >> "$GITHUB_ENV"
+            echo "[provenance] 使用本次采集产物"
+          else
+            echo "AH_REPORT_SOURCE=main-checkout" >> "$GITHUB_ENV"
+            echo "::warning::本次运行未取得采集产物；沿用 main 上已存在的报告，来源写入台账，不标记为新采集"
+          fi
+
       - name: Fail closed if report missing
         run: |
           D="$AH_DATE"

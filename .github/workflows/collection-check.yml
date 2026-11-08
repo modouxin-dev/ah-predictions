@@ -6,6 +6,10 @@ on:
     paths: ['.github/workflows/collection-check.yml']
 permissions:
   contents: read
+concurrency:
+  group: collection-check
+  cancel-in-progress: false
+
 jobs:
   preview:
     runs-on: ubuntu-latest

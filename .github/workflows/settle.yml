@@ -10,9 +10,14 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+concurrency:
+  group: settle
+  cancel-in-progress: false
+
 jobs:
   settle:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     env:
       PYTHONPATH: src
       API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}   # 可选；未设置时跳过自动回填

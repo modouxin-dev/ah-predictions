@@ -316,3 +316,21 @@ PYTHONPATH=src python -m ah delivery preflight
 - GitHub cron 延迟本身无法在仓库内消除。要让 11/16/22 点准点，需外部定时器以 `workflow_dispatch` 触发：
   `POST /repos/modouxin-dev/ah-predictions/actions/workflows/daily.yml/dispatches`，body `{"ref":"main","inputs":{"slot":"2"}}`（slot 取 1/2/3/4），令牌需 `actions:write`。可用 cron-job.org 或 Cloudflare Workers Cron。
 - 延迟后的更新推送消息里写的是**实际发送时间**（「第 N 次更新（北京 HH:MM）」），不会假装准点。
+
+## ORCHESTRATION（2026-11-08）：全仓库体检与冻结清单外加固
+
+**范围**：全量静态审计覆盖 10 个 workflow、39 个 `src/ah` 模块、43 个测试、配置、schema、脚本与历史报告；本轮只修**冻结清单外**的编排、对账、日志与测试问题。
+
+**改动（【已验证】本地 `pytest 874 passed, 1 skipped`，Python 3.10；CI 3.12 结果以 Actions 为准）**
+- `src/ah/delivery.py`：`save_ledger` 改为同目录临时文件 + `os.replace` 原子落盘；`record_sent` 加独立锁文件的 `flock` 排他锁，杜绝并发覆盖；新增 `VALID_SLOTS` / `validate_slot()`，非法 slot 立即报错而非静默落 `manual`；日志只输出 `chat_hash`（sha256 前 12 位），不回显完整 `chat_id`；`record_sent` 可选写入 `report_source` / `collect_result`，只记录事实来源、不推断原因。
+- `.github/workflows/daily.yml`：publish 新增 `Record report provenance` 步骤，把 `needs.collect.result` 与 artifact 是否取得写入环境；采集失败而沿用 main 报告时，台账标记 `report_source=main-checkout`、`collect_result=failure`，并输出 `::warning::`，**不假装本次新采集**。仍保留「采集失败不阻断推送」的设计：否则 11-08 早间版补发会被一起阻断；风险改为可审计而非静默。
+- 其余 9 个 workflow：补齐 workflow 级 `concurrency`（`cancel-in-progress: false`，只防重叠不取消在跑的任务）与 job 级 `timeout-minutes`；`tests.yml` 的 push 触发用于合并后自动复跑。
+- `src/ah/build_site.py`：改写含反斜杠的 f-string 表达式，Python 3.10/3.12 均可导入，渲染结果不变。
+- `.gitignore`：忽略台账锁文件与原子写临时文件；`requirements.txt` 顶部注明需要 Python ≥3.12。
+- `tests/test_ops_hardening.py`（新增 9 例）：slot 白名单、台账原子写与并发不丢记录、provenance 字段兼容、chat_id 脱敏、build_site 兼容、全部 workflow 的并发/超时契约。
+
+**已核实不是缺陷**：`numpy==2.5.4`、`pandas==3.1.0`、`scipy==1.18.1` 均为 2026 年真实发布版本，且 numpy 2.5.4 要求 Python ≥3.12；本地 3.10 装不上是环境限制，不改任何版本 pin。
+
+**冻结清单未触碰**：`analyze.py` / `policy.py` / `daily.py build_report·assess` / `odds_snapshots.py` / `config/settings.yaml` / `model/**` / `schema/**` / `templates/report.md.j2` / 盘口采集口径 / 阈值与评分公式 / `publish_telegram.py` 的展示与观察块策略，一律未改。以下只列为建议，需单独评审与回测：观察块统一渲染与 grounding 双检、recheck 与 daily 的统一幂等键（需先回放历史台账）、报告新鲜度 SLO、依赖 lock 文件、把 `GITHUB_TOKEN` 换成最小权限 fine-grained PAT。
+
+**【未验证】**：本次 commit 在真实 3.12 CI 的测试结果（以 `tests.yml` 运行为准）；Telegram 接收端实际到达；外部定时器是否已配置及其准时率；采集失败根因（Actions 步骤日志下载仍被网络策略拦截）；多日 cron 稳定性。台账里 `date=2026-11-08 slot=4` 的凌晨误发记录仍在，未清理或标注。

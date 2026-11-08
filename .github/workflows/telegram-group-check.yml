@@ -6,6 +6,10 @@ on:
     paths: ['.github/workflows/telegram-group-check.yml']
 permissions:
   contents: read
+concurrency:
+  group: telegram-group-check
+  cancel-in-progress: false
+
 jobs:
   check:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.head_commit.message == 'Inspect Telegram group IDs' || github.event.head_commit.message == 'Expand fixture screening and data coverage' }}
