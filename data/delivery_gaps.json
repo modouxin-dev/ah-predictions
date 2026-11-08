@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "checked_at": "2026-11-08T10:05:09Z",
+  "date": "2026-11-08",
+  "source": "/home/runner/work/ah-predictions/ah-predictions/data/telegram_delivery.json",
+  "slots": [
+    {
+      "slot": "1",
+      "label": "北京 07:00 早间版",
+      "target_utc": "2026-11-07T23:00:00Z",
+      "due": true,
+      "delivered": true,
+      "message_ids": [
+        547,
+        548
+      ],
+      "picks_count": 7,
+      "status": "DELIVERED"
+    },
+    {
+      "slot": "2",
+      "label": "北京 11:00 更新",
+      "target_utc": "2026-11-08T03:00:00Z",
+      "due": true,
+      "delivered": false,
+      "message_ids": "未取得",
+      "picks_count": "未取得",
+      "status": "DUE_MISSING"
+    },
+    {
+      "slot": "3",
+      "label": "北京 16:00 更新",
+      "target_utc": "2026-11-08T08:00:00Z",
+      "due": true,
+      "delivered": false,
+      "message_ids": "未取得",
+      "picks_count": "未取得",
+      "status": "DUE_MISSING"
+    },
+    {
+      "slot": "4",
+      "label": "北京 22:00 更新",
+      "target_utc": "2026-11-08T14:00:00Z",
+      "due": false,
+      "delivered": true,
+      "message_ids": [
+        545,
+        546
+      ],
+      "picks_count": 6,
+      "status": "DELIVERED_BEFORE_TARGET"
+    }
+  ],
+  "missing_slots": [
+    "2",
+    "3"
+  ],
+  "off_schedule_slots": [
+    "4"
+  ],
+  "suggested_dispatch": [
+    {
+      "ref": "main",
+      "inputs": {
+        "slot": "2"
+      }
+    },
+    {
+      "ref": "main",
+      "inputs": {
+        "slot": "3"
+      }
+    }
+  ],
+  "alerts": [
+    {
+      "code": "OFF_SCHEDULE_DELIVERY",
+      "severity": "info",
+      "message": "slot 4 目标时刻未到但台账已有送达记录；只记录事实，不推断为误发或正常",
+      "evidence": {
+        "slots": [
+          "4"
+        ]
+      }
+    }
+  ],
+  "note": "只读比对当日目标时刻与发送台账；未到点不报、已有 message_ids 送达记录不报；不写台账、不触发 workflow、不发 Telegram、不生成任何预测或赛程盘口；建议补发命令只给出不执行，避免误发。零注册依赖，纯仓库内自愈可见性。；只读 data/telegram_delivery.json",
+  "unverified": [
+    "Telegram 接收端是否真正读到（台账只记录 sendMessage 返回的 message_id）",
+    "漏发的具体成因（cron 延迟 / 采集失败 / 闸门拦截，本盘点不推断）",
+    "建议补发命令是否被实际执行（本命令不执行）"
+  ]
+}

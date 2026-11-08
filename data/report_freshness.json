@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "checked_at": "2026-11-08T10:05:09Z",
+  "report_date": "2026-11-08",
+  "generated_at": "2026-11-07T23:14:23Z",
+  "report_age_minutes": 650,
+  "picks": 7,
+  "price_ts_checked": 32,
+  "price_ts_missing": 24,
+  "price_ts_stale": 8,
+  "max_age_minutes": 180,
+  "max_price_age_minutes": 240,
+  "alerts": [
+    {
+      "code": "STALE_REPORT",
+      "severity": "warning",
+      "message": "报告已生成 650 分钟（阈值 180）；可能是旧报告，不推断原因"
+    },
+    {
+      "code": "PRICE_TS_MISSING",
+      "severity": "info",
+      "message": "24 个条目 price_ts 未取得；不补造、不推断"
+    },
+    {
+      "code": "PRICE_TS_STALE",
+      "severity": "warning",
+      "message": "8 个条目盘口时间戳超过 240 分钟；只标注"
+    }
+  ],
+  "status": "STALE_OR_MISSING",
+  "note": "运行事实只记录 UTC 时刻、run_id、slot、阶段名与报告已有字段；缺字段写『未取得』，不推断延迟原因、不补造盘口水位或比分；新鲜度超阈值只告警，不阻断发送（阻断会让补发漏发）。"
+}
