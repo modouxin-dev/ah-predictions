@@ -76,9 +76,19 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None, fd5
     """Return upcoming configured fixtures and source errors, without inventing data."""
     leagues = _leagues()
     by_id = {entry['id']: entry for entry in leagues}
+    # 间歇期赛事扩展清单（DATA SOURCE: 用户授权）：只把免注册源确实返回过的联赛原名
+    # 纳入「赛程发现」，全部 tier=3、无 apif/fd code，不编造 id 或赛事类型。
+    # 缺盘口/近期状态的场次照旧只进 watchlist，不放宽任何核验或评分口径。
+    interim_path = CONFIG / 'interim_leagues.yaml'
+    interim = ((yaml.safe_load(interim_path.read_text(encoding='utf-8')) or {}).get('leagues') or []) \
+        if interim_path.exists() else []
+    by_id.update({entry['id']: entry for entry in interim})
     config = yaml.safe_load((CONFIG / 'sources.yaml').read_text(encoding='utf-8')) or {}
     infer_codes = (config.get('infersports') or {}).get('leagues') or {}
     infer_ids = {str(v).casefold(): k for k, v in infer_codes.items() if k in by_id}
+    for entry in interim:
+        for alias in entry.get('infer') or []:
+            infer_ids.setdefault(str(alias).casefold(), entry['id'])
     fd_ids = {value: key for key, value in football_data.CODE_BY_LEAGUE.items() if key in by_id}
     end = now + timedelta(hours=hours)
     rows, errors, succeeded = [], [], 0
@@ -184,14 +194,24 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None, fd5
     # 补盘口（collect_titan），从未参与赛程发现；主源不可用时整条入口就断了。
     # 现在作为兜底补进候选池：只取未开赛、联赛名能对上 leagues.yaml 的行，
     # 经 add() 做时间窗/去重过滤，不生成任何盘口、水位、比分或倾向。
-    titan_ids = {str(x['cn']).casefold(): x['id'] for x in leagues if x.get('cn')}
-    titan_ids.update({str(x['name']).casefold(): x['id'] for x in leagues if x.get('name')})
-    # titan007 常见简称别名（只补已知写法，不猜测未知联赛）
-    for alias, lid in {'英格兰超级联赛': 'epl', '西班牙甲': 'laliga', '意大利甲': 'seriea',
-                       '德国甲': 'bundesliga', '法国甲': 'ligue1', '日本职业联赛': 'j1',
-                       '韩国职业': 'k1', '澳洲甲': 'aleague', '中国超级': 'csl',
-                       '亚冠精英': 'acl_elite', '亚冠联2': 'acl_two'}.items():
-        titan_ids.setdefault(alias.casefold(), lid)
+    # 只使用配置文件里写明的名称（leagues.yaml 的 titan007 简称 + 间歇期清单的
+    # 数据源原名），不再凭印象补别名：名称对应关系未核验就不猜。
+    def _aliases(entry):
+        raw = entry.get('titan007')
+        out = []
+        if isinstance(raw, str):
+            out.append(raw)
+        elif isinstance(raw, (list, tuple)):
+            out += [str(x) for x in raw]
+        for k in ('cn', 'name'):
+            if entry.get(k):
+                out.append(str(entry[k]))
+        return out
+
+    titan_ids: dict[str, str] = {}
+    for entry in [*leagues, *interim]:
+        for alias in _aliases(entry):
+            titan_ids.setdefault(alias.strip().casefold(), entry['id'])
     # 显式开关：默认关闭，避免离线/单测环境意外联网改变既有断言；
     # daily.yml 的采集 job 设 AH_TITAN_FIXTURES=1 才真正启用这个免注册兜底。
     titan_on = os.environ.get('AH_TITAN_FIXTURES', '').strip().lower() in ('1', 'true', 'yes', 'on')
@@ -232,6 +252,17 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None, fd5
         notes.append(f'titan007 赛程: {type(exc).__name__}（备用源不可用）')
     if not succeeded:
         raise RuntimeError('没有可用的赛程数据源')
+    # 同一场比赛可能被多个源以不同 league_id 返回（间歇期清单按数据源原名分别建 id）。
+    # 按 (主队, 客队, 开球时刻) 全局去重，保留 tier 更小的一条；纯编排防重复。
+    seen: set = set()
+    deduped = []
+    for r in sorted(rows, key=lambda x: (x['tier'], x['match_id'])):
+        key = (str(r['home']).casefold(), str(r['away']).casefold(), r['kickoff_utc'])
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(r)
+    rows = deduped
     # Prefer fixtures for which an enabled provider can supply team form.
     # Asian priority slots below still preserve coverage for observation.
     supported_form_leagues = set(football_data.CODE_BY_LEAGUE) if fd and fd.enabled else set()

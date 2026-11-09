@@ -1,0 +1,25 @@
+# 间歇期赛事扩展清单（DATA SOURCE: 用户 2026-11-09 明确点头授权）
+#
+# 目的：11 月国际比赛日，config/leagues.yaml 的 17 个联赛集体停摆（J1 下一轮 11-20）。
+# 免注册赛程源仍返回真实杯赛/友谊赛，本清单只把这些【数据源确实返回过的原名】
+# 纳入赛程发现，让报告不再出现 window=0 / watchlist=0 的空白。
+#
+# 硬底线（AGENTS.md，不放宽）：
+#   - 推荐仍必须有真实采集的 line / odds / price_ts / 同机构初盘 / ≥3 场近期状态；
+#   - 缺数据只进 watchlist，绝不用默认值、推测值或聚合值补全；
+#   - 核验未通过必须如实标注，不得隐藏；
+#   - 不编造赛程、盘口、水位、比分或倾向。
+#
+# 因此：本清单只影响「能否被看见」，不影响「能否被推荐」。tier=3，排在主流联赛之后。
+# 不含 apif / football-data code：不知道真实 id，绝不编造；缺它们时 provider 自然跳过。
+# 不纳入女足 / 青年 / U23 / 预备队 / 后备队：盘口与状态覆盖不足，按准确率优先排除。
+# 每条 cn 保留数据源原名；跨源名称对应关系、赛事类型均未独立核验，不做推断合并。
+leagues:
+  - {id: interim_titan_intl_friendly, cn: "国际友谊（titan007 原名）", titan007: ["国际友谊"], infer: [], tier: 3}
+  - {id: interim_titan_fa_cup,       cn: "英足总杯（titan007 原名）", titan007: ["英足总杯"], infer: [], tier: 3}
+  - {id: interim_titan_eng_u21_cup,  cn: "英U21杯（titan007 原名）",  titan007: ["英U21杯", "英U21"], infer: [], tier: 3}
+  - {id: interim_titan_egypt_cup,    cn: "埃及杯（titan007 原名）",   titan007: ["埃及杯"], infer: [], tier: 3}
+  - {id: interim_titan_uruguay_cup,  cn: "乌拉杯（titan007 原名）",   titan007: ["乌拉杯"], infer: [], tier: 3}
+  - {id: interim_infer_engflt,       cn: "EngFLT（InferSports 原名，赛事类型未核验）", titan007: [], infer: ["EngFLT"], tier: 3}
+  - {id: interim_infer_four_nations, cn: "Four Nations（InferSports 原名，赛事类型未核验）", titan007: [], infer: ["Four Nations"], tier: 3}
+  - {id: interim_infer_efac,         cn: "EFAC（InferSports 原名，赛事类型未核验）", titan007: [], infer: ["EFAC"], tier: 3}
