@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "checked_at": "2026-11-09T01:58:01Z",
+ "evidence_grade": "【已验证】CI runner 直连数据源的字段解析事实",
+ "window": {
+  "now": "2026-11-09T01:58:01.523626+00:00",
+  "end": "2026-11-10T13:58:01.523626+00:00",
+  "hours": 36
+ },
+ "mapping_size": 15,
+ "mapping": {
+  "afctwo": "acl_two",
+  "ausla": "aleague",
+  "eflc": "championship",
+  "enpl": "epl",
+  "fra": "ligue1",
+  "ger": "bundesliga",
+  "ita": "seriea",
+  "jap1": "j1",
+  "jap2": "j2",
+  "koreak1": "k1",
+  "qatarsl": "qsl",
+  "saudipl": "spl",
+  "spa": "laliga",
+  "ucl": "ucl",
+  "uel": "uel"
+ },
+ "per_date_rows": {
+  "2026-11-09": 77,
+  "2026-11-10": 43
+ },
+ "status_distribution": {
+  "scheduled": 110,
+  "live": 10
+ },
+ "league_name_distribution": {
+  "EngFLT": 17,
+  "Uefa Womens": 10,
+  "UAEU23": 8,
+  "Bul B": 4,
+  "SpaWPD": 4,
+  "EngU21": 4,
+  "ItaSerieC": 4,
+  "ChinaW1": 3,
+  "ILL": 3,
+  "UruC": 3,
+  "EngNLsouth": 3,
+  "SPAC": 3,
+  "EngNLnorth": 3,
+  "Karnataka": 2,
+  "RomB": 2,
+  "EngPDL": 2,
+  "GerW": 2,
+  "ECUSA": 2,
+  "SPA2": 2,
+  "ParPD": 2,
+  "JamPL": 2,
+  "Four Nations": 2,
+  "ARU D1": 1,
+  "BraCU20": 1,
+  "MexPD": 1,
+  "MongPL": 1,
+  "Ukr1": 1,
+  "Egy2": 1,
+  "SAL2": 1,
+  "EgyC": 1
+ },
+ "stages": {
+  "raw": 120,
+  "drop_status": 10,
+  "pass_status": 110,
+  "drop_league_unmapped": 110
+ },
+ "first_passing_samples": [],
+ "errors": [],
+ "note": "只记录接口返回的字段分布与逐层淘汰计数，不生成任何赛程、盘口、水位、比分或倾向；不写报告/台账，不改评分、阈值、核验或推送。raw 含全部联赛，added 只计配置联赛且未开赛场次。",
+ "unverified": [
+  "未配置联赛的比赛是否可用（本项目口径不纳入）",
+  "盘口/近期状态是否充足（本探针不采集）"
+ ]
+}
