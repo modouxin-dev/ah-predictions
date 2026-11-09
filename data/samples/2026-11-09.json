@@ -3,8 +3,8 @@
   "kind": "pre-kickoff candidate pool",
   "date": "2026-11-09",
   "source_report": "reports/2026/11/2026-11-09.json",
-  "captured_at": "2026-11-09T05:19:50Z",
-  "generated_at": "2026-11-09T05:19:51Z",
+  "captured_at": "2026-11-09T05:22:57Z",
+  "generated_at": "2026-11-09T05:22:58Z",
   "counts": {
     "total": 6,
     "recommended": 0,
@@ -14,7 +14,7 @@
   "rows": [
     {
       "date": "2026-11-09",
-      "captured_at": "2026-11-09T05:19:50Z",
+      "captured_at": "2026-11-09T05:22:57Z",
       "match_id": "titan007-3108764",
       "league": "埃及杯（titan007 原名）",
       "home": "瓦迪格拉",
@@ -42,7 +42,7 @@
     },
     {
       "date": "2026-11-09",
-      "captured_at": "2026-11-09T05:19:50Z",
+      "captured_at": "2026-11-09T05:22:57Z",
       "match_id": "titan007-3111651",
       "league": "国际友谊（titan007 原名）",
       "home": "乌兹别克斯坦U17",
@@ -70,7 +70,7 @@
     },
     {
       "date": "2026-11-09",
-      "captured_at": "2026-11-09T05:19:50Z",
+      "captured_at": "2026-11-09T05:22:57Z",
       "match_id": "titan007-3108765",
       "league": "埃及杯（titan007 原名）",
       "home": "泽德FC",
@@ -98,7 +98,7 @@
     },
     {
       "date": "2026-11-09",
-      "captured_at": "2026-11-09T05:19:50Z",
+      "captured_at": "2026-11-09T05:22:57Z",
       "match_id": "infs-evt_FANJN5KC",
       "league": "EFAC（InferSports 原名，赛事类型未核验）",
       "home": "Plymouth Parkway",
@@ -126,7 +126,7 @@
     },
     {
       "date": "2026-11-09",
-      "captured_at": "2026-11-09T05:19:50Z",
+      "captured_at": "2026-11-09T05:22:57Z",
       "match_id": "infs-evt_DJTY4Z8P",
       "league": "Four Nations（InferSports 原名，赛事类型未核验）",
       "home": "Qatar U23",
@@ -154,7 +154,7 @@
     },
     {
       "date": "2026-11-09",
-      "captured_at": "2026-11-09T05:19:50Z",
+      "captured_at": "2026-11-09T05:22:57Z",
       "match_id": "infs-evt_B60796VP",
       "league": "Four Nations（InferSports 原名，赛事类型未核验）",
       "home": "Vietnam u23",
