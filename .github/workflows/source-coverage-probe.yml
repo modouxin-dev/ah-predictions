@@ -1,0 +1,36 @@
+name: Fixture source coverage probe (facts only)
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: source-coverage-probe
+  cancel-in-progress: true
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: src
+      API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+      ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+      ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}
+      FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
+      FIVEDOLLAR_KEY: ${{ secrets.FIVEDOLLAR_KEY }}
+      GITHUB_AH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false, ref: main}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - name: Probe all fixture sources (full league names, no truncation)
+        continue-on-error: true
+        run: python -m ah source-coverage-probe --out data/source_coverage_probe.json
+      - name: Publish facts back to main
+        if: always()
+        run: |
+          scripts/safe_commit.sh --skip-tests \
+            -m "OPS: fixture source coverage facts (no data invented)" \
+            data/source_coverage_probe.json \
+            || echo "::warning::事实提交失败（不影响任何推送）"

@@ -1,4 +1,4 @@
-"""python -m ah <cmd> 便捷入口：render|settle|stats|site|telegram|consensus|prematch-record|backtest-record|sources|tg-bot|delivery|grounding|source-probe|samples|factors|backtest|gaps|review|runfacts|source-audit|delivery-gaps|date-consistency|data-quality|ops-failures|clv|score-truth|source-policy|rule-lab|funnel|eval-facts|infer-probe|credential-verify|punctual"""
+"""python -m ah <cmd> 便捷入口：render|settle|stats|site|telegram|consensus|prematch-record|backtest-record|sources|tg-bot|delivery|grounding|source-probe|samples|factors|backtest|gaps|review|runfacts|source-audit|delivery-gaps|date-consistency|data-quality|ops-failures|clv|score-truth|source-policy|rule-lab|funnel|eval-facts|infer-probe|credential-verify|punctual|source-coverage-probe"""
 import sys
 
 cmd, sys.argv = (sys.argv[1] if len(sys.argv) > 1 else "help"), [sys.argv[0]] + sys.argv[2:]
@@ -68,5 +68,7 @@ elif cmd == "credential-verify":
     from .credential_verify import main; main()
 elif cmd == "punctual":
     from .punctual import main; main()
+elif cmd == "source-coverage-probe":
+    from .source_coverage_probe import main; main()
 else:
     print(__doc__)
