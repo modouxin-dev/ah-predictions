@@ -1,14 +1,111 @@
 {
   "date": "2026-11-09",
-  "generated_at": "2026-11-09T04:29:35Z",
+  "generated_at": "2026-11-09T05:19:50Z",
   "edition": "automatic",
   "odds_format": "HK",
   "picks": [],
   "watched": [],
-  "watchlist": [],
+  "watchlist": [
+    {
+      "match_id": "titan007-3108764",
+      "fixture_id": null,
+      "league_id": "interim_titan_egypt_cup",
+      "league": "埃及杯（titan007 原名）",
+      "home": "瓦迪格拉",
+      "away": "卡巴阿斯玛利",
+      "kickoff_utc": "2026-11-09T12:30:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过",
+      "titan007_observation": {
+        "source": "titan007",
+        "home_line": -0.5,
+        "home_water": 0.85,
+        "away_water": 0.85
+      }
+    },
+    {
+      "match_id": "titan007-3111651",
+      "fixture_id": null,
+      "league_id": "interim_titan_intl_friendly",
+      "league": "国际友谊（titan007 原名）",
+      "home": "乌兹别克斯坦U17",
+      "away": "厄瓜多尔U17",
+      "kickoff_utc": "2026-11-09T13:00:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "titan007-3108765",
+      "fixture_id": null,
+      "league_id": "interim_titan_egypt_cup",
+      "league": "埃及杯（titan007 原名）",
+      "home": "泽德FC",
+      "away": "萨马诺德",
+      "kickoff_utc": "2026-11-09T15:00:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过",
+      "titan007_observation": {
+        "source": "titan007",
+        "home_line": -2.25,
+        "home_water": 0.89,
+        "away_water": 0.81
+      }
+    },
+    {
+      "match_id": "infs-evt_FANJN5KC",
+      "fixture_id": null,
+      "league_id": "interim_infer_efac",
+      "league": "EFAC（InferSports 原名，赛事类型未核验）",
+      "home": "Plymouth Parkway",
+      "away": "Berkhamsted FC",
+      "kickoff_utc": "2026-11-09T19:30:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_DJTY4Z8P",
+      "fixture_id": null,
+      "league_id": "interim_infer_four_nations",
+      "league": "Four Nations（InferSports 原名，赛事类型未核验）",
+      "home": "Qatar U23",
+      "away": "Singapore U23",
+      "kickoff_utc": "2026-11-10T08:00:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_B60796VP",
+      "fixture_id": null,
+      "league_id": "interim_infer_four_nations",
+      "league": "Four Nations（InferSports 原名，赛事类型未核验）",
+      "home": "Vietnam u23",
+      "away": "Thailand U23",
+      "kickoff_utc": "2026-11-10T12:00:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    }
+  ],
   "odds_source_note": "赛程、盘口与近期状态自动采集；推荐只用真实盘口，核验未完全通过的场次强制低信心并显式标注。",
-  "not_covered": "筛查上限 48 场；窗口内共发现 0 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）；OddsPapi 赛程 csl: 未取得赛程（HTTP 404）。",
-  "window_fixtures": 0,
+  "not_covered": "筛查上限 48 场；窗口内共发现 6 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）；OddsPapi 赛程 csl: 未取得赛程（HTTP 404）；盘口核验：books:2<3 2场；no_pinnacle_and_asian<2 2场；no_quotes 3场；sources:1<2 3场；stale>1800s 1场；stale>7200s 2场；verified:0<1 3场。",
+  "window_fixtures": 6,
   "screening_cap": 48,
   "outside_screen": 0,
   "fixture_source_counts": {
@@ -17,19 +114,20 @@
       "added": 0
     },
     "infersports": {
-      "raw": 127,
-      "added": 0
+      "raw": 136,
+      "added": 3
     },
     "titan007_fixtures": {
       "raw": 157,
-      "added": 0
+      "added": 3
     }
   },
   "collection_errors": [],
   "collection_notes": [
     "API-Football 未启用",
     "OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）",
-    "OddsPapi 赛程 csl: 未取得赛程（HTTP 404）"
+    "OddsPapi 赛程 csl: 未取得赛程（HTTP 404）",
+    "盘口核验：books:2<3 2场；no_pinnacle_and_asian<2 2场；no_quotes 3场；sources:1<2 3场；stale>1800s 1场；stale>7200s 2场；verified:0<1 3场"
   ],
   "feature_evidence": {
     "schema": 1,
