@@ -567,3 +567,21 @@ tests / pages / source-probe / accuracy-review 四个运行 success；`data/rule
 且「扩初筛上限」对空池无效——本轮只加 `fixture_source_counts` 事实字段、漏斗事实句与
 `ZERO_FIXTURE_WINDOW` 告警（notify_only），**不改采集/推送行为、不重采、不补发**。
 详见 `docs/zero-pick-2026-11-09.md`。`pytest 1024 passed, 1 skipped`。
+
+## 2026-11-09：准点能力收进仓库，不再需要外部账号
+
+`punctual-dispatch.yml` 每 5 分钟由 `python -m ah punctual --apply` 按北京
+06:00/11:00/16:00/22:00 目标时刻触发 `daily.yml` 的 `workflow_dispatch`，
+只用 runner 自带 `GITHUB_TOKEN`，**零注册、零外部 API key**。三重防重复：
+台账 `(date,slot)` 已送达、最近 30 分钟已有 daily run、workflow 并发组。
+只在目标起 60 分钟内动作（+1h 不跨北京午夜，`AH_DATE` 不会滚到次日）；
+窗口外漏发仍由 `delivery-gaps` 只读告警，不自动补、不绕过日期保护。
+GitHub 自带 4 条 schedule 保留作兜底。详见 `docs/external-timer.md`。
+
+可选增强：`scripts/setup_cronjob_org.py` 用 cron-job.org REST API 一键建 4 个任务
+（`PUT /jobs`、`POST` 方法枚举 1、Asia/Shanghai、按标题去重、失败通知）；
+两个密钥只从环境变量读、输出脱敏。官方 API 无 Test run 端点，需在 Console 点一次。
+
+新增 `python -m ah punctual` / `scripts/setup_cronjob_org.py` 与 12 个用例；
+`pytest 1041 passed, 1 skipped`。不改评分、阈值、盘口核验、报告、台账、推送，
+不生成任何赛程/盘口/水位/比分/倾向，未触发 Telegram。

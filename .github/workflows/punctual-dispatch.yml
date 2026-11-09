@@ -1,0 +1,50 @@
+name: Punctual dispatch (zero-registration, no external account)
+# 让准点能力收进仓库本身：GitHub 自带 schedule 实测迟到 4.7~6.8h，
+# 这个每 5 分钟的轻量工作流按北京目标时刻用 REST API 触发 daily.yml。
+# 零注册、零外部账号、零额外密钥（只用 runner 自带的 GITHUB_TOKEN）。
+# 不改报告/台账/评分/阈值/核验/推送；不生成任何赛程盘口水位比分倾向。
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      verify:
+        description: '链路自检：真发一次 slot=1 dispatch 并核对是否新建 run（推送会被幂等跳过）'
+        required: false
+        default: 'false'
+        type: boolean
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: punctual-dispatch
+  cancel-in-progress: true
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      PYTHONPATH: src
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, ref: main}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      # punctual 只用标准库；装依赖仅为与仓库其它 CLI 保持同一运行环境
+      - run: pip install -r requirements.txt
+      - name: Decide and dispatch (facts only, idempotent by date+slot)
+        run: |
+          if [ "${{ inputs.verify }}" = "true" ]; then
+            python -m ah punctual --verify | tee punctual_facts.json
+          else
+            python -m ah punctual --apply | tee punctual_facts.json
+          fi
+      - name: Upload decision facts as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: punctual-facts-${{ github.run_id }}
+          path: punctual_facts.json
+          if-no-files-found: ignore
