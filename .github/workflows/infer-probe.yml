@@ -1,0 +1,41 @@
+name: InferSports fixture probe (facts only)
+# 网络出口被拦时换通道：日志/artifact 下载读不到，就让 CI runner 直连数据源，
+# 把字段分布与逐层淘汰计数写成 JSON 提交回 main，再从 contents 通道读回。
+# 不改报告/台账/评分/阈值/推送；不生成任何赛程、盘口、水位、比分或倾向。
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: infer-probe
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: src
+      API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+      ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+      ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}
+      FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
+      FIVEDOLLAR_KEY: ${{ secrets.FIVEDOLLAR_KEY }}
+      INFERSPORTS_KEY: ${{ secrets.INFERSPORTS_KEY }}
+      GITHUB_AH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false, ref: main}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - name: Probe InferSports fixture filtering (facts only)
+        continue-on-error: true
+        run: python -m ah infer-probe --out data/infer_probe.json
+      - name: Publish probe facts back to main
+        if: always()
+        run: |
+          scripts/safe_commit.sh --skip-tests \
+            -m "OPS: infer-probe facts (filter-stage counts, no report/ledger change)" \
+            data/infer_probe.json \
+            || echo "::warning::探针事实提交失败（不影响任何推送）"
