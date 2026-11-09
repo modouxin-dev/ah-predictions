@@ -1,6 +1,6 @@
 {
   "date": "2026-11-09",
-  "generated_at": "2026-11-09T01:29:41Z",
+  "generated_at": "2026-11-09T01:49:44Z",
   "edition": "automatic",
   "odds_format": "HK",
   "picks": [],
@@ -11,6 +11,16 @@
   "window_fixtures": 0,
   "screening_cap": 48,
   "outside_screen": 0,
+  "fixture_source_counts": {
+    "football_data": {
+      "raw": 0,
+      "added": 0
+    },
+    "infersports": {
+      "raw": 120,
+      "added": 0
+    }
+  },
   "collection_errors": [],
   "collection_notes": [
     "API-Football 未启用",
