@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-09T01:49:22Z",
+  "checked_at": "2026-11-09T03:00:29Z",
   "evidence_grade": "【已验证】本地配置与环境变量布尔事实；连通项为【运行时代理自检】",
   "policy": "免注册优先、缺凭据不静默、不阻断、不推断、不改源开关",
   "registered": [
@@ -14,7 +14,9 @@
       "enabled": true,
       "declared_in_workflows": [
         "collection-check.yml",
+        "credential-verify.yml",
         "daily.yml",
+        "infer-probe.yml",
         "publish-recheck.yml",
         "settle.yml",
         "source-probe.yml",
@@ -33,7 +35,9 @@
       "enabled": "未取得",
       "declared_in_workflows": [
         "collection-check.yml",
+        "credential-verify.yml",
         "daily.yml",
+        "infer-probe.yml",
         "publish-recheck.yml",
         "source-probe.yml"
       ],
@@ -50,7 +54,9 @@
       "enabled": "未取得",
       "declared_in_workflows": [
         "collection-check.yml",
+        "credential-verify.yml",
         "daily.yml",
+        "infer-probe.yml",
         "publish-recheck.yml",
         "settle.yml",
         "source-probe.yml"
@@ -68,7 +74,9 @@
       "enabled": "未取得",
       "declared_in_workflows": [
         "collection-check.yml",
+        "credential-verify.yml",
         "daily.yml",
+        "infer-probe.yml",
         "publish-recheck.yml",
         "source-probe.yml"
       ],
@@ -86,7 +94,9 @@
       "declared_in_workflows": [
         "close-snapshots.yml",
         "collection-check.yml",
+        "credential-verify.yml",
         "daily.yml",
+        "infer-probe.yml",
         "publish-recheck.yml",
         "source-probe.yml"
       ],
@@ -97,7 +107,9 @@
   "workflow_declared_secrets": {
     "API_FOOTBALL_KEY": [
       "collection-check.yml",
+      "credential-verify.yml",
       "daily.yml",
+      "infer-probe.yml",
       "publish-recheck.yml",
       "settle.yml",
       "source-probe.yml",
@@ -105,35 +117,49 @@
     ],
     "FIVEDOLLAR_KEY": [
       "collection-check.yml",
+      "credential-verify.yml",
       "daily.yml",
+      "infer-probe.yml",
       "publish-recheck.yml",
       "source-probe.yml"
     ],
     "FOOTBALL_DATA_KEY": [
       "collection-check.yml",
+      "credential-verify.yml",
       "daily.yml",
+      "infer-probe.yml",
       "publish-recheck.yml",
       "settle.yml",
       "source-probe.yml"
     ],
     "GITHUB_TOKEN": [
       "close-snapshots.yml",
+      "credential-verify.yml",
       "daily.yml",
+      "infer-probe.yml",
       "publish-recheck.yml",
+      "punctual-dispatch.yml",
       "review.yml",
       "rule-lab.yml",
       "settle.yml"
     ],
+    "INFERSPORTS_KEY": [
+      "infer-probe.yml"
+    ],
     "ODDSPAPI_KEY": [
       "close-snapshots.yml",
       "collection-check.yml",
+      "credential-verify.yml",
       "daily.yml",
+      "infer-probe.yml",
       "publish-recheck.yml",
       "source-probe.yml"
     ],
     "ODDS_API_KEY": [
       "collection-check.yml",
+      "credential-verify.yml",
       "daily.yml",
+      "infer-probe.yml",
       "publish-recheck.yml",
       "source-probe.yml"
     ],
@@ -254,40 +280,40 @@
     {
       "source": "uefa_fixtures",
       "url": "https://www.uefa.com/uefachampionsleague/",
-      "checked_at": "2026-11-09T01:49:20Z",
+      "checked_at": "2026-11-09T03:00:27Z",
       "http_status": 200,
       "bytes_read": 2048,
-      "elapsed_ms": 1149,
+      "elapsed_ms": 886,
       "error_type": null,
       "note": "仅 HTTP 状态与首块字节数；不解析页面内容"
     },
     {
       "source": "jleague_acle",
       "url": "https://www.jleague.jp/en/acle/game/",
-      "checked_at": "2026-11-09T01:49:21Z",
+      "checked_at": "2026-11-09T03:00:28Z",
       "http_status": 200,
       "bytes_read": 2048,
-      "elapsed_ms": 1096,
+      "elapsed_ms": 302,
       "error_type": null,
       "note": "仅 HTTP 状态与首块字节数；不解析页面内容"
     },
     {
       "source": "jleague",
       "url": "https://www.jleague.jp",
-      "checked_at": "2026-11-09T01:49:22Z",
+      "checked_at": "2026-11-09T03:00:28Z",
       "http_status": 200,
       "bytes_read": 2048,
-      "elapsed_ms": 48,
+      "elapsed_ms": 380,
       "error_type": null,
       "note": "仅 HTTP 状态与首块字节数；不解析页面内容"
     },
     {
       "source": "afc",
       "url": "https://www.the-afc.com/en/club/afc_champions_league_elite.html",
-      "checked_at": "2026-11-09T01:49:22Z",
+      "checked_at": "2026-11-09T03:00:29Z",
       "http_status": 200,
       "bytes_read": 2048,
-      "elapsed_ms": 169,
+      "elapsed_ms": 171,
       "error_type": null,
       "note": "仅 HTTP 状态与首块字节数；不解析页面内容"
     }
