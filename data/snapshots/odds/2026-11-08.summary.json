@@ -1,6 +1,6 @@
 {
  "report_date": "2026-11-08",
- "updated_at": "2026-11-08T22:49:18Z",
+ "updated_at": "2026-11-09T01:31:40Z",
  "csv": "2026-11-08.csv",
  "matches_screened": 32,
  "skipped": [],
@@ -237,12 +237,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 67518,
+      "stale_age_s": 77240,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 67518
+        "age_s": 77240
        }
       ],
       "freshness": "stale_withdraw",
@@ -431,12 +431,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 67282,
+      "stale_age_s": 77004,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 67282
+        "age_s": 77004
        }
       ],
       "freshness": "stale_withdraw",
@@ -626,12 +626,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 63767,
+      "stale_age_s": 73489,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 63767
+        "age_s": 73489
        }
       ],
       "freshness": "stale_withdraw",
@@ -837,12 +837,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 63730,
+      "stale_age_s": 73452,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 63730
+        "age_s": 73452
        }
       ],
       "freshness": "stale_withdraw",
@@ -1045,12 +1045,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 63729,
+      "stale_age_s": 73451,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 63729
+        "age_s": 73451
        }
       ],
       "freshness": "stale_withdraw",
@@ -1240,12 +1240,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 63707,
+      "stale_age_s": 73429,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 63707
+        "age_s": 73429
        }
       ],
       "freshness": "stale_withdraw",
@@ -1449,12 +1449,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 63673,
+      "stale_age_s": 73395,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 63673
+        "age_s": 73395
        }
       ],
       "freshness": "stale_withdraw",
@@ -1644,12 +1644,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 63687,
+      "stale_age_s": 73409,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 63687
+        "age_s": 73409
        }
       ],
       "freshness": "stale_withdraw",
@@ -1853,12 +1853,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 60081,
+      "stale_age_s": 69803,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 60081
+        "age_s": 69803
        }
       ],
       "freshness": "stale_withdraw",
@@ -2064,12 +2064,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 60171,
+      "stale_age_s": 69893,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 60171
+        "age_s": 69893
        }
       ],
       "freshness": "stale_withdraw",
@@ -2628,12 +2628,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 31270,
+      "stale_age_s": 40992,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 31270
+        "age_s": 40992
        }
       ],
       "freshness": "stale_withdraw",
@@ -2830,12 +2830,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 31279,
+      "stale_age_s": 41001,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 31279
+        "age_s": 41001
        }
       ],
       "freshness": "stale_withdraw",
@@ -2984,12 +2984,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 31594,
+      "stale_age_s": 41316,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 31594
+        "age_s": 41316
        }
       ],
       "freshness": "stale_withdraw",
@@ -3197,12 +3197,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 31274,
+      "stale_age_s": 40996,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 31274
+        "age_s": 40996
        }
       ],
       "freshness": "stale_withdraw",
@@ -3410,12 +3410,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 31267,
+      "stale_age_s": 40989,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 31267
+        "age_s": 40989
        }
       ],
       "freshness": "stale_withdraw",
@@ -3623,12 +3623,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 31275,
+      "stale_age_s": 40997,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 31275
+        "age_s": 40997
        }
       ],
       "freshness": "stale_withdraw",
@@ -3835,12 +3835,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 31278,
+      "stale_age_s": 41000,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 31278
+        "age_s": 41000
        }
       ],
       "freshness": "stale_withdraw",
@@ -4043,12 +4043,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 31594,
+      "stale_age_s": 41316,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 31594
+        "age_s": 41316
        }
       ],
       "freshness": "stale_withdraw",
@@ -4236,12 +4236,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 29479,
+      "stale_age_s": 39201,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 29479
+        "age_s": 39201
        }
       ],
       "freshness": "stale_withdraw",
@@ -4603,12 +4603,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 23199,
+      "stale_age_s": 32921,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 23199
+        "age_s": 32921
        }
       ],
       "freshness": "stale_withdraw",
@@ -4757,12 +4757,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 23174,
+      "stale_age_s": 32896,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 23174
+        "age_s": 32896
        }
       ],
       "freshness": "stale_withdraw",
@@ -4963,12 +4963,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 23196,
+      "stale_age_s": 32918,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 23196
+        "age_s": 32918
        }
       ],
       "freshness": "stale_withdraw",
@@ -5173,12 +5173,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 23223,
+      "stale_age_s": 32945,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 23223
+        "age_s": 32945
        }
       ],
       "freshness": "stale_withdraw",
@@ -5370,12 +5370,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 23174,
+      "stale_age_s": 32896,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 23174
+        "age_s": 32896
        }
       ],
       "freshness": "stale_withdraw",
@@ -5580,12 +5580,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 22294,
+      "stale_age_s": 32016,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 22294
+        "age_s": 32016
        }
       ],
       "freshness": "stale_withdraw",
@@ -5770,12 +5770,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 22306,
+      "stale_age_s": 32028,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 22306
+        "age_s": 32028
        }
       ],
       "freshness": "stale_withdraw",
@@ -6063,12 +6063,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 20469,
+      "stale_age_s": 30191,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 20469
+        "age_s": 30191
        }
       ],
       "freshness": "stale_withdraw",
@@ -6273,12 +6273,12 @@
       ],
       "verified_books": [],
       "pinnacle_or_asian": true,
-      "stale_age_s": 18673,
+      "stale_age_s": 28395,
       "stale_detail": [
        {
         "book": "pinnacle",
         "source": "oddspapi",
-        "age_s": 18673
+        "age_s": 28395
        }
       ],
       "freshness": "stale_withdraw",
@@ -6314,6 +6314,23 @@
   },
   {
    "at": "2026-11-08T22:49:18Z",
+   "phases": [
+    "close"
+   ],
+   "calls": {
+    "oddspapi_free": 84
+   },
+   "quota_after": {
+    "oddspapi": {
+     "used": 181,
+     "remaining": 69,
+     "limit": 250,
+     "month": "2026-11"
+    }
+   }
+  },
+  {
+   "at": "2026-11-09T01:31:40Z",
    "phases": [
     "close"
    ],
