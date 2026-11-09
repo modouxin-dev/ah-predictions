@@ -556,3 +556,14 @@ tests / pages / source-probe / accuracy-review 四个运行 success；`data/rule
 
 `pytest 1022 passed, 1 skipped`。详见 `docs/upgrade-2026-11-08-round6.md`。
 台账严格校验：仅 6 个 CLV 回填列变化，未触碰赛程、盘口、赔率、比分、结算等权威字段。
+
+## 2026-11-09：0 场不是漏推，补齐分源诊断
+
+早间版 slot 1 消息 552 已按规矩发出（0 场事实版，未编造）。报告 `window_fixtures=0`、
+`watchlist=0`、`collection_errors=[]`：`daily.yml` 的 0 场兜底已从 32 自动扩到 48 重采一次，
+两次都 0 场。**API-Football 账号 suspended** 的直接证据在 `data/source_status.json`
+（`status errors: Your account is suspended`）；football-data / InferSports / The Odds API 调用成功但窗口内
+没给符合配置的比赛，OddsPapi 两个赛程端点 404。404 被计入「源成功」掩盖了空窗口，
+且「扩初筛上限」对空池无效——本轮只加 `fixture_source_counts` 事实字段、漏斗事实句与
+`ZERO_FIXTURE_WINDOW` 告警（notify_only），**不改采集/推送行为、不重采、不补发**。
+详见 `docs/zero-pick-2026-11-09.md`。`pytest 1024 passed, 1 skipped`。

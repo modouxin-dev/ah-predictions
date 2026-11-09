@@ -139,6 +139,14 @@ def _alerts(funnel, clv_join, scope, reports) -> list[dict]:
     if zeros:
         add("ZERO_PICK_DAY", "warning", f"存在 0 场推荐日：{', '.join(str(x) for x in zeros)}；漏斗照常出表可定位",
             "selection_funnel.json days[].zero_pick_day")
+    empty_windows = [d.get("date") for d in days
+                     if d.get("zero_pick_day") and (d.get("upstream") or {}).get("window_fixtures") == 0]
+    if empty_windows:
+        add("ZERO_FIXTURE_WINDOW", "warning",
+            f"{', '.join(str(x) for x in empty_windows)} 的赛程窗口内 0 场：不是推荐被筛掉，"
+            "而是赛程源没给比赛；扩大初筛上限无效，需检查赛程源状态与当天是否有配置联赛比赛。"
+            "此条只告警，不自动补发、不编造赛程。",
+            "reports window_fixtures / fixture_source_counts")
     obs = summary.get("observations") or []
     persistent = next((x for x in obs if "连续" in x and "近期状态数据不足" in x), None)
     if persistent:

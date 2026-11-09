@@ -146,6 +146,7 @@ def _day(path: Path) -> dict | None:
         "buckets": buckets,
         "data_gap_by_league": dict(sorted(gap_leagues.items(), key=lambda kv: (-kv[1], kv[0]))),
         "upstream": _upstream(r),
+        "fixture_source_counts": r.get("fixture_source_counts") if isinstance(r.get("fixture_source_counts"), dict) else MISSING,
         "verification_facts": ver_facts,
         "state_gap_note_count": len(gap_notes),
         "collection_notes": notes,
@@ -199,6 +200,22 @@ def _observations(days: list[dict], summary: dict) -> list[str]:
     zeros = [d["date"] for d in days if d["zero_pick_day"]]
     if zeros:
         out.append(f"0 场推荐日：{', '.join(zeros)}；漏斗照常出表，便于定位【已验证】报告字段")
+    empty_windows = [(d["date"], d["upstream"].get("window_fixtures")) for d in days
+                     if d["zero_pick_day"] and d["upstream"].get("window_fixtures") == 0]
+    if empty_windows:
+        detail = []
+        for d in days:
+            if d["date"] not in {x[0] for x in empty_windows}:
+                continue
+            sc = d["fixture_source_counts"]
+            if isinstance(sc, dict) and sc:
+                detail.append(f"{d['date']}：" + "、".join(
+                    f"{k} 返回 {v.get('raw', '未取得')} 场/入池 {v.get('added', '未取得')} 场"
+                    for k, v in sorted(sc.items())))
+            else:
+                detail.append(f"{d['date']}：旧报告未记录分源计数【未取得】")
+        out.append("窗口内 0 场赛程（不是被门槛或模型筛掉，watchlist 同为 0）："
+                   + "；".join(detail) + "。依据：报告 window_fixtures / fixture_source_counts【已验证】报告字段")
     # 伤停/首发事实
     if any("尚未自动采集伤停或首发" in str(d["not_covered_text"]) for d in days):
         out.append("报告自述『尚未自动采集伤停或首发』；不补造伤停信息【已验证】报告文本")

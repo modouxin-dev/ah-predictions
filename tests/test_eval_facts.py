@@ -98,3 +98,15 @@ def test_cmd_atomic_and_deterministic(tmp_path):
     assert json.loads(out.read_text(encoding="utf-8")) == o
     assert o["checked_at"] == "2026-11-08T01:02:03Z"
     assert not list(d.glob(".eval-*"))
+
+
+def test_zero_fixture_window_alert_is_notify_only(tmp_path):
+    d, rep = _seed(tmp_path)
+    f = json.loads((d / "selection_funnel.json").read_text(encoding="utf-8"))
+    f["days"].append({"date": "2026-11-10", "categories": {}, "zero_pick_day": True,
+                      "upstream": {"window_fixtures": 0}})
+    (d / "selection_funnel.json").write_text(json.dumps(f, ensure_ascii=False), encoding="utf-8")
+    o = eval_facts.build(data=d, reports=rep)
+    a = next(x for x in o["alerts"] if x["code"] == "ZERO_FIXTURE_WINDOW")
+    assert "扩大初筛上限无效" in a["message"] and a["action"] == "notify_only"
+    assert "不编造赛程" in a["message"]

@@ -82,6 +82,9 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None, fd5
     end = now + timedelta(hours=hours)
     rows, errors, succeeded = [], [], 0
     notes = []
+    # 只读事实：每个赛程源「接口返回条数 / 过滤后入池条数」。
+    # 不改变任何采集、去重、筛选或推送行为；0 场时用于定位是哪个环节空了。
+    src_counts: dict[str, dict] = {}
 
     def add(mid, lid, home, away, kickoff):
         if not all((mid, lid, home, away, kickoff)):
@@ -108,10 +111,14 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None, fd5
             try:
                 games = fetch_fixtures.fetch_api(current.isoformat(), client=apif)
                 succeeded += 1
+                cur = src_counts.setdefault("api_football", {"raw": 0, "added": 0})
+                before = len(rows)
+                cur["raw"] += len(games)
                 for game in games:
                     if game.get('status') not in ('NS', 'TBD'):
                         continue
                     add(game['match_id'], game.get('league_key'), game.get('home'), game.get('away'), game.get('kickoff_utc'))
+                cur["added"] += len(rows) - before
             except Exception as exc:
                 errors.append('API-Football: ' + type(exc).__name__)
             current += timedelta(days=1)
@@ -120,11 +127,15 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None, fd5
         try:
             games = fd.matches(now.date().isoformat(), end.date().isoformat(), ','.join(fd_ids))
             succeeded += 1
+            cur = src_counts.setdefault("football_data", {"raw": 0, "added": 0})
+            before = len(rows)
+            cur["raw"] += len(games)
             for game in games:
                 if game.get('status') not in ('SCHEDULED', 'TIMED'):
                     continue
                 add('fd-' + str(game['id']), fd_ids.get((game.get('competition') or {}).get('code')),
                     (game.get('homeTeam') or {}).get('name'), (game.get('awayTeam') or {}).get('name'), game.get('utcDate'))
+            cur["added"] += len(rows) - before
         except Exception as exc:
             errors.append('football-data: ' + type(exc).__name__)
 
@@ -134,11 +145,15 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None, fd5
             try:
                 games = infs.events(current.isoformat())
                 succeeded += 1
+                cur = src_counts.setdefault("infersports", {"raw": 0, "added": 0})
+                before = len(rows)
+                cur["raw"] += len(games)
                 for game in games:
                     if game.get('status') not in ('scheduled', 'not_started'):
                         continue
                     add('infs-' + str(game.get('id') or ''), infer_ids.get(str((game.get('league') or {}).get('name', '')).casefold()),
                         (game.get('home_team') or {}).get('name'), (game.get('away_team') or {}).get('name'), game.get('scheduled_at'))
+                cur["added"] += len(rows) - before
             except Exception as exc:
                 errors.append('InferSports: ' + type(exc).__name__)
             current += timedelta(days=1)
@@ -148,10 +163,14 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None, fd5
             try:
                 games = papi.fixtures(oddspapi.TOURNAMENTS[lid], now, end)
                 succeeded += 1
+                cur = src_counts.setdefault("oddspapi_fixtures", {"raw": 0, "added": 0})
+                before = len(rows)
+                cur["raw"] += len(games)
                 for game in games:
                     if game.get('fixtureId'):
                         add('oddspapi-' + str(game['fixtureId']), lid, game.get('participant1Name'),
                             game.get('participant2Name'), game.get('startTime'))
+                cur["added"] += len(rows) - before
             except Exception as exc:
                 if 'HTTP 404' in str(exc):
                     # A 404 can mean no matching fixtures; the response body was not
@@ -179,6 +198,7 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None, fd5
     rest = [r for r in rows if r['match_id'] not in taken][:max(0, limit - len(reserved))]
     selected = sorted(reserved + rest, key=chronological)
     collect_fixtures.notes = notes
+    collect_fixtures.source_counts = src_counts
     return selected, errors, len(rows)
 
 
@@ -369,6 +389,7 @@ def build_report(report_date, now=None, max_fixtures=None, snapshot_dir=None):
             papi = None
     matches, fixture_errors, total = collect_fixtures(infs, fd, now, hours=_settings().get('report_window_hours', 36),
                                                        limit=max_fixtures, apif=apif, papi=papi, fd5=fd5)
+    fixture_source_counts = getattr(collect_fixtures, 'source_counts', {})
     errors.extend(fixture_errors)
     notes.extend(getattr(collect_fixtures, 'notes', []))
     fd5_leagues = dict(fivedollar.LEAGUE_IDS)
@@ -415,6 +436,7 @@ def build_report(report_date, now=None, max_fixtures=None, snapshot_dir=None):
               # 只加字段，不改文本、不改 picks、不改评分/核验/阈值。
               'window_fixtures': total, 'screening_cap': max_fixtures,
               'outside_screen': max(0, total - max_fixtures),
+              'fixture_source_counts': fixture_source_counts,
               'collection_errors': errors, 'collection_notes': notes}
     verification_failures = Counter()
     history, apif_done = None, set()

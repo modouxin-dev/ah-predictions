@@ -194,3 +194,21 @@ def test_structured_fields_partial_do_not_backderive(tmp_path):
     d.write_text(json.dumps(obj, ensure_ascii=False), encoding="utf-8")
     up = funnel.build(reports=reports)["days"][0]["upstream"]
     assert up["screening_cap"] == funnel.MISSING and up["outside_screen"] == funnel.MISSING
+
+
+def test_zero_fixture_window_is_diagnosed_not_silently_zero_picks(tmp_path):
+    reports = _report(tmp_path, "2026-11-09", picks=0)
+    d = tmp_path / "reports" / "2026" / "11" / "2026-11-09.json"
+    obj = json.loads(d.read_text(encoding="utf-8"))
+    obj.update({"window_fixtures": 0, "screening_cap": 48, "outside_screen": 0,
+                "fixture_source_counts": {"api_football": {"raw": 0, "added": 0},
+                                          "football_data": {"raw": 0, "added": 0},
+                                          "oddspapi_fixtures": {"raw": 0, "added": 0}}})
+    d.write_text(json.dumps(obj, ensure_ascii=False), encoding="utf-8")
+    o = funnel.build(reports=reports)
+    day = o["days"][0]
+    assert day["zero_pick_day"] is True and day["watchlist"] == 0
+    assert day["upstream"]["window_fixtures"] == 0
+    assert "窗口内 0 场赛程" in " ".join(o["summary"]["observations"])
+    assert "不是被门槛或模型筛掉" in " ".join(o["summary"]["observations"])
+    assert day["fixture_source_counts"]["football_data"] == {"raw": 0, "added": 0}
