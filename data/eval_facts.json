@@ -1,13 +1,13 @@
 {
  "schema": 1,
- "checked_at": "2026-11-08T23:20:15Z",
+ "checked_at": "2026-11-09T01:39:13Z",
  "evidence_grade": "【已验证】本地文件解析事实",
  "model_scope": {
   "boundary": "研究层（离线回测 / 线上规则 walk-forward）与每日实际发布不是同一套可互证结论；两边样本、输入与评估对象不同，任何一边的数字都不能迁移成另一边的准确率或 ROI 声明。",
   "research_facts": [
    "rule_lab.model_under_test：线上规则档位（analyze.py / policy.py / config/settings.yaml），未改动任何一行",
    "rule_lab.live_model_modified：False",
-   "rule_lab.joined_decided_rows：9",
+   "rule_lab.joined_decided_rows：17",
    "backtest.evaluation.status：INSUFFICIENT_SAMPLE",
    "backtest 门槛：{\"min_per_tier\": 80, \"min_total\": 300}",
    "rule_lab 样本状态：INSUFFICIENT_SAMPLE"
@@ -116,9 +116,23 @@
  },
  "alerts": [
   {
+   "code": "ZERO_PICK_DAY",
+   "severity": "warning",
+   "message": "存在 0 场推荐日：2026-11-09；漏斗照常出表可定位",
+   "evidence": "selection_funnel.json days[].zero_pick_day",
+   "action": "notify_only"
+  },
+  {
+   "code": "ZERO_FIXTURE_WINDOW",
+   "severity": "warning",
+   "message": "2026-11-09 的赛程窗口内 0 场：不是推荐被筛掉，而是赛程源没给比赛；扩大初筛上限无效，需检查赛程源状态与当天是否有配置联赛比赛。此条只告警，不自动补发、不编造赛程。",
+   "evidence": "reports window_fixtures / fixture_source_counts",
+   "action": "notify_only"
+  },
+  {
    "code": "PERSISTENT_DATA_GAP",
    "severity": "warning",
-   "message": "连续 3 天『近期状态数据不足』≥5 场（2026-11-06:9 / 2026-11-07:10 / 2026-11-08:10）；依据：各日报告 watchlist.withheld_category 计数【已验证】报告字段",
+   "message": "连续 3 天『近期状态数据不足』≥5 场（）；依据：各日报告 watchlist.withheld_category 计数【已验证】报告字段",
    "evidence": "selection_funnel.json summary.observations",
    "action": "notify_only"
   },
