@@ -45,7 +45,9 @@ jobs:
       - name: Persist dispatch log (only when a dispatch actually happened)
         if: ${{ inputs.verify != true }}
         run: |
-          if ! git diff --quiet -- data/punctual_dispatch_log.json; then
+          # 必须用 status --porcelain：日志首次生成是「未跟踪新文件」，
+          # git diff --quiet 对未跟踪文件返回 0，会误判成「无变化」而漏提交。
+          if [ -n "$(git status --porcelain -- data/punctual_dispatch_log.json)" ]; then
             scripts/safe_commit.sh --skip-tests \
               -m "OPS: punctual dispatch log (date+slot idempotency, facts only)" \
               data/punctual_dispatch_log.json \
