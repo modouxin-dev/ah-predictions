@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-09T03:00:29Z",
+  "checked_at": "2026-11-09T04:26:11Z",
   "evidence_grade": "【已验证】本地配置与环境变量布尔事实；连通项为【运行时代理自检】",
   "policy": "免注册优先、缺凭据不静默、不阻断、不推断、不改源开关",
   "registered": [
@@ -19,6 +19,7 @@
         "infer-probe.yml",
         "publish-recheck.yml",
         "settle.yml",
+        "source-coverage-probe.yml",
         "source-probe.yml",
         "telegram-preflight.yml"
       ],
@@ -39,6 +40,7 @@
         "daily.yml",
         "infer-probe.yml",
         "publish-recheck.yml",
+        "source-coverage-probe.yml",
         "source-probe.yml"
       ],
       "wired": true,
@@ -59,6 +61,7 @@
         "infer-probe.yml",
         "publish-recheck.yml",
         "settle.yml",
+        "source-coverage-probe.yml",
         "source-probe.yml"
       ],
       "wired": true,
@@ -78,6 +81,7 @@
         "daily.yml",
         "infer-probe.yml",
         "publish-recheck.yml",
+        "source-coverage-probe.yml",
         "source-probe.yml"
       ],
       "wired": true,
@@ -98,6 +102,7 @@
         "daily.yml",
         "infer-probe.yml",
         "publish-recheck.yml",
+        "source-coverage-probe.yml",
         "source-probe.yml"
       ],
       "wired": true,
@@ -112,6 +117,7 @@
       "infer-probe.yml",
       "publish-recheck.yml",
       "settle.yml",
+      "source-coverage-probe.yml",
       "source-probe.yml",
       "telegram-preflight.yml"
     ],
@@ -121,6 +127,7 @@
       "daily.yml",
       "infer-probe.yml",
       "publish-recheck.yml",
+      "source-coverage-probe.yml",
       "source-probe.yml"
     ],
     "FOOTBALL_DATA_KEY": [
@@ -130,6 +137,7 @@
       "infer-probe.yml",
       "publish-recheck.yml",
       "settle.yml",
+      "source-coverage-probe.yml",
       "source-probe.yml"
     ],
     "GITHUB_TOKEN": [
@@ -141,7 +149,8 @@
       "punctual-dispatch.yml",
       "review.yml",
       "rule-lab.yml",
-      "settle.yml"
+      "settle.yml",
+      "source-coverage-probe.yml"
     ],
     "INFERSPORTS_KEY": [
       "infer-probe.yml"
@@ -153,6 +162,7 @@
       "daily.yml",
       "infer-probe.yml",
       "publish-recheck.yml",
+      "source-coverage-probe.yml",
       "source-probe.yml"
     ],
     "ODDS_API_KEY": [
@@ -161,6 +171,7 @@
       "daily.yml",
       "infer-probe.yml",
       "publish-recheck.yml",
+      "source-coverage-probe.yml",
       "source-probe.yml"
     ],
     "TELEGRAM_BOT_TOKEN": [
@@ -280,40 +291,40 @@
     {
       "source": "uefa_fixtures",
       "url": "https://www.uefa.com/uefachampionsleague/",
-      "checked_at": "2026-11-09T03:00:27Z",
+      "checked_at": "2026-11-09T04:26:09Z",
       "http_status": 200,
       "bytes_read": 2048,
-      "elapsed_ms": 886,
+      "elapsed_ms": 631,
       "error_type": null,
       "note": "仅 HTTP 状态与首块字节数；不解析页面内容"
     },
     {
       "source": "jleague_acle",
       "url": "https://www.jleague.jp/en/acle/game/",
-      "checked_at": "2026-11-09T03:00:28Z",
+      "checked_at": "2026-11-09T04:26:10Z",
       "http_status": 200,
       "bytes_read": 2048,
-      "elapsed_ms": 302,
+      "elapsed_ms": 496,
       "error_type": null,
       "note": "仅 HTTP 状态与首块字节数；不解析页面内容"
     },
     {
       "source": "jleague",
       "url": "https://www.jleague.jp",
-      "checked_at": "2026-11-09T03:00:28Z",
+      "checked_at": "2026-11-09T04:26:10Z",
       "http_status": 200,
       "bytes_read": 2048,
-      "elapsed_ms": 380,
+      "elapsed_ms": 254,
       "error_type": null,
       "note": "仅 HTTP 状态与首块字节数；不解析页面内容"
     },
     {
       "source": "afc",
       "url": "https://www.the-afc.com/en/club/afc_champions_league_elite.html",
-      "checked_at": "2026-11-09T03:00:29Z",
+      "checked_at": "2026-11-09T04:26:10Z",
       "http_status": 200,
       "bytes_read": 2048,
-      "elapsed_ms": 171,
+      "elapsed_ms": 289,
       "error_type": null,
       "note": "仅 HTTP 状态与首块字节数；不解析页面内容"
     }

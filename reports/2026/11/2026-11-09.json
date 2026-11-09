@@ -1,6 +1,6 @@
 {
   "date": "2026-11-09",
-  "generated_at": "2026-11-09T03:00:52Z",
+  "generated_at": "2026-11-09T04:26:33Z",
   "edition": "automatic",
   "odds_format": "HK",
   "picks": [],
@@ -17,7 +17,11 @@
       "added": 0
     },
     "infersports": {
-      "raw": 122,
+      "raw": 127,
+      "added": 0
+    },
+    "titan007_fixtures": {
+      "raw": 157,
       "added": 0
     }
   },
