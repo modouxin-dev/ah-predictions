@@ -30,6 +30,19 @@ def _stamp(dt: datetime | None = None) -> str:
     return (dt or datetime.now(timezone.utc)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def _names_from(x, out: set) -> None:
+    """从 /v1/leagues 响应里递归收集 name/league_name 字符串；结构未知也不猜字段含义。"""
+    if isinstance(x, dict):
+        for k, v in x.items():
+            if k in ("name", "league_name") and isinstance(v, str):
+                out.add(v)
+            else:
+                _names_from(v, out)
+    elif isinstance(x, list):
+        for v in x:
+            _names_from(v, out)
+
+
 def probe(hours: int = 36, now: datetime | None = None, client=None) -> dict:
     now = now or datetime.now(timezone.utc)
     end = now + timedelta(hours=hours)
@@ -40,6 +53,23 @@ def probe(hours: int = 36, now: datetime | None = None, client=None) -> dict:
     # 与 daily.collect_fixtures 完全相同的映射构造，不另立口径
     infer_ids = {str(v).casefold(): k for k, v in codes.items() if k in by_id}
     c = client if client is not None else infersports.Client()
+
+    # 联赛目录对比：区分「映射名字过期」与「窗口内确实没有配置联赛的比赛」。
+    # 只收集 /v1/leagues 里的 name 字段，不改任何数据源开关或映射文件。
+    catalog: dict = {"source": "GET /v1/leagues", "fetch_ok": False}
+    try:
+        raw = c.get("leagues", {}, ttl=0)
+        names: set = set()
+        _names_from(raw, names)
+        expected = {str(v) for v in codes.values()}
+        catalog.update(fetch_ok=True, expected_count=len(expected),
+                       present=sorted(x for x in expected if any(n.casefold() == x.casefold() for n in names)),
+                       missing=sorted(x for x in expected if not any(n.casefold() == x.casefold() for n in names)),
+                       catalog_size=len(names),
+                       catalog_names=sorted(names)[:200])
+    except Exception as exc:
+        catalog.update(error=type(exc).__name__,
+                       note="目录未取得；不推断映射是否过期")
 
     stages: Counter = Counter()
     status_dist: Counter = Counter()
@@ -114,14 +144,16 @@ def probe(hours: int = 36, now: datetime | None = None, client=None) -> dict:
         "window": {"now": now.isoformat(), "end": end.isoformat(), "hours": hours},
         "mapping_size": len(infer_ids),
         "mapping": dict(sorted(infer_ids.items())),
+        "league_catalog": catalog,
         "per_date_rows": per_date,
         "status_distribution": dict(status_dist.most_common()),
         "league_name_distribution": dict(league_dist.most_common(30)),
         "stages": dict(stages),
         "first_passing_samples": samples,
         "errors": errors,
-        "note": ("只记录接口返回的字段分布与逐层淘汰计数，不生成任何赛程、盘口、水位、比分或倾向；"
-                 "不写报告/台账，不改评分、阈值、核验或推送。raw 含全部联赛，added 只计配置联赛且未开赛场次。"),
+        "note": ("只记录接口返回的字段分布、逐层淘汰计数与联赛目录对比，不生成任何赛程、盘口、水位、比分或倾向；"
+                 "不写报告/台账，不改评分、阈值、核验或推送，也不改 sources.yaml 映射。"
+                 "raw 含全部联赛，added 只计配置联赛且未开赛场次。"),
         "unverified": ["未配置联赛的比赛是否可用（本项目口径不纳入）", "盘口/近期状态是否充足（本探针不采集）"],
     }
 

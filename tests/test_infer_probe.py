@@ -6,8 +6,9 @@ from ah import infer_probe
 
 
 class FakeClient:
-    def __init__(self, rows): self.rows = rows
+    def __init__(self, rows, catalog=None): self.rows, self.catalog = rows, (catalog or {"data": []})
     def events(self, date): return self.rows
+    def get(self, path, params=None, ttl=None): return self.catalog
 
 
 def _game(mid, league, status="scheduled", ko="2026-11-09T12:00:00Z", home="A", away="B"):
@@ -41,6 +42,8 @@ def test_stage_counts_locate_the_drop():
     assert "scheduled" in o["status_distribution"]
     assert all("odds" not in k and "line" not in k for x in o["first_passing_samples"] for k in x)
     assert "不生成任何赛程" in o["note"]
+    assert o["league_catalog"]["fetch_ok"] is True
+    assert "Jap1" in o["league_catalog"]["missing"]  # 目录里没有配置名
 
 
 def test_cmd_writes_atomic_json(tmp_path):
