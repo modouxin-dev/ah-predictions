@@ -179,6 +179,46 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None, fd5
                     notes.append(f'OddsPapi 赛程 {lid}: 未取得赛程（HTTP 404）')
                     continue
                 errors.append(_collection_error(f'OddsPapi 赛程 {lid}', exc))
+    # roles.fixtures 声明的免注册备用赛程源（titan007）。此前只用于给「已发现」的比赛
+    # 补盘口（collect_titan），从未参与赛程发现；主源不可用时整条入口就断了。
+    # 现在作为兜底补进候选池：只取未开赛、联赛名能对上 leagues.yaml 的行，
+    # 经 add() 做时间窗/去重过滤，不生成任何盘口、水位、比分或倾向。
+    titan_ids = {str(x['cn']).casefold(): x['id'] for x in leagues if x.get('cn')}
+    titan_ids.update({str(x['name']).casefold(): x['id'] for x in leagues if x.get('name')})
+    # titan007 常见简称别名（只补已知写法，不猜测未知联赛）
+    for alias, lid in {'英格兰超级联赛': 'epl', '西班牙甲': 'laliga', '意大利甲': 'seriea',
+                       '德国甲': 'bundesliga', '法国甲': 'ligue1', '日本职业联赛': 'j1',
+                       '韩国职业': 'k1', '澳洲甲': 'aleague', '中国超级': 'csl',
+                       '亚冠精英': 'acl_elite', '亚冠联2': 'acl_two'}.items():
+        titan_ids.setdefault(alias.casefold(), lid)
+    try:
+        trows = fetch_fixtures.fetch()
+        date_bjt = (now + timedelta(hours=8)).strftime('%Y-%m-%d')
+        cur = src_counts.setdefault("titan007_fixtures", {"raw": 0, "added": 0})
+        before = len(rows)
+        cur["raw"] += len(trows)
+        for g in trows:
+            if str(g.get('state') or '') != '0':        # 0 = 未开赛
+                continue
+            lid = titan_ids.get(str(g.get('league') or '').strip().casefold())
+            if not lid:
+                continue
+            try:
+                ko = titan_kickoff_utc(str(g['kickoff_bjt']), date_bjt)
+            except (KeyError, TypeError, ValueError):
+                continue
+            add('titan007-' + str(g.get('match_id', '')).split('-', 1)[-1], lid,
+                g.get('home'), g.get('away'), ko.strftime('%Y-%m-%dT%H:%M:%SZ'))
+        cur["added"] += len(rows) - before
+        if trows:
+            # 备用源确实给了数据：主源全挂时它才算「可用入口」。
+            # 返回 0 行或失败时不计数，保留「所有源都空」的保护，不静默出 0 场报告。
+            succeeded += 1
+        else:
+            notes.append('titan007 赛程：当日返回 0 行（不推断原因）')
+    except Exception as exc:
+        # 备用源失败不阻断主流程，只记事实；不计入 succeeded
+        notes.append(f'titan007 赛程: {type(exc).__name__}（备用源不可用）')
     if not succeeded:
         raise RuntimeError('没有可用的赛程数据源')
     # Prefer fixtures for which an enabled provider can supply team form.
