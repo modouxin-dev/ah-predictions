@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "checked_at": "2026-11-09T01:39:13Z",
+ "checked_at": "2026-11-09T01:41:58Z",
  "source": "reports/*/*/*.json（只读；不含 rechecks）",
  "report_files": 6,
  "category_buckets": {
