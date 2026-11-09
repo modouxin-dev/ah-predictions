@@ -2,8 +2,10 @@
 
 ## 结论先说
 
-**不需要任何外部账号、不需要注册、不需要 API key，准点能力已经在仓库内。**
-`punctual-dispatch.yml` 每 5 分钟跑一次，按北京目标时刻用 REST API 触发 `daily.yml`。
+**触发链路已不需要任何外部账号、不需要注册、不需要 API key。**
+`punctual-dispatch.yml` 设计为每 5 分钟跑一次，按北京目标时刻用 REST API 触发 `daily.yml`。
+链路已实证（204 → 新建 daily run → 台账幂等不重复推送）；但 **GitHub 的 5 分钟 schedule
+截至 2026-11-09 11:0x 尚未自动产出运行**，见第五节「仍【未验证】」，这点不包装成已全自动。
 GitHub 自带那 4 条 `schedule` 保留作兜底，两边都受 `(date, chat_id, slot)` 台账幂等保护，
 **不会重复推送**。
 
@@ -121,6 +123,14 @@ Test run，看到 **204**，再去 GitHub Actions 核对 run_id 与台账。
 
 ## 五、仍【未验证】
 
+- **`punctual-dispatch.yml` 的 5 分钟 schedule 是否已被 GitHub 激活**：截至 2026-11-09
+  11:0x，该工作流只有 3 次 `workflow_dispatch` 手动运行，尚无 `schedule` 事件运行。
+  仓库内不推断原因（日志下载被网络策略拦截）。若 GitHub 侧一直不激活，准点只能靠
+  第三节的外部定时任务（不依赖 GitHub 调度）或人工在 Actions 页点 `Run workflow`。
+  这不影响「漏发可见」：`delivery-gaps` 只读告警与 GitHub 自带 4 条 schedule 兜底仍在。
+- `data/punctual_dispatch_log.json` 的真实落盘：首次生成是未跟踪新文件，
+  `git diff --quiet` 会误判为无变化（已在干净 git 仓库复现），已改用
+  `git status --porcelain` 并初始化为已跟踪文件；下一次真实 dispatch 时自然验证。
 - `punctual-dispatch.yml` 的 5 分钟 cron 在 GitHub 高峰时段的实际抖动
 - 真实准点班次（北京 11:00 / 16:00 / 22:00）跑完后的台账落地
 - cron-job.org 的实际准时率、Test run 结果、失败通知是否到达（需要账号）

@@ -1,0 +1,5 @@
+{
+ "schema": 1,
+ "dispatches": [],
+ "note": "punctual 自身发出的 dispatch 请求留痕（date+slot 精确幂等）。初始化为空，不是 Telegram 送达证据；送达只认 data/telegram_delivery.json 的 message_id。作为已跟踪文件存在，避免首次写入时未跟踪文件被漏提交。"
+}
