@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "checked_at_utc": "2026-11-09T02:59:40Z",
+ "checked_at_bj": "2026-11-09 10:59:40",
+ "window_minutes": 60,
+ "recent_run_minutes": 30,
+ "repository": "modouxin-dev/ah-predictions",
+ "actions": [],
+ "skips": [
+  {
+   "slot": "1",
+   "date": "2026-11-09",
+   "target_bj": "2026-11-09 06:00",
+   "minutes_from_target": 299.7,
+   "reason": "outside_window"
+  },
+  {
+   "slot": "2",
+   "date": "2026-11-09",
+   "target_bj": "2026-11-09 11:00",
+   "minutes_from_target": -0.3,
+   "reason": "before_target"
+  },
+  {
+   "slot": "3",
+   "date": "2026-11-09",
+   "target_bj": "2026-11-09 16:00",
+   "minutes_from_target": -300.3,
+   "reason": "before_target"
+  },
+  {
+   "slot": "4",
+   "date": "2026-11-09",
+   "target_bj": "2026-11-09 22:00",
+   "minutes_from_target": -660.3,
+   "reason": "before_target"
+  }
+ ],
+ "note": "只做 (date,slot) 幂等决策；只在目标时刻起 60 分钟内动作，窗口外的漏发不自动补（由 delivery-gaps 只读告警），避免延迟班次归错日期。不生成赛程/盘口/水位/比分/倾向，不写报告/台账，不改评分/阈值/核验/推送。204 不代表 Telegram 已送达。",
+ "unverified": [
+  "dispatch 是否创建了 run（需查 Actions API）",
+  "Telegram 接收端（本模块不发送任何消息）",
+  "窗口外的漏发（由 delivery-gaps 只读告警，不自动补）"
+ ],
+ "apply": false,
+ "verification": {
+  "dispatch_status": 204,
+  "dispatch_result": "204 No Content",
+  "new_run_id": "42553897395",
+  "checked_at_utc": "2026-11-09T02:59:40Z",
+  "new_run_event": "workflow_dispatch",
+  "note": "只验证『punctual -> REST API -> daily run 创建』链路；不声明 Telegram 已送达。slot 1 当天已送达时 publish 会幂等跳过，但 collect 仍会跑一次并消耗一次数据源额度。"
+ }
+}
