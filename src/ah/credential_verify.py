@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import tempfile
@@ -20,7 +21,7 @@ from collections import Counter
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from . import DATA, ROOT, fetch_fixtures, source_probe, source_status
+from . import DATA, ROOT, api_football, fetch_fixtures, source_probe
 
 MISSING = "未取得"
 
@@ -54,8 +55,16 @@ def _safe_status() -> dict:
 
 def verify(now: datetime | None = None, days: int = 2) -> dict:
     now = now or datetime.now(timezone.utc)
-    injected = bool(os.environ.get("API_FOOTBALL_KEY", "").strip())
+    raw_key = os.environ.get("API_FOOTBALL_KEY", "").strip()
+    injected = bool(raw_key)
+    # 不可逆指纹：只用于回答「runner 看到的 Secret 是不是我刚换的那条」，
+    # 不回显 key 本身；用户可在本地对自己的新 key 做同样运算比对。
+    fingerprint = hashlib.sha256(raw_key.encode()).hexdigest()[:12] if raw_key else MISSING
     kill_env = bool(os.environ.get("AH_API_FOOTBALL_DISABLED", "").strip())
+    try:
+        kill_reason = api_football.kill_switch_reason()
+    except Exception as exc:
+        kill_reason = f"未取得（{type(exc).__name__}）"
 
     # 1) 官方自检：/status（账号 active / 订阅 / 额度），失败也只记事实
     probe = source_probe.run()
@@ -86,8 +95,14 @@ def verify(now: datetime | None = None, days: int = 2) -> dict:
         "evidence_grade": "【运行时代理自检】runner 直连数据源的字段事实",
         "secret": {
             "api_football_key_injected": injected,
+            "api_football_key_fingerprint": fingerprint,
             "kill_env_set": kill_env,
-            "note": "只记录环境变量是否注入，绝不回显值；注入不代表 Secret 有效或账号可用",
+            "disabled_flag_present": api_football.DISABLED_FLAG.exists(),
+            "kill_switch_reason": kill_reason or MISSING,
+            "note": "只记录环境变量是否注入与其 sha256 前 12 位不可逆指纹，绝不回显值；"
+                    "指纹用于自行核对『runner 看到的是不是刚换的那条 key』："
+                    "在本地对同一条 key 做 echo -n KEY | sha256sum | cut -c1-12 比对即可。"
+                    "注入不代表 Secret 有效或账号可用",
         },
         "status_probe": {
             "status_checked": apif.get("status_checked"),

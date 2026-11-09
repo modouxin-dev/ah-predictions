@@ -35,6 +35,9 @@ def test_verify_never_echoes_secret_and_has_no_recovery_claim(monkeypatch, tmp_p
     blob = json.dumps(o, ensure_ascii=False)
     assert "SECRET_VALUE_MUST_NOT_APPEAR" not in blob
     assert o["secret"]["api_football_key_injected"] is True
+    assert o["secret"]["api_football_key_fingerprint"] != "SECRET_VALUE_MUST_NOT_APPEAR"
+    assert len(o["secret"]["api_football_key_fingerprint"]) == 12
+    assert "sha256" in o["secret"]["note"]
     assert o["secret"]["kill_env_set"] is False
     assert o["status_probe"]["account_active"] is True
     assert o["runtime_status_snapshot"]["suspended_error_present"] is False
