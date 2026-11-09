@@ -27,6 +27,7 @@ import argparse
 import json
 import os
 import sys
+import tempfile
 import urllib.error
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -42,7 +43,7 @@ TARGETS: dict[str, tuple[int, int]] = {
     "4": (22, 0),
 }
 WINDOW_MINUTES = 60          # 目标后 60 分钟内有效；+1h 不跨北京午夜
-RECENT_RUN_MINUTES = 30      # 最近已有 daily run 就不再触发
+DISPATCH_LOG = DATA / "punctual_dispatch_log.json"
 BJ = timedelta(hours=8)
 MISSING = "未取得"
 
@@ -79,27 +80,54 @@ def _parse_gh(ts: str) -> datetime | None:
         return None
 
 
-def recent_run_exists(runs: list[dict], now: datetime) -> str | None:
-    """最近 RECENT_RUN_MINUTES 分钟内是否已有 daily.yml 运行；不区分谁触发的。"""
-    cutoff = now.astimezone(timezone.utc) - timedelta(minutes=RECENT_RUN_MINUTES)
-    for r in runs:
-        if r.get("event") not in ("schedule", "workflow_dispatch"):
-            continue
-        dt = _parse_gh(r.get("created_at") or "")
-        if dt and dt >= cutoff:
-            return str(r.get("id") or MISSING)
+def load_dispatch_log(path: Path | None = None) -> list[dict]:
+    p = path or DISPATCH_LOG
+    try:
+        o = json.loads(p.read_text(encoding="utf-8"))
+        return o.get("dispatches", []) if isinstance(o, dict) else []
+    except (OSError, ValueError):
+        return []
+
+
+def already_dispatched(log: list[dict], date: str, slot: str) -> str | None:
+    """按 (date,slot) 精确幂等：不挡别的时段，也不被别的时段挡。"""
+    for r in log:
+        if r.get("date") == date and str(r.get("slot")) == str(slot) and r.get("status") == 204:
+            return str(r.get("at_utc") or MISSING)
     return None
 
 
+def append_dispatch(log: list[dict], date: str, slot: str, status: int,
+                    now: datetime, path: Path | None = None) -> list[dict]:
+    log = list(log) + [{"date": date, "slot": str(slot), "status": status,
+                        "at_utc": _ts(now), "evidence": "POST /dispatches 204 (run 创建请求被接受)"}]
+    p = path or DISPATCH_LOG
+    p.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(prefix=".pd-", dir=str(p.parent))
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump({"schema": 1, "dispatches": log[-200:],
+                       "note": "只记录 punctual 自己发出的 dispatch 请求；不是 Telegram 送达证据，"
+                               "送达只认 data/telegram_delivery.json 的 message_id"},
+                      f, ensure_ascii=False, indent=1)
+            f.write("\n")
+        os.replace(tmp, p)
+    finally:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+    return log
+
+
 def decide(now: datetime | None = None, ledger: dict | None = None,
-           runs: list[dict] | None = None, ledger_path: Path | None = None) -> dict:
+           runs: list[dict] | None = None, ledger_path: Path | None = None,
+           dispatch_log: list[dict] | None = None) -> dict:
     """纯决策：不联网、不发请求、不写文件。返回可回溯的事实对象。"""
     now = now or datetime.now(timezone.utc)
     bj = bj_now(now)
     date = bj.strftime("%Y-%m-%d")
     ledger = ledger if ledger is not None else _load_ledger(ledger_path or (DATA / "telegram_delivery.json"))
     runs = runs or []
-    recent = recent_run_exists(runs, now)
+    dispatch_log = dispatch_log if dispatch_log is not None else load_dispatch_log()
 
     actions: list[dict] = []
     skips: list[dict] = []
@@ -120,9 +148,10 @@ def decide(now: datetime | None = None, ledger: dict | None = None,
             item["reason"] = "already_delivered"
             skips.append(item)
             continue
-        if recent:
-            item["reason"] = "recent_daily_run_exists"
-            item["recent_run_id"] = recent
+        done = already_dispatched(dispatch_log, date, slot)
+        if done:
+            item["reason"] = "already_dispatched"
+            item["dispatched_at_utc"] = done
             skips.append(item)
             continue
         item["reason"] = "dispatch"
@@ -134,7 +163,7 @@ def decide(now: datetime | None = None, ledger: dict | None = None,
         "checked_at_utc": _ts(now),
         "checked_at_bj": bj.strftime("%Y-%m-%d %H:%M:%S"),
         "window_minutes": WINDOW_MINUTES,
-        "recent_run_minutes": RECENT_RUN_MINUTES,
+        "idempotency": "台账 (date,slot,sent) + punctual dispatch_log (date,slot,204) + workflow 并发组",
         "repository": os.environ.get("GITHUB_REPOSITORY", MISSING),
         "actions": actions,
         "skips": skips,
@@ -229,11 +258,15 @@ def main(argv: list[str] | None = None) -> None:
         obj["verification"] = verify_link(token) if token else {"error": "token 未取得"}
     elif a.apply:
         results = []
+        log = load_dispatch_log()
         for act in obj["actions"]:
             s, o = dispatch(token, act["slot"]) if token else (0, {"error": "token 未取得"})
             results.append({"slot": act["slot"], "date": act["date"], "status": s,
                             "result": "204 No Content" if s == 204 else o})
+            if s == 204:
+                log = append_dispatch(log, act["date"], act["slot"], s, datetime.now(timezone.utc))
         obj["dispatch_results"] = results
+        obj["dispatch_log_written"] = bool(obj["actions"])
         print(f"[punctual] dispatch {len(results)} 次；204 只代表 run 创建请求被接受，"
               "送达证据只认台账 message_id", file=sys.stderr)
 

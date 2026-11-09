@@ -48,24 +48,37 @@ def test_ledger_record_blocks_second_dispatch(tmp_path):
     assert any(s["reason"] == "already_delivered" and s["slot"] == "2" for s in o["skips"])
 
 
-def test_recent_daily_run_blocks_dispatch(tmp_path):
+def test_dispatch_log_blocks_same_slot(tmp_path):
     led = tmp_path / "l.json"
     led.write_text(json.dumps({"deliveries": []}), encoding="utf-8")
-    now = _bj(2026, 11, 9, 11, 10)
-    runs = [_run(999, (now - timedelta(minutes=3)).strftime("%Y-%m-%dT%H:%M:%SZ"))]
-    o = punctual.decide(now=now, ledger_path=led, runs=runs)
+    log = [{"date": "2026-11-09", "slot": "2", "status": 204, "at_utc": "2026-11-09T03:00:00Z"}]
+    o = punctual.decide(now=_bj(2026, 11, 9, 11, 10), ledger_path=led, dispatch_log=log)
     assert o["actions"] == []
     s = next(x for x in o["skips"] if x["slot"] == "2")
-    assert s["reason"] == "recent_daily_run_exists" and s["recent_run_id"] == "999"
+    assert s["reason"] == "already_dispatched"
 
 
-def test_old_run_does_not_block(tmp_path):
+def test_other_slots_and_other_runs_do_not_block(tmp_path):
+    """关键：链路自检发的 slot=1 不能把 11:00 的 slot=2 挡掉。"""
     led = tmp_path / "l.json"
     led.write_text(json.dumps({"deliveries": []}), encoding="utf-8")
-    now = _bj(2026, 11, 9, 11, 10)
-    runs = [_run(888, (now - timedelta(minutes=45)).strftime("%Y-%m-%dT%H:%M:%SZ"))]
-    o = punctual.decide(now=now, ledger_path=led, runs=runs)
+    now = _bj(2026, 11, 9, 11, 5)
+    runs = [_run(999, (now - timedelta(minutes=2)).strftime("%Y-%m-%dT%H:%M:%SZ"))]
+    log = [{"date": "2026-11-09", "slot": "1", "status": 204, "at_utc": "2026-11-08T22:00:00Z"},
+           {"date": "2026-11-08", "slot": "2", "status": 204, "at_utc": "2026-11-08T03:00:00Z"}]
+    o = punctual.decide(now=now, ledger_path=led, runs=runs, dispatch_log=log)
     assert [a["slot"] for a in o["actions"]] == ["2"]
+
+
+def test_append_dispatch_is_atomic_and_never_echoes_token(tmp_path):
+    p = tmp_path / "log.json"
+    log = punctual.append_dispatch([], "2026-11-09", "2", 204,
+                                   _bj(2026, 11, 9, 11, 5), path=p)
+    assert len(log) == 1 and log[0]["status"] == 204
+    blob = p.read_text(encoding="utf-8")
+    assert "Bearer" not in blob and "github_pat" not in blob
+    assert not list(tmp_path.glob(".pd-*"))
+    assert punctual.already_dispatched(punctual.load_dispatch_log(p), "2026-11-09", "2")
 
 
 def test_late_night_does_not_roll_slot4_to_wrong_date(tmp_path):

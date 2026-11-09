@@ -42,6 +42,17 @@ jobs:
           else
             python -m ah punctual --apply | tee punctual_facts.json
           fi
+      - name: Persist dispatch log (only when a dispatch actually happened)
+        if: ${{ inputs.verify != true }}
+        run: |
+          if ! git diff --quiet -- data/punctual_dispatch_log.json; then
+            scripts/safe_commit.sh --skip-tests \
+              -m "OPS: punctual dispatch log (date+slot idempotency, facts only)" \
+              data/punctual_dispatch_log.json \
+              || echo "::warning::dispatch log 提交失败；台账幂等仍可防重复推送"
+          else
+            echo "[punctual] 本次无 dispatch，不写仓库"
+          fi
       - name: Upload decision facts as artifact
         if: always()
         uses: actions/upload-artifact@v4
