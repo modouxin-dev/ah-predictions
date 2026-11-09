@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-08T23:03:10Z",
-  "run_id": "42533147761",
-  "job_conclusion": "success",
+  "checked_at": "2026-11-09T19:20:11Z",
+  "run_id": "42682208732",
+  "job_conclusion": "failure",
   "event": "schedule",
   "source": "data/predictions.csv",
   "total_rows": 24,

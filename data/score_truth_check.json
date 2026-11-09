@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-08T23:03:10Z",
+  "checked_at": "2026-11-09T19:20:10Z",
   "date_filter": "未取得",
   "evidence_grade": "【已验证】本地解析与声明事实",
   "ledger_rows": 24,
@@ -26,9 +26,9 @@
       "as_of": "2026-11-08",
       "coverage_status": "仅落地页 SEO 区块列出最近有战报/集锦的亚冠比赛；未列出记暂无",
       "parser": "afc_scores",
-      "status": "PARSED",
-      "claims": 3,
-      "error_type": "未取得"
+      "status": "NO_EXPLICIT_SCORE_FOUND",
+      "claims": 0,
+      "error_type": "StructureChanged"
     },
     {
       "source_id": "jleague_acle",
@@ -41,7 +41,7 @@
       "error_type": "未取得"
     }
   ],
-  "claims_total": 4,
+  "claims_total": 1,
   "verdict_counts": {
     "AGREE": 0,
     "DISAGREE": 0,
@@ -55,12 +55,8 @@
       "home": "武里南联 Buriram United",
       "away": "鹿岛鹿角 Kashima Antlers",
       "primary_result": "未取得",
-      "third_claims": [
-        "0-0@afc_official_scores"
-      ],
-      "independent_sources": [
-        "afc_official_scores"
-      ],
+      "third_claims": [],
+      "independent_sources": [],
       "verdict": "PRIMARY_MISSING",
       "note": "主源无比分；不推断、不补造"
     },
