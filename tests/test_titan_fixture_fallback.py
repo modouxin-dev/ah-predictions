@@ -9,6 +9,14 @@ class _Off:
     enabled = False
 
 
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def _titan_on(monkeypatch):
+    monkeypatch.setenv("AH_TITAN_FIXTURES", "1")
+
+
 def _row(mid, league, home, away, hhmm="20:00", state="0"):
     return {"match_id": f"titan007-{mid}", "league": league, "home": home,
             "away": away, "kickoff_bjt": hhmm, "state": state}
@@ -65,3 +73,17 @@ def test_titan_failure_is_recorded_as_fact_only(monkeypatch):
         _Off(), _On(), now, hours=36, limit=32, apif=_Off(), papi=_Off(), fd5=_Off())
     assert rows == [] and total == 0 and errors == []
     assert any("titan007 赛程: ConnectionError" in n for n in daily.collect_fixtures.notes)
+
+
+def test_titan_defaults_off_so_existing_tests_never_hit_network(monkeypatch):
+    monkeypatch.delenv("AH_TITAN_FIXTURES", raising=False)
+    now = datetime(2026, 11, 8, 1, 0, tzinfo=timezone.utc)
+    with patch.object(daily.fetch_fixtures, "fetch", side_effect=AssertionError("不应联网")):
+        daily.collect_fixtures(_Off(), _On(), now, hours=36, limit=32,
+                               apif=_Off(), papi=_Off(), fd5=_Off())
+    assert any("未启用" in n for n in daily.collect_fixtures.notes)
+
+
+class _On:
+    enabled = True
+    def matches(self, a, b, c): return []

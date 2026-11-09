@@ -29,6 +29,7 @@ jobs:
     timeout-minutes: 90
     env:
       PYTHONPATH: src
+      AH_TITAN_FIXTURES: "1"   # roles.fixtures 声明的免注册赛程兜底，显式启用
       API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
       ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
       ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}

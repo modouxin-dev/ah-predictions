@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import re
 import sys
 from collections import Counter
@@ -191,7 +192,14 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None, fd5
                        '韩国职业': 'k1', '澳洲甲': 'aleague', '中国超级': 'csl',
                        '亚冠精英': 'acl_elite', '亚冠联2': 'acl_two'}.items():
         titan_ids.setdefault(alias.casefold(), lid)
+    # 显式开关：默认关闭，避免离线/单测环境意外联网改变既有断言；
+    # daily.yml 的采集 job 设 AH_TITAN_FIXTURES=1 才真正启用这个免注册兜底。
+    titan_on = os.environ.get('AH_TITAN_FIXTURES', '').strip().lower() in ('1', 'true', 'yes', 'on')
+    if not titan_on:
+        notes.append('titan007 赛程兜底：未启用（编排层未设 AH_TITAN_FIXTURES）')
     try:
+        if not titan_on:
+            raise RuntimeError('disabled')
         trows = fetch_fixtures.fetch()
         date_bjt = (now + timedelta(hours=8)).strftime('%Y-%m-%d')
         cur = src_counts.setdefault("titan007_fixtures", {"raw": 0, "added": 0})
@@ -216,6 +224,9 @@ def collect_fixtures(infs, fd, now, hours=36, limit=8, apif=None, papi=None, fd5
             succeeded += 1
         else:
             notes.append('titan007 赛程：当日返回 0 行（不推断原因）')
+    except RuntimeError as exc:
+        if str(exc) != 'disabled':
+            notes.append('titan007 赛程: RuntimeError（备用源不可用）')
     except Exception as exc:
         # 备用源失败不阻断主流程，只记事实；不计入 succeeded
         notes.append(f'titan007 赛程: {type(exc).__name__}（备用源不可用）')
