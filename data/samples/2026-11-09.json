@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "kind": "pre-kickoff candidate pool",
+  "date": "2026-11-09",
+  "source_report": "reports/2026/11/2026-11-09.json",
+  "captured_at": "2026-11-09T01:29:41Z",
+  "generated_at": "2026-11-09T01:29:41Z",
+  "counts": {
+    "total": 0,
+    "recommended": 0,
+    "observed": 0,
+    "not_recommended": 0
+  },
+  "rows": [],
+  "note": "开球前候选快照：所有字段逐字取自当日报告 JSON，未生成任何预测结论、盘口或赛果；缺字段标『未取得』；result 固定为『未取得』、settled=false，赛果由 settle 任务回填；sample_role 仅标记该场在报告里的归属，不代表模型判断。"
+}

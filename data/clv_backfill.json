@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-08T14:54:01Z",
+  "checked_at": "2026-11-09T01:29:41Z",
   "evidence_grade": "【已验证】本地文件解析事实",
-  "ledger": "/data/workspace/ah_full/data/predictions.csv",
+  "ledger": "/home/runner/work/ah-predictions/ah-predictions/data/predictions.csv",
   "rows": 24,
   "columns": [
     "date",
@@ -58,16 +58,16 @@
     "truth_source"
   ],
   "pick_facts_matches": 22,
-  "snapshot_close_matches": 9,
+  "snapshot_close_matches": 17,
   "counters": {
     "line_open_filled": 0,
     "price_ts_filled": 0,
     "close_from_final": 2,
-    "close_from_snapshot": 6,
-    "line_move_computed": 8,
+    "close_from_snapshot": 12,
+    "line_move_computed": 14,
     "open_to_report_move_computed": 0,
-    "clv_price_computed": 0,
-    "no_close_available": 16
+    "clv_price_computed": 1,
+    "no_close_available": 10
   },
   "applied": true,
   "note": "口径与列名直接复用 src/ah/audit/experiment_track.py 的 line_move() / clv() / close_* 字段：line_move=所选方向收盘线差（正=拿到更好的线）；clv=o_bet×p_fair(收盘去水)-1（仅收盘盘口=下注盘口时），需收盘两侧水位去水，缺数据写『未取得』，不另立口径、不用线差冒充 CLV；open_to_report_move 只是开盘→报告位移；缺字段一律写『未取得』，不补造盘口/水位/比分/赛程，不改评分或核验口径。",

@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-09",
+  "generated_at": "2026-11-09T01:29:41Z",
+  "edition": "automatic",
+  "odds_format": "HK",
+  "picks": [],
+  "watched": [],
+  "watchlist": [],
+  "odds_source_note": "赛程、盘口与近期状态自动采集；推荐只用真实盘口，核验未完全通过的场次强制低信心并显式标注。",
+  "not_covered": "筛查上限 48 场；窗口内共发现 0 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）；OddsPapi 赛程 csl: 未取得赛程（HTTP 404）。",
+  "window_fixtures": 0,
+  "screening_cap": 48,
+  "outside_screen": 0,
+  "collection_errors": [],
+  "collection_notes": [
+    "API-Football 未启用",
+    "OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）",
+    "OddsPapi 赛程 csl: 未取得赛程（HTTP 404）"
+  ],
+  "feature_evidence": {
+    "schema": 1,
+    "mode": "observation",
+    "note": "逐场因子证据；observation 模式不参与 score；无证据不得进评分",
+    "by_match": {}
+  }
+}

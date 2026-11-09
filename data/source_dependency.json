@@ -1,0 +1,319 @@
+{
+  "schema": 1,
+  "checked_at": "2026-11-09T01:29:19Z",
+  "evidence_grade": "【已验证】本地配置与环境变量布尔事实；连通项为【运行时代理自检】",
+  "policy": "免注册优先、缺凭据不静默、不阻断、不推断、不改源开关",
+  "registered": [
+    {
+      "source": "api_football",
+      "auth_class": "registered",
+      "credential_env": "API_FOOTBALL_KEY",
+      "credential_present": true,
+      "credential_value": "REDACTED",
+      "base_url": "https://v3.football.api-sports.io",
+      "enabled": true,
+      "declared_in_workflows": [
+        "collection-check.yml",
+        "daily.yml",
+        "publish-recheck.yml",
+        "settle.yml",
+        "source-probe.yml",
+        "telegram-preflight.yml"
+      ],
+      "wired": true,
+      "note": "仅记录凭据是否注入当前进程、编排层是否声明；不代表 Secret 已配置、密钥有效、订阅激活或数据充足"
+    },
+    {
+      "source": "the_odds_api",
+      "auth_class": "registered",
+      "credential_env": "ODDS_API_KEY",
+      "credential_present": true,
+      "credential_value": "REDACTED",
+      "base_url": "https://api.the-odds-api.com/v4",
+      "enabled": "未取得",
+      "declared_in_workflows": [
+        "collection-check.yml",
+        "daily.yml",
+        "publish-recheck.yml",
+        "source-probe.yml"
+      ],
+      "wired": true,
+      "note": "仅记录凭据是否注入当前进程、编排层是否声明；不代表 Secret 已配置、密钥有效、订阅激活或数据充足"
+    },
+    {
+      "source": "football_data",
+      "auth_class": "registered",
+      "credential_env": "FOOTBALL_DATA_KEY",
+      "credential_present": true,
+      "credential_value": "REDACTED",
+      "base_url": "https://api.football-data.org/v4",
+      "enabled": "未取得",
+      "declared_in_workflows": [
+        "collection-check.yml",
+        "daily.yml",
+        "publish-recheck.yml",
+        "settle.yml",
+        "source-probe.yml"
+      ],
+      "wired": true,
+      "note": "仅记录凭据是否注入当前进程、编排层是否声明；不代表 Secret 已配置、密钥有效、订阅激活或数据充足"
+    },
+    {
+      "source": "fivedollar",
+      "auth_class": "registered",
+      "credential_env": "FIVEDOLLAR_KEY",
+      "credential_present": true,
+      "credential_value": "REDACTED",
+      "base_url": "https://api.5dollarfootballapi.com/v1",
+      "enabled": "未取得",
+      "declared_in_workflows": [
+        "collection-check.yml",
+        "daily.yml",
+        "publish-recheck.yml",
+        "source-probe.yml"
+      ],
+      "wired": true,
+      "note": "仅记录凭据是否注入当前进程、编排层是否声明；不代表 Secret 已配置、密钥有效、订阅激活或数据充足"
+    },
+    {
+      "source": "oddspapi",
+      "auth_class": "registered",
+      "credential_env": "ODDSPAPI_KEY",
+      "credential_present": true,
+      "credential_value": "REDACTED",
+      "base_url": "https://api.oddspapi.io/v4",
+      "enabled": "未取得",
+      "declared_in_workflows": [
+        "close-snapshots.yml",
+        "collection-check.yml",
+        "daily.yml",
+        "publish-recheck.yml",
+        "source-probe.yml"
+      ],
+      "wired": true,
+      "note": "仅记录凭据是否注入当前进程、编排层是否声明；不代表 Secret 已配置、密钥有效、订阅激活或数据充足"
+    }
+  ],
+  "workflow_declared_secrets": {
+    "API_FOOTBALL_KEY": [
+      "collection-check.yml",
+      "daily.yml",
+      "publish-recheck.yml",
+      "settle.yml",
+      "source-probe.yml",
+      "telegram-preflight.yml"
+    ],
+    "FIVEDOLLAR_KEY": [
+      "collection-check.yml",
+      "daily.yml",
+      "publish-recheck.yml",
+      "source-probe.yml"
+    ],
+    "FOOTBALL_DATA_KEY": [
+      "collection-check.yml",
+      "daily.yml",
+      "publish-recheck.yml",
+      "settle.yml",
+      "source-probe.yml"
+    ],
+    "GITHUB_TOKEN": [
+      "close-snapshots.yml",
+      "daily.yml",
+      "publish-recheck.yml",
+      "review.yml",
+      "rule-lab.yml",
+      "settle.yml"
+    ],
+    "ODDSPAPI_KEY": [
+      "close-snapshots.yml",
+      "collection-check.yml",
+      "daily.yml",
+      "publish-recheck.yml",
+      "source-probe.yml"
+    ],
+    "ODDS_API_KEY": [
+      "collection-check.yml",
+      "daily.yml",
+      "publish-recheck.yml",
+      "source-probe.yml"
+    ],
+    "TELEGRAM_BOT_TOKEN": [
+      "daily.yml",
+      "publish-recheck.yml",
+      "telegram-group-check.yml",
+      "telegram-preflight.yml"
+    ],
+    "TELEGRAM_CHAT_ID": [
+      "daily.yml",
+      "publish-recheck.yml",
+      "telegram-preflight.yml"
+    ]
+  },
+  "keyless": [
+    {
+      "source": "infersports",
+      "auth_class": "keyless",
+      "url": "https://api.infersports.dev/v1",
+      "use": "未取得",
+      "status": "未取得",
+      "requires_registration": false,
+      "note": "免注册档不等于已接进采集主链路；只陈述配置事实"
+    },
+    {
+      "source": "titan007_live_fixtures",
+      "auth_class": "keyless",
+      "url": "https://live.titan007.com/vbsxml/bfdata_ut.js?r=007XXXX",
+      "use": "当日赛程/比分/排名（北京时间）",
+      "status": "未取得",
+      "requires_registration": false,
+      "note": "免注册档不等于已接进采集主链路；只陈述配置事实"
+    },
+    {
+      "source": "titan007_odds",
+      "auth_class": "keyless",
+      "url": "https://live.titan007.com/vbsxml/goal3.xml?r=007XXXX",
+      "use": "亚盘(初/即)、欧赔、大小球（默认公司，HK水位）",
+      "status": "未取得",
+      "requires_registration": false,
+      "note": "免注册档不等于已接进采集主链路；只陈述配置事实"
+    },
+    {
+      "source": "titan007_1x2_history",
+      "auth_class": "keyless",
+      "url": "https://1x2d.titan007.com/<match_id>.js",
+      "use": "多家公司欧赔及变化（约380KB/场，未解析）",
+      "status": "未取得",
+      "requires_registration": false,
+      "note": "免注册档不等于已接进采集主链路；只陈述配置事实"
+    },
+    {
+      "source": "uefa_fixtures",
+      "auth_class": "keyless",
+      "url": "https://www.uefa.com/uefachampionsleague/",
+      "use": "欧冠赛程",
+      "status": "未取得",
+      "requires_registration": false,
+      "note": "免注册档不等于已接进采集主链路；只陈述配置事实"
+    },
+    {
+      "source": "jleague_acle",
+      "auth_class": "keyless",
+      "url": "https://www.jleague.jp/en/acle/game/",
+      "use": "亚冠赛程/比分",
+      "status": "未取得",
+      "requires_registration": false,
+      "note": "免注册档不等于已接进采集主链路；只陈述配置事实"
+    },
+    {
+      "source": "oddsportal",
+      "auth_class": "keyless",
+      "url": "https://www.oddsportal.com/",
+      "use": "未取得",
+      "status": "partial",
+      "requires_registration": false,
+      "note": "免注册档不等于已接进采集主链路；只陈述配置事实"
+    },
+    {
+      "source": "okooo",
+      "auth_class": "keyless",
+      "url": "https://www.okooo.com/",
+      "use": "未取得",
+      "status": "partial",
+      "requires_registration": false,
+      "note": "免注册档不等于已接进采集主链路；只陈述配置事实"
+    },
+    {
+      "source": "jleague",
+      "auth_class": "keyless",
+      "url": "https://www.jleague.jp",
+      "use": "比赛页服务端渲染的 Next.js RSC 数据（页面内嵌 JSON，self.__next_f），英文页 /en/match/<comp>/<year>/<id>/",
+      "status": "enabled",
+      "requires_registration": false,
+      "note": "免注册档不等于已接进采集主链路；只陈述配置事实"
+    },
+    {
+      "source": "afc",
+      "auth_class": "keyless",
+      "url": "https://www.the-afc.com",
+      "use": "未取得",
+      "status": "enabled",
+      "requires_registration": false,
+      "note": "免注册档不等于已接进采集主链路；只陈述配置事实"
+    },
+    {
+      "source": "websearch_previews",
+      "auth_class": "keyless",
+      "url": "未取得",
+      "use": "伤停/阵容/状态 —— Sports Mole、AFC官网、J.League、Football Italia、BBC、ESPN、WhoScored 预览均可通过 WebSearch 获取",
+      "status": "未取得",
+      "requires_registration": false,
+      "note": "免注册档不等于已接进采集主链路；只陈述配置事实"
+    }
+  ],
+  "keyless_probes": [
+    {
+      "source": "uefa_fixtures",
+      "url": "https://www.uefa.com/uefachampionsleague/",
+      "checked_at": "2026-11-09T01:29:17Z",
+      "http_status": 200,
+      "bytes_read": 2048,
+      "elapsed_ms": 581,
+      "error_type": null,
+      "note": "仅 HTTP 状态与首块字节数；不解析页面内容"
+    },
+    {
+      "source": "jleague_acle",
+      "url": "https://www.jleague.jp/en/acle/game/",
+      "checked_at": "2026-11-09T01:29:17Z",
+      "http_status": 200,
+      "bytes_read": 2048,
+      "elapsed_ms": 719,
+      "error_type": null,
+      "note": "仅 HTTP 状态与首块字节数；不解析页面内容"
+    },
+    {
+      "source": "jleague",
+      "url": "https://www.jleague.jp",
+      "checked_at": "2026-11-09T01:29:18Z",
+      "http_status": 200,
+      "bytes_read": 2048,
+      "elapsed_ms": 236,
+      "error_type": null,
+      "note": "仅 HTTP 状态与首块字节数；不解析页面内容"
+    },
+    {
+      "source": "afc",
+      "url": "https://www.the-afc.com/en/club/afc_champions_league_elite.html",
+      "checked_at": "2026-11-09T01:29:18Z",
+      "http_status": 200,
+      "bytes_read": 2048,
+      "elapsed_ms": 462,
+      "error_type": null,
+      "note": "仅 HTTP 状态与首块字节数；不解析页面内容"
+    }
+  ],
+  "summary": {
+    "registered_total": 5,
+    "registered_configured": 5,
+    "registered_missing": 0,
+    "registered_wired": 5,
+    "keyless_total": 11,
+    "keyless_probe_checked": 4,
+    "keyless_probe_reachable": 4
+  },
+  "alerts": [
+    {
+      "code": "NO_ALERT",
+      "severity": "info",
+      "message": "凭据分级与公开源探测均已记录，无异常",
+      "evidence": {}
+    }
+  ],
+  "unverified": [
+    "密钥是否有效、订阅是否激活（只记录凭据是否存在）",
+    "免注册源是否返回足够赛程/盘口覆盖（连通 ≠ 数据充足）",
+    "报告采集实际使用了哪个源（本审计不读运行日志、不推断）",
+    "Telegram 接收端（本命令不发送任何消息）"
+  ],
+  "note": "只做凭据依赖分级与合规公开源连通事实：不回显密钥值、不解析任何赛程/盘口/水位/比分、不写报告、不新增需注册数据源、不改任何 provider 或核验口径；缺字段写『未取得』，连通失败只记异常类型，不推断原因；缺 key 只告警不阻断。编排层声明了 secrets.NAME 只代表接线，不代表 Secret 已配置、密钥有效、订阅激活或数据充足；当前进程未注入也不代表线上未配置。"
+}

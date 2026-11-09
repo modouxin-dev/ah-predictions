@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-08T23:20:15Z",
+  "checked_at": "2026-11-09T01:29:41Z",
   "evidence_grade": "【已验证】本地文件解析事实",
-  "report_date": "2026-11-08",
-  "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-08.json",
+  "report_date": "2026-11-09",
+  "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-09.json",
   "report_exists": true,
   "report_parsed": true,
   "note": "只读盘点：不写回 predictions.csv / 报告 / 台账，不改任何模型或核验口径；所有数字来自文件解析，缺字段写『未取得』，不推断原因、不补造任何赛程盘口水位比分；样本精度只说明区间宽度，不构成命中率或优势结论（是否达门槛由 review.py 判定）。",
@@ -15,15 +15,6 @@
   ],
   "alerts": [
     {
-      "code": "CANDIDATE_TRUNCATION",
-      "severity": "info",
-      "message": "窗口内 19 场未进候选池（配置事实，不推断漏采）",
-      "evidence": {
-        "max": 32,
-        "total": 51
-      }
-    },
-    {
       "code": "CLV_CLOSE_FIELDS_SPARSE",
       "severity": "info",
       "message": "收盘线字段 final_line 有值 2 行，已结算 23 行；只记录覆盖缺口，不推断结算质量",
@@ -31,46 +22,18 @@
         "final_line_filled": 2,
         "decided": 23
       }
-    },
-    {
-      "code": "VERIFICATION_FACTS_RECORDED",
-      "severity": "info",
-      "message": "报告已写明盘口核验各项场数，事实已抄录；不解释成因、不推断覆盖",
-      "evidence": {
-        "no_quotes": 1,
-        "no_shared_book": 3,
-        "sources:1<2": 2,
-        "stale>7200s": 20,
-        "verified:0<1": 6
-      }
-    },
-    {
-      "code": "SINGLE_SOURCE_IN_REPORT",
-      "severity": "info",
-      "message": "当日 picks 全部来自单一 source；只记录事实，不代表数据不足",
-      "evidence": {
-        "by_source": {
-          "oddspapi": 7
-        }
-      }
     }
   ],
   "candidate_coverage": {
-    "raw": "筛查上限 32 场；窗口内共发现 51 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）；盘口采集：oddspapi:no_fixture_match 4场；近期状态不足：Macarthur FC vs Brisbane Roar（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Vanraure Hachnohe vs Hokkaido Consadole Sapporo（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Vissel Kobe vs Urawa Red Diamond（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Daejeon Hana Citizen vs Incheon utd（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：FC Seoul vs Ulsan HD（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Machida.Z vs Hiroshima Sanfrecce（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Tochigi city vs O.Ardija（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：J.Iwata vs S.Bellmare（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Gamba.O vs Cerezo Osaka（API-Football 与 InferSports 赛果库均不足 3 场）；近期状态不足：Adelaide Utd vs Melbourne Victory（API-Football 与 InferSports 赛果库均不足 3 场）；盘口核验：no_quotes 1场；no_shared_book 3场；sources:1<2 2场；stale>7200s 20场；verified:0<1 6场。",
-    "max_fixtures": 32,
-    "window_total": 51,
-    "not_covered_count": 19,
+    "raw": "筛查上限 48 场；窗口内共发现 0 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）；OddsPapi 赛程 csl: 未取得赛程（HTTP 404）。",
+    "max_fixtures": 48,
+    "window_total": 0,
+    "not_covered_count": 0,
     "note": "只解析报告已写明的数字，不推断漏采原因"
   },
   "verification_facts": {
-    "raw": "no_quotes 1场；no_shared_book 3场；sources:1<2 2场；stale>7200s 20场；verified:0<1 6场",
-    "items": {
-      "no_quotes": 1,
-      "no_shared_book": 3,
-      "sources:1<2": 2,
-      "stale>7200s": 20,
-      "verified:0<1": 6
-    },
+    "raw": "未取得",
+    "items": {},
     "note": "只抄录报告已写明的项目与场数，不解释成因、不推断数据充足"
   },
   "clv_field_coverage": {
@@ -99,49 +62,34 @@
       "odds_if_known": 24
     },
     "snapshots_dir": "/home/runner/work/ah-predictions/ah-predictions/data/snapshots/odds",
-    "snapshot_files": 4,
+    "snapshot_files": 5,
     "snapshot_match_ids": 103,
     "joinable_rows": 22,
     "odds_estimated_true": 0,
     "note": "joinable 仅指 match_id 同时出现在预测行与任一快照 csv；不代表已回填 CLV"
   },
   "source_concentration": {
-    "picks": 7,
-    "by_source": {
-      "oddspapi": 7
-    },
-    "by_bookmaker": {
-      "pinnacle": 7
-    },
-    "distinct_sources": 1,
+    "picks": 0,
+    "by_source": {},
+    "by_bookmaker": {},
+    "distinct_sources": 0,
     "note": "只统计报告已有字段；单一来源不代表数据不足，也不推断覆盖率"
   },
   "factor_gaps": {
-    "matches": 7,
-    "factors_total": 56,
-    "factors_value_missing": 49,
+    "matches": 0,
+    "factors_total": 0,
+    "factors_value_missing": 0,
     "factors_explicit_unavailable": 0,
-    "observation_mode_matches": 7,
+    "observation_mode_matches": 0,
     "note": "只数报告里已标为空/未取得的因子；observation 因子不参与评分，不代表模型缺陷"
   },
   "zero_pick_reasons": {
-    "picks": 7,
-    "is_zero_pick": false,
+    "picks": 0,
+    "is_zero_pick": true,
     "collection_notes": [
       "API-Football 未启用",
       "OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）",
-      "盘口采集：oddspapi:no_fixture_match 4场",
-      "近期状态不足：Macarthur FC vs Brisbane Roar（API-Football 与 InferSports 赛果库均不足 3 场）",
-      "近期状态不足：Vanraure Hachnohe vs Hokkaido Consadole Sapporo（API-Football 与 InferSports 赛果库均不足 3 场）",
-      "近期状态不足：Vissel Kobe vs Urawa Red Diamond（API-Football 与 InferSports 赛果库均不足 3 场）",
-      "近期状态不足：Daejeon Hana Citizen vs Incheon utd（API-Football 与 InferSports 赛果库均不足 3 场）",
-      "近期状态不足：FC Seoul vs Ulsan HD（API-Football 与 InferSports 赛果库均不足 3 场）",
-      "近期状态不足：Machida.Z vs Hiroshima Sanfrecce（API-Football 与 InferSports 赛果库均不足 3 场）",
-      "近期状态不足：Tochigi city vs O.Ardija（API-Football 与 InferSports 赛果库均不足 3 场）",
-      "近期状态不足：J.Iwata vs S.Bellmare（API-Football 与 InferSports 赛果库均不足 3 场）",
-      "近期状态不足：Gamba.O vs Cerezo Osaka（API-Football 与 InferSports 赛果库均不足 3 场）",
-      "近期状态不足：Adelaide Utd vs Melbourne Victory（API-Football 与 InferSports 赛果库均不足 3 场）",
-      "盘口核验：no_quotes 1场；no_shared_book 3场；sources:1<2 2场；stale>7200s 20场；verified:0<1 6场"
+      "OddsPapi 赛程 csl: 未取得赛程（HTTP 404）"
     ],
     "collection_errors": [],
     "note": "只列报告里已有的事实条目；不推断 0 场原因，不补造场次"

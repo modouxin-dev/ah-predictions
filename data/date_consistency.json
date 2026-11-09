@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "checked_at": "2026-11-09T01:29:16Z",
+  "evidence_grade": "【已验证】本地时间与环境变量布尔事实",
+  "ah_date": "2026-11-09",
+  "ah_date_valid": true,
+  "allowed_by_entry_check": [
+    "2026-11-09"
+  ],
+  "slot": "1",
+  "consistent": true,
+  "status": "OK",
+  "alerts": [
+    {
+      "code": "NO_ALERT",
+      "severity": "info",
+      "message": "编排日期与采集入口口径一致",
+      "evidence": {}
+    }
+  ],
+  "note": "只比对 AH_DATE 与采集入口的 allowed 口径；分叉时 daily.py 的日期校验是保护性拒绝，本模块不绕过、不自动改日期、不推断延迟原因、不补造赛程或盘口。",
+  "unverified": [
+    "cron 实际触发时刻与延迟（本模块不读运行日志）",
+    "采集是否因日期校验被拒绝（只给一致性事实，不读 job 结论）",
+    "Telegram 接收端（本命令不发送任何消息）"
+  ]
+}
