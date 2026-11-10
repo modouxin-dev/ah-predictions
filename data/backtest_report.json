@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-08T23:08:33Z",
-  "pool_days": 2,
-  "pool_rows": 64,
+  "checked_at": "2026-11-10T02:24:16Z",
+  "pool_days": 3,
+  "pool_rows": 70,
   "ledger_rows": 24,
   "matched_rows": 15,
   "settled_rows": 15,
@@ -10,17 +10,19 @@
   "time_split": {
     "dates": [
       "2026-11-07",
-      "2026-11-08"
+      "2026-11-08",
+      "2026-11-09"
     ],
     "train": [
-      "2026-11-07",
+      "2026-11-07"
+    ],
+    "valid": [
       "2026-11-08"
     ],
-    "valid": [],
     "test": [
-      "2026-11-08"
+      "2026-11-09"
     ],
-    "note": "日期不足 3 天，无法做三段切分；仅保留最后一天作测试集占位"
+    "note": "按日期时间外切分（train 60% / valid 20% / test 20%），不随机打散；测试集仅用于最终评估"
   },
   "evaluation": {
     "status": "INSUFFICIENT_SAMPLE",
