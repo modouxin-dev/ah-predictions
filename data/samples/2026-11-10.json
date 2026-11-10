@@ -3,8 +3,8 @@
   "kind": "pre-kickoff candidate pool",
   "date": "2026-11-10",
   "source_report": "reports/2026/11/2026-11-10.json",
-  "captured_at": "2026-11-10T03:58:25Z",
-  "generated_at": "2026-11-10T03:58:26Z",
+  "captured_at": "2026-11-10T04:10:32Z",
+  "generated_at": "2026-11-10T04:10:33Z",
   "counts": {
     "total": 24,
     "recommended": 0,
@@ -14,7 +14,7 @@
   "rows": [
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "titan007-3111985",
       "league": "国际友谊（titan007 原名）",
       "home": "东海岸海湾",
@@ -42,7 +42,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "titan007-3110134",
       "league": "国际友谊（titan007 原名）",
       "home": "卡塔尔U23",
@@ -70,7 +70,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "titan007-3110131",
       "league": "国际友谊（titan007 原名）",
       "home": "加蓬女足",
@@ -98,7 +98,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "titan007-3110130",
       "league": "国际友谊（titan007 原名）",
       "home": "越南U23",
@@ -126,7 +126,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "titan007-3110132",
       "league": "国际友谊（titan007 原名）",
       "home": "刚果共和国女足",
@@ -154,7 +154,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "titan007-3108766",
       "league": "埃及杯（titan007 原名）",
       "home": "阿拉伯建筑",
@@ -182,7 +182,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "titan007-3110133",
       "league": "国际友谊（titan007 原名）",
       "home": "尼扬加体育女足",
@@ -210,7 +210,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "infs-evt_2MVWZBAY",
       "league": "EngFLT（InferSports 原名，赛事类型未核验）",
       "home": "Crewe",
@@ -238,7 +238,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "infs-evt_A7SR06X7",
       "league": "EngFLT（InferSports 原名，赛事类型未核验）",
       "home": "Stockport",
@@ -266,7 +266,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "infs-evt_A7SRJSX7",
       "league": "EngFLT（InferSports 原名，赛事类型未核验）",
       "home": "Bristol Rovers",
@@ -294,7 +294,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "infs-evt_CG89SHP3",
       "league": "EngFLT（InferSports 原名，赛事类型未核验）",
       "home": "Grimsby",
@@ -322,7 +322,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "infs-evt_NSJXFQGJ",
       "league": "EngFLT（InferSports 原名，赛事类型未核验）",
       "home": "Stevenage",
@@ -350,7 +350,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "infs-evt_NSJXSBGJ",
       "league": "EngFLT（InferSports 原名，赛事类型未核验）",
       "home": "Mansfield",
@@ -378,7 +378,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "infs-evt_NSJXT1GJ",
       "league": "EngFLT（InferSports 原名，赛事类型未核验）",
       "home": "Barnet",
@@ -406,7 +406,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "infs-evt_PYMHBTWS",
       "league": "EngFLT（InferSports 原名，赛事类型未核验）",
       "home": "Oxford Utd",
@@ -434,7 +434,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "infs-evt_QNDKB0CS",
       "league": "EngFLT（InferSports 原名，赛事类型未核验）",
       "home": "Huddersfield",
@@ -462,7 +462,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "infs-evt_T9P3H868",
       "league": "EngFLT（InferSports 原名，赛事类型未核验）",
       "home": "Plymouth",
@@ -490,7 +490,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "infs-evt_VE47E6S2",
       "league": "EngFLT（InferSports 原名，赛事类型未核验）",
       "home": "Northampton",
@@ -518,7 +518,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "infs-evt_WB72SZR6",
       "league": "EngFLT（InferSports 原名，赛事类型未核验）",
       "home": "Burton Albion",
@@ -546,7 +546,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "infs-evt_XZ5N0NDH",
       "league": "EngFLT（InferSports 原名，赛事类型未核验）",
       "home": "Leicester",
@@ -574,7 +574,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "infs-evt_836YCDM7",
       "league": "EngFLT（InferSports 原名，赛事类型未核验）",
       "home": "Bromley",
@@ -602,7 +602,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "infs-evt_G53D9HY6",
       "league": "EngFLT（InferSports 原名，赛事类型未核验）",
       "home": "Crawley",
@@ -630,7 +630,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "infs-evt_WB726CR6",
       "league": "EngFLT（InferSports 原名，赛事类型未核验）",
       "home": "Bradford City",
@@ -658,7 +658,7 @@
     },
     {
       "date": "2026-11-10",
-      "captured_at": "2026-11-10T03:58:25Z",
+      "captured_at": "2026-11-10T04:10:32Z",
       "match_id": "infs-evt_4RXFS6QV",
       "league": "EngFLT（InferSports 原名，赛事类型未核验）",
       "home": "Colchester",

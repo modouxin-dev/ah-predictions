@@ -1,6 +1,6 @@
 {
   "date": "2026-11-10",
-  "generated_at": "2026-11-10T03:58:25Z",
+  "generated_at": "2026-11-10T04:10:32Z",
   "edition": "automatic",
   "odds_format": "HK",
   "picks": [],
@@ -36,8 +36,8 @@
       "titan007_observation": {
         "source": "titan007",
         "home_line": -1.5,
-        "home_water": 0.78,
-        "away_water": 1.04
+        "home_water": 0.8,
+        "away_water": 1.02
       }
     },
     {
@@ -70,8 +70,8 @@
       "titan007_observation": {
         "source": "titan007",
         "home_line": 0.25,
-        "home_water": 0.78,
-        "away_water": 0.98
+        "home_water": 0.83,
+        "away_water": 1.03
       }
     },
     {
@@ -104,8 +104,8 @@
       "titan007_observation": {
         "source": "titan007",
         "home_line": -0.75,
-        "home_water": 0.7,
-        "away_water": 1.0
+        "home_water": 0.76,
+        "away_water": 1.06
       }
     },
     {
@@ -362,7 +362,7 @@
     }
   ],
   "odds_source_note": "赛程、盘口与近期状态自动采集；推荐只用真实盘口，核验未完全通过的场次强制低信心并显式标注。",
-  "not_covered": "筛查上限 48 场；窗口内共发现 24 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）；OddsPapi 赛程 csl: 未取得赛程（HTTP 404）；盘口核验：no_pinnacle_and_asian<2 7场；no_quotes 5场；sources:1<2 19场；stale>1800s 19场；verified:0<1 19场。",
+  "not_covered": "筛查上限 48 场；窗口内共发现 24 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）；OddsPapi 赛程 csl: 未取得赛程（HTTP 404）；盘口核验：no_pinnacle_and_asian<2 7场；no_quotes 5场；sources:1<2 19场；stale>1800s 16场；verified:0<1 19场。",
   "window_fixtures": 24,
   "screening_cap": 48,
   "outside_screen": 0,
@@ -372,7 +372,7 @@
       "added": 0
     },
     "infersports": {
-      "raw": 163,
+      "raw": 164,
       "added": 17
     },
     "titan007_fixtures": {
@@ -385,7 +385,7 @@
     "API-Football 未启用",
     "OddsPapi 赛程 acl_elite: 未取得赛程（HTTP 404）",
     "OddsPapi 赛程 csl: 未取得赛程（HTTP 404）",
-    "盘口核验：no_pinnacle_and_asian<2 7场；no_quotes 5场；sources:1<2 19场；stale>1800s 19场；verified:0<1 19场"
+    "盘口核验：no_pinnacle_and_asian<2 7场；no_quotes 5场；sources:1<2 19场；stale>1800s 16场；verified:0<1 19场"
   ],
   "feature_evidence": {
     "schema": 1,
