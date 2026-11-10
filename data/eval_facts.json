@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "checked_at": "2026-11-09T01:41:58Z",
+ "checked_at": "2026-11-10T02:29:32Z",
  "evidence_grade": "【已验证】本地文件解析事实",
  "model_scope": {
   "boundary": "研究层（离线回测 / 线上规则 walk-forward）与每日实际发布不是同一套可互证结论；两边样本、输入与评估对象不同，任何一边的数字都不能迁移成另一边的准确率或 ROI 声明。",
@@ -120,13 +120,6 @@
    "severity": "warning",
    "message": "存在 0 场推荐日：2026-11-09；漏斗照常出表可定位",
    "evidence": "selection_funnel.json days[].zero_pick_day",
-   "action": "notify_only"
-  },
-  {
-   "code": "ZERO_FIXTURE_WINDOW",
-   "severity": "warning",
-   "message": "2026-11-09 的赛程窗口内 0 场：不是推荐被筛掉，而是赛程源没给比赛；扩大初筛上限无效，需检查赛程源状态与当天是否有配置联赛比赛。此条只告警，不自动补发、不编造赛程。",
-   "evidence": "reports window_fixtures / fixture_source_counts",
    "action": "notify_only"
   },
   {
