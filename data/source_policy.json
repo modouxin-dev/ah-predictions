@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-10T02:22:11Z",
+  "checked_at": "2026-11-10T03:48:30Z",
   "evidence_grade": "【已验证】环境变量布尔事实 + 静态文件文本事实",
   "mode": "optional_enhancement",
   "policy": [
@@ -24,8 +24,8 @@
       "on_missing": "skip_with_fact",
       "as_of": "2026-11-08",
       "coverage_status": "声明；实际覆盖由 source-probe 运行时自检给出，不静态断言",
-      "credential_present": false,
-      "decision": "skipped_no_credential",
+      "credential_present": true,
+      "decision": "active",
       "note": "只判断当前进程是否注入该变量；不代表 Secret 已配置、密钥有效、订阅激活或数据充足"
     },
     {
@@ -48,8 +48,8 @@
       "on_missing": "skip_with_fact",
       "as_of": "2026-11-08",
       "coverage_status": "声明；实际覆盖由运行时给出，不静态断言",
-      "credential_present": false,
-      "decision": "skipped_no_credential",
+      "credential_present": true,
+      "decision": "active",
       "note": "只判断当前进程是否注入该变量；不代表 Secret 已配置、密钥有效、订阅激活或数据充足"
     },
     {
@@ -60,8 +60,8 @@
       "on_missing": "skip_with_fact",
       "as_of": "2026-11-08",
       "coverage_status": "声明；当前日报 picks 全来自此源，缺凭据时按事实跳过而非替代",
-      "credential_present": false,
-      "decision": "skipped_no_credential",
+      "credential_present": true,
+      "decision": "active",
       "note": "只判断当前进程是否注入该变量；不代表 Secret 已配置、密钥有效、订阅激活或数据充足"
     }
   ],
@@ -109,8 +109,8 @@
   ],
   "summary": {
     "declared": 5,
-    "active": 2,
-    "skipped_no_credential": 3,
+    "active": 5,
+    "skipped_no_credential": 0,
     "credential_gate_present": 5,
     "gate_not_verified": 0
   },
