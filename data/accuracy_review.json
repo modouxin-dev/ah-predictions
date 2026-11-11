@@ -43,8 +43,23 @@
         "INSUFFICIENT_SAMPLE",
         "STALE_STATS"
       ]
+    },
+    {
+      "date": "2026-11-11",
+      "generated_at": "2026-11-11T00:20:18Z",
+      "run_id": "42930455477",
+      "sample_status": "INSUFFICIENT_SAMPLE",
+      "reconciliation": "RECONCILED",
+      "decided": 23,
+      "pending": 0,
+      "missing_result": 0,
+      "hit_rate": "未取得",
+      "alerts": [
+        "INSUFFICIENT_SAMPLE",
+        "STALE_STATS"
+      ]
     }
   ],
-  "updated_at": "2026-11-10T02:29:31Z",
+  "updated_at": "2026-11-11T00:20:18Z",
   "note": "赛果只来自 data/predictions.csv；空值写『未取得』，不补造比分、不推断未结算原因。命中率口径与 data/stats.json 一致；对账不一致时写『未取得』，不输出结论数字。样本不足时写 INSUFFICIENT_SAMPLE，不宣称准确率或 ROI 变化。"
 }
