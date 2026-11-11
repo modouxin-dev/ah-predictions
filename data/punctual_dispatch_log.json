@@ -7,6 +7,13 @@
    "status": 204,
    "at_utc": "2026-11-10T03:47:54Z",
    "evidence": "POST /dispatches 204 (run 创建请求被接受)"
+  },
+  {
+   "date": "2026-11-11",
+   "slot": "4",
+   "status": 204,
+   "at_utc": "2026-11-11T14:45:11Z",
+   "evidence": "POST /dispatches 204 (run 创建请求被接受)"
   }
  ],
  "note": "只记录 punctual 自己发出的 dispatch 请求；不是 Telegram 送达证据，送达只认 data/telegram_delivery.json 的 message_id"
