@@ -1,0 +1,71 @@
+{
+  "date": "2026-11-11",
+  "generated_at": "2026-11-11T01:45:38Z",
+  "edition": "automatic",
+  "odds_format": "HK",
+  "picks": [],
+  "watched": [],
+  "watchlist": [
+    {
+      "match_id": "infs-evt_FAN4Z3KC",
+      "fixture_id": null,
+      "league_id": "interim_infer_engflt",
+      "league": "EngFLT（InferSports 原名，赛事类型未核验）",
+      "home": "Barnsley",
+      "away": "Oldham",
+      "kickoff_utc": "2026-11-11T19:00:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_XZ5NCBDH",
+      "fixture_id": null,
+      "league_id": "interim_infer_engflt",
+      "league": "EngFLT（InferSports 原名，赛事类型未核验）",
+      "home": "Sheffield Wed",
+      "away": "Accrington",
+      "kickoff_utc": "2026-11-11T19:00:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    }
+  ],
+  "odds_source_note": "赛程、盘口与近期状态自动采集；推荐只用真实盘口，核验未完全通过的场次强制低信心并显式标注。",
+  "not_covered": "筛查上限 32 场；窗口内共发现 2 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；盘口核验：sources:1<2 2场；stale>7200s 2场；verified:0<1 2场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded。",
+  "window_fixtures": 2,
+  "screening_cap": 32,
+  "outside_screen": 0,
+  "fixture_source_counts": {
+    "football_data": {
+      "raw": 0,
+      "added": 0
+    },
+    "infersports": {
+      "raw": 240,
+      "added": 2
+    },
+    "titan007_fixtures": {
+      "raw": 178,
+      "added": 0
+    }
+  },
+  "collection_errors": [
+    "OddsPapi 赛程 acl_elite: BudgetExceeded",
+    "OddsPapi 赛程 csl: BudgetExceeded"
+  ],
+  "collection_notes": [
+    "API-Football 未启用",
+    "盘口核验：sources:1<2 2场；stale>7200s 2场；verified:0<1 2场"
+  ],
+  "feature_evidence": {
+    "schema": 1,
+    "mode": "observation",
+    "note": "逐场因子证据；observation 模式不参与 score；无证据不得进评分",
+    "by_match": {}
+  }
+}
