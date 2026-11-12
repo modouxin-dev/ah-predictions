@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-12T01:38:58Z",
+  "checked_at": "2026-11-12T17:14:45Z",
   "date_filter": "未取得",
   "evidence_grade": "【已验证】本地解析与声明事实",
   "ledger_rows": 24,
@@ -28,7 +28,7 @@
       "parser": "afc_scores",
       "status": "NO_EXPLICIT_SCORE_FOUND",
       "claims": 0,
-      "error_type": "StructureChanged"
+      "error_type": "ReadTimeout"
     },
     {
       "source_id": "jleague_acle",
