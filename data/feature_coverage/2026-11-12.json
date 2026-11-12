@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "date": "2026-11-12",
+  "checked_at": "2026-11-12T02:46:01Z",
+  "mode": "observation",
+  "picks": 0,
+  "rows": [],
+  "note": "仅统计报告里真实存在的字段；value=None 表示未取得，不代表 0 分"
+}
