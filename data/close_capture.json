@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-12T02:40:14Z",
+  "checked_at": "2026-11-12T23:59:42Z",
   "capture_outcome": "success",
-  "close_rows_in_repo": 1436,
+  "close_rows_in_repo": 1446,
   "close_rows_with_line": 1402,
-  "close_unique_match_ids": 78,
+  "close_unique_match_ids": 88,
   "note": "用 csv 模块解析 stage 列（不再按逗号切分，避免字段内逗号误数）；只记录真实存在的行数/唯一场次/带盘口行数；失败不补造盘口、不推断原因。行数不等于可 join 的场次，需再与 predictions.csv 的 match_id 求交。",
   "unverified": [
     "收盘快照是否覆盖全部已结算场次",
