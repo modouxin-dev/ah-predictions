@@ -1,0 +1,407 @@
+{
+ "report_date": "2026-11-11",
+ "updated_at": "2026-11-12T01:20:37Z",
+ "csv": "2026-11-11.csv",
+ "matches_screened": 2,
+ "skipped": [],
+ "bookmakers": [
+  "crown",
+  "hkjc",
+  "m8bet",
+  "macau",
+  "nova88",
+  "sbobet"
+ ],
+ "counts": {
+  "open": {
+   "single": 2
+  },
+  "report": {
+   "single": 2
+  },
+  "close": {
+   "missing": 2
+  }
+ },
+ "matches": [
+  {
+   "match_id": "infs-evt_FAN4Z3KC",
+   "kickoff_utc": "2026-11-11T19:00:00Z",
+   "league_id": "",
+   "home": "Barnsley",
+   "away": "Oldham",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-12 03:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "infersports": {
+       "line": -0.25,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "report": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "infersports": {
+       "line": -0.5,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "close": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    }
+   },
+   "cross_verification": {
+    "enabled": true,
+    "advisory_only": true,
+    "phases": {
+     "open": {
+      "status": "ok",
+      "passed": true,
+      "reasons": [],
+      "sources": [
+       "infersports"
+      ],
+      "bookmakers_on_main": [
+       "crown",
+       "hkjc",
+       "m8bet",
+       "macau",
+       "nova88",
+       "sbobet"
+      ],
+      "verified_books": [],
+      "pinnacle_or_asian": true,
+      "stale_age_s": 243919,
+      "stale_detail": [
+       {
+        "book": "crown",
+        "source": "infersports",
+        "age_s": 208259
+       },
+       {
+        "book": "hkjc",
+        "source": "infersports",
+        "age_s": 164673
+       },
+       {
+        "book": "m8bet",
+        "source": "infersports",
+        "age_s": 243753
+       },
+       {
+        "book": "macau",
+        "source": "infersports",
+        "age_s": 226188
+       },
+       {
+        "book": "nova88",
+        "source": "infersports",
+        "age_s": 243919
+       },
+       {
+        "book": "sbobet",
+        "source": "infersports",
+        "age_s": 51309
+       }
+      ],
+      "freshness": "ok",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": -0.25
+     },
+     "report": {
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>7200s"
+      ],
+      "sources": [
+       "infersports"
+      ],
+      "bookmakers_on_main": [
+       "crown",
+       "hkjc",
+       "m8bet",
+       "macau",
+       "nova88",
+       "sbobet"
+      ],
+      "verified_books": [],
+      "pinnacle_or_asian": true,
+      "stale_age_s": 41658,
+      "stale_detail": [
+       {
+        "book": "crown",
+        "source": "infersports",
+        "age_s": 19935
+       },
+       {
+        "book": "hkjc",
+        "source": "infersports",
+        "age_s": 41658
+       },
+       {
+        "book": "m8bet",
+        "source": "infersports",
+        "age_s": 5760
+       },
+       {
+        "book": "macau",
+        "source": "infersports",
+        "age_s": 25582
+       },
+       {
+        "book": "nova88",
+        "source": "infersports",
+        "age_s": 5797
+       },
+       {
+        "book": "sbobet",
+        "source": "infersports",
+        "age_s": 5538
+       }
+      ],
+      "freshness": "stale_withdraw",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": -0.75
+     },
+     "close": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     }
+    },
+    "active_stage": "report",
+    "verdict": "review",
+    "advisory": "review"
+   },
+   "deep_line": false
+  },
+  {
+   "match_id": "infs-evt_XZ5NCBDH",
+   "kickoff_utc": "2026-11-11T19:00:00Z",
+   "league_id": "",
+   "home": "Sheffield Wed",
+   "away": "Accrington",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-12 03:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "infersports": {
+       "line": -1.0,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "report": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "infersports": {
+       "line": -1.0,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "close": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    }
+   },
+   "cross_verification": {
+    "enabled": true,
+    "advisory_only": true,
+    "phases": {
+     "open": {
+      "status": "ok",
+      "passed": true,
+      "reasons": [],
+      "sources": [
+       "infersports"
+      ],
+      "bookmakers_on_main": [
+       "crown",
+       "hkjc",
+       "m8bet",
+       "macau",
+       "nova88",
+       "sbobet"
+      ],
+      "verified_books": [],
+      "pinnacle_or_asian": true,
+      "stale_age_s": 292006,
+      "stale_detail": [
+       {
+        "book": "crown",
+        "source": "infersports",
+        "age_s": 208264
+       },
+       {
+        "book": "hkjc",
+        "source": "infersports",
+        "age_s": 164676
+       },
+       {
+        "book": "m8bet",
+        "source": "infersports",
+        "age_s": 285691
+       },
+       {
+        "book": "macau",
+        "source": "infersports",
+        "age_s": 226188
+       },
+       {
+        "book": "nova88",
+        "source": "infersports",
+        "age_s": 292006
+       },
+       {
+        "book": "sbobet",
+        "source": "infersports",
+        "age_s": 50835
+       }
+      ],
+      "freshness": "ok",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": -1.0
+     },
+     "report": {
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>7200s"
+      ],
+      "sources": [
+       "infersports"
+      ],
+      "bookmakers_on_main": [
+       "crown",
+       "hkjc",
+       "m8bet",
+       "macau",
+       "nova88",
+       "sbobet"
+      ],
+      "verified_books": [],
+      "pinnacle_or_asian": true,
+      "stale_age_s": 81896,
+      "stale_detail": [
+       {
+        "book": "crown",
+        "source": "infersports",
+        "age_s": 63424
+       },
+       {
+        "book": "hkjc",
+        "source": "infersports",
+        "age_s": 81896
+       },
+       {
+        "book": "m8bet",
+        "source": "infersports",
+        "age_s": 10253
+       },
+       {
+        "book": "macau",
+        "source": "infersports",
+        "age_s": 10061
+       },
+       {
+        "book": "nova88",
+        "source": "infersports",
+        "age_s": 10286
+       },
+       {
+        "book": "sbobet",
+        "source": "infersports",
+        "age_s": 50834
+       }
+      ],
+      "freshness": "stale_withdraw",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": -1.0
+     },
+     "close": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     }
+    },
+    "active_stage": "report",
+    "verdict": "review",
+    "advisory": "review"
+   },
+   "deep_line": false
+  }
+ ],
+ "runs": [
+  {
+   "at": "2026-11-12T01:20:37Z",
+   "phases": [
+    "close"
+   ],
+   "calls": {},
+   "quota_after": {
+    "oddspapi": {
+     "used": 220,
+     "remaining": 30,
+     "limit": 250,
+     "month": "2026-11"
+    }
+   }
+  }
+ ]
+}
