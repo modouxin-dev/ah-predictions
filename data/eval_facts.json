@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "checked_at": "2026-11-11T00:20:18Z",
+ "checked_at": "2026-11-12T01:45:02Z",
  "evidence_grade": "【已验证】本地文件解析事实",
  "model_scope": {
   "boundary": "研究层（离线回测 / 线上规则 walk-forward）与每日实际发布不是同一套可互证结论；两边样本、输入与评估对象不同，任何一边的数字都不能迁移成另一边的准确率或 ROI 声明。",
@@ -118,7 +118,7 @@
   {
    "code": "ZERO_PICK_DAY",
    "severity": "warning",
-   "message": "存在 0 场推荐日：2026-11-09, 2026-11-10；漏斗照常出表可定位",
+   "message": "存在 0 场推荐日：2026-11-09, 2026-11-10, 2026-11-11；漏斗照常出表可定位",
    "evidence": "selection_funnel.json days[].zero_pick_day",
    "action": "notify_only"
   },
