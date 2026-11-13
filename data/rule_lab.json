@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-12T01:45:02Z",
+  "checked_at": "2026-11-13T00:49:55Z",
   "evidence_grade": "【已验证】本地文件解析事实",
   "model_under_test": "线上规则档位（analyze.py / policy.py / config/settings.yaml），未改动任何一行",
   "live_model_modified": false,
-  "pool_rows": 96,
+  "pool_rows": 106,
   "outcome_rows": 22,
   "joined_decided_rows": 17,
   "thresholds": {

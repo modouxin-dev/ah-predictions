@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-12T02:46:01Z",
+  "checked_at": "2026-11-13T00:49:54Z",
   "evidence_grade": "【已验证】本地文件解析事实",
-  "report_date": "2026-11-12",
-  "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-12.json",
-  "report_exists": true,
-  "report_parsed": true,
+  "report_date": "2026-11-13",
+  "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-13.json",
+  "report_exists": false,
+  "report_parsed": false,
   "note": "只读盘点：不写回 predictions.csv / 报告 / 台账，不改任何模型或核验口径；所有数字来自文件解析，缺字段写『未取得』，不推断原因、不补造任何赛程盘口水位比分；样本精度只说明区间宽度，不构成命中率或优势结论（是否达门槛由 review.py 判定）。",
   "unverified": [
     "盘口/水位是否经第二家独立来源核验（本盘点只读报告字段）",
@@ -15,46 +15,17 @@
   ],
   "alerts": [
     {
-      "code": "CLV_CLOSE_FIELDS_SPARSE",
+      "code": "REPORT_MISSING",
       "severity": "info",
-      "message": "收盘线字段 final_line 有值 2 行，已结算 23 行；只记录覆盖缺口，不推断结算质量",
-      "evidence": {
-        "final_line_filled": 2,
-        "decided": 23
-      }
-    },
-    {
-      "code": "VERIFICATION_FACTS_RECORDED",
-      "severity": "info",
-      "message": "报告已写明盘口核验各项场数，事实已抄录；不解释成因、不推断覆盖",
-      "evidence": {
-        "books:1<3": 2,
-        "no_pinnacle_and_asian<2": 3,
-        "no_quotes": 6,
-        "sources:1<2": 4,
-        "stale>7200s": 4,
-        "verified:0<1": 4
-      }
+      "message": "当日报告未找到；只记录事实，不补造",
+      "evidence": {}
     }
   ],
   "candidate_coverage": {
-    "raw": "筛查上限 32 场；窗口内共发现 10 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；盘口核验：books:1<3 2场；no_pinnacle_and_asian<2 3场；no_quotes 6场；sources:1<2 4场；stale>7200s 4场；verified:0<1 4场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded。",
-    "max_fixtures": 32,
-    "window_total": 10,
-    "not_covered_count": 0,
-    "note": "只解析报告已写明的数字，不推断漏采原因"
+    "status": "REPORT_MISSING"
   },
   "verification_facts": {
-    "raw": "books:1<3 2场；no_pinnacle_and_asian<2 3场；no_quotes 6场；sources:1<2 4场；stale>7200s 4场；verified:0<1 4场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded",
-    "items": {
-      "books:1<3": 2,
-      "no_pinnacle_and_asian<2": 3,
-      "no_quotes": 6,
-      "sources:1<2": 4,
-      "stale>7200s": 4,
-      "verified:0<1": 4
-    },
-    "note": "只抄录报告已写明的项目与场数，不解释成因、不推断数据充足"
+    "status": "REPORT_MISSING"
   },
   "clv_field_coverage": {
     "ledger": "/home/runner/work/ah-predictions/ah-predictions/data/predictions.csv",
@@ -89,32 +60,13 @@
     "note": "joinable 仅指 match_id 同时出现在预测行与任一快照 csv；不代表已回填 CLV"
   },
   "source_concentration": {
-    "picks": 0,
-    "by_source": {},
-    "by_bookmaker": {},
-    "distinct_sources": 0,
-    "note": "只统计报告已有字段；单一来源不代表数据不足，也不推断覆盖率"
+    "status": "REPORT_MISSING"
   },
   "factor_gaps": {
-    "matches": 0,
-    "factors_total": 0,
-    "factors_value_missing": 0,
-    "factors_explicit_unavailable": 0,
-    "observation_mode_matches": 0,
-    "note": "只数报告里已标为空/未取得的因子；observation 因子不参与评分，不代表模型缺陷"
+    "status": "REPORT_MISSING"
   },
   "zero_pick_reasons": {
-    "picks": 0,
-    "is_zero_pick": true,
-    "collection_notes": [
-      "API-Football 未启用",
-      "盘口核验：books:1<3 2场；no_pinnacle_and_asian<2 3场；no_quotes 6场；sources:1<2 4场；stale>7200s 4场；verified:0<1 4场"
-    ],
-    "collection_errors": [
-      "OddsPapi 赛程 acl_elite: BudgetExceeded",
-      "OddsPapi 赛程 csl: BudgetExceeded"
-    ],
-    "note": "只列报告里已有的事实条目；不推断 0 场原因，不补造场次"
+    "status": "REPORT_MISSING"
   },
   "sample_precision": {
     "rows": 24,
