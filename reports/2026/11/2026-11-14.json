@@ -1,0 +1,298 @@
+{
+  "date": "2026-11-14",
+  "generated_at": "2026-11-14T02:03:54Z",
+  "edition": "automatic",
+  "odds_format": "HK",
+  "picks": [],
+  "watched": [],
+  "watchlist": [
+    {
+      "match_id": "titan007-3112195",
+      "fixture_id": null,
+      "league_id": "interim_titan_intl_friendly",
+      "league": "国际友谊（titan007 原名）",
+      "home": "塔希提群岛",
+      "away": "库克群岛",
+      "kickoff_utc": "2026-11-14T04:00:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_9DYPA0H2",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "O.Ardija",
+      "away": "Montedio Yamagata",
+      "kickoff_utc": "2026-11-14T05:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_PYM94ZWS",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "A.Niigata",
+      "away": "Tegevajaro Miyazaki",
+      "kickoff_utc": "2026-11-14T05:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_QND9WECS",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "Oita Trinita",
+      "away": "Tochigi city",
+      "kickoff_utc": "2026-11-14T05:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_WB7AYDR6",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "Fujieda MYFC",
+      "away": "Ventforet Kofu",
+      "kickoff_utc": "2026-11-14T05:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_YT1MS2BW",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "S.Bellmare",
+      "away": "Yokohama Fc",
+      "kickoff_utc": "2026-11-14T05:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "titan007-3000173",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "新潟天鹅",
+      "away": "宫崎棒牛鸟",
+      "kickoff_utc": "2026-11-14T05:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过",
+      "titan007_observation": {
+        "source": "titan007",
+        "home_line": 0.25,
+        "home_water": 0.87,
+        "away_water": 1.01
+      }
+    },
+    {
+      "match_id": "titan007-3000174",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "藤枝MYFC",
+      "away": "甲府风林",
+      "kickoff_utc": "2026-11-14T05:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过",
+      "titan007_observation": {
+        "source": "titan007",
+        "home_line": -0.5,
+        "home_water": 0.98,
+        "away_water": 0.9
+      }
+    },
+    {
+      "match_id": "titan007-3000177",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "大分三神",
+      "away": "枥木市FC",
+      "kickoff_utc": "2026-11-14T05:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过",
+      "titan007_observation": {
+        "source": "titan007",
+        "home_line": -0.5,
+        "home_water": 1.05,
+        "away_water": 0.83
+      }
+    },
+    {
+      "match_id": "titan007-3000178",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "RB大宫松鼠",
+      "away": "山形山神",
+      "kickoff_utc": "2026-11-14T05:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过",
+      "titan007_observation": {
+        "source": "titan007",
+        "home_line": -1.0,
+        "home_water": 1.07,
+        "away_water": 0.81
+      }
+    },
+    {
+      "match_id": "titan007-3000179",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "湘南海洋",
+      "away": "横滨FC",
+      "kickoff_utc": "2026-11-14T05:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过",
+      "titan007_observation": {
+        "source": "titan007",
+        "home_line": 0.5,
+        "home_water": 0.88,
+        "away_water": 1.0
+      }
+    },
+    {
+      "match_id": "infs-evt_2MVRXPAY",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "Hokkaido Consadole Sapporo",
+      "away": "Sagan Tosu",
+      "kickoff_utc": "2026-11-15T04:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_E2R4K3F3",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "Vanraure Hachnohe",
+      "away": "Iwaki",
+      "kickoff_utc": "2026-11-15T04:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_A7SNMGX7",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "Vegalta Sendai",
+      "away": "B.Akita",
+      "kickoff_utc": "2026-11-15T04:05:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_5KC3ENTH",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "Imabari",
+      "away": "J.Iwata",
+      "kickoff_utc": "2026-11-15T05:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_H8BWX526",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "Kataller Toyama",
+      "away": "Tokushima Vortis",
+      "kickoff_utc": "2026-11-15T05:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    }
+  ],
+  "odds_source_note": "赛程、盘口与近期状态自动采集；推荐只用真实盘口，核验未完全通过的场次强制低信心并显式标注。",
+  "not_covered": "筛查上限 32 场；窗口内共发现 16 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；盘口采集：oddspapi:fixtures_error(BudgetExceeded) 15场；oddspapi:no_fixture_match 15场；盘口核验：no_quotes 6场；sources:1<2 10场；stale>1800s 1场；stale>7200s 8场；verified:0<1 10场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded。",
+  "window_fixtures": 16,
+  "screening_cap": 32,
+  "outside_screen": 0,
+  "fixture_source_counts": {
+    "football_data": {
+      "raw": 0,
+      "added": 0
+    },
+    "infersports": {
+      "raw": 710,
+      "added": 10
+    },
+    "titan007_fixtures": {
+      "raw": 392,
+      "added": 6
+    }
+  },
+  "collection_errors": [
+    "OddsPapi 赛程 acl_elite: BudgetExceeded",
+    "OddsPapi 赛程 csl: BudgetExceeded"
+  ],
+  "collection_notes": [
+    "API-Football 未启用",
+    "盘口采集：oddspapi:fixtures_error(BudgetExceeded) 15场；oddspapi:no_fixture_match 15场",
+    "盘口核验：no_quotes 6场；sources:1<2 10场；stale>1800s 1场；stale>7200s 8场；verified:0<1 10场"
+  ],
+  "feature_evidence": {
+    "schema": 1,
+    "mode": "observation",
+    "note": "逐场因子证据；observation 模式不参与 score；无证据不得进评分",
+    "by_match": {}
+  }
+}
