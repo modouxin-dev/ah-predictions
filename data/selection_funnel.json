@@ -1,8 +1,8 @@
 {
  "schema": 1,
- "checked_at": "2026-11-13T00:49:55Z",
+ "checked_at": "2026-11-14T00:35:13Z",
  "source": "reports/*/*/*.json（只读；不含 rechecks）",
- "report_files": 9,
+ "report_files": 10,
  "category_buckets": {
   "近期状态数据不足": "data_gap",
   "盘口报价过期，降级后不足": "data_gap",
@@ -501,15 +501,68 @@
    ],
    "collection_errors": 2,
    "not_covered_text": "筛查上限 32 场；窗口内共发现 10 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；盘口核验：books:1<3 2场；no_pinnacle_and_asian<2 3场；no_quotes 6场；sources:1<2 4场；stale>7200s 4场；verified:0<1 4场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded。"
+  },
+  {
+   "date": "2026-11-13",
+   "picks": 0,
+   "watchlist": 5,
+   "watched_free_text_entries": 0,
+   "zero_pick_day": true,
+   "generated_at": "2026-11-13T02:30:00Z",
+   "categories": {
+    "盘口跨来源核验未通过": 5
+   },
+   "buckets": {
+    "data_gap": 0,
+    "verification": 5,
+    "model_judgment": 0,
+    "timing": 0,
+    "unknown": 0
+   },
+   "data_gap_by_league": {},
+   "upstream": {
+    "window_fixtures": 5,
+    "screening_cap": 32,
+    "outside_screen": 0,
+    "status": "RECORDED",
+    "source": "report 结构化字段"
+   },
+   "fixture_source_counts": {
+    "football_data": {
+     "raw": 0,
+     "added": 0
+    },
+    "infersports": {
+     "raw": 398,
+     "added": 5
+    },
+    "titan007_fixtures": {
+     "raw": 209,
+     "added": 0
+    }
+   },
+   "verification_facts": [
+    "sources:1<2 5场",
+    "stale>7200s 5场",
+    "verified:0<1 5场"
+   ],
+   "state_gap_note_count": 0,
+   "collection_notes": [
+    "API-Football 未启用",
+    "盘口采集：oddspapi:fixtures_error(BudgetExceeded) 5场；oddspapi:no_fixture_match 5场",
+    "盘口核验：sources:1<2 5场；stale>7200s 5场；verified:0<1 5场"
+   ],
+   "collection_errors": 2,
+   "not_covered_text": "筛查上限 32 场；窗口内共发现 5 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；盘口采集：oddspapi:fixtures_error(BudgetExceeded) 5场；oddspapi:no_fixture_match 5场；盘口核验：sources:1<2 5场；stale>7200s 5场；verified:0<1 5场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded。"
   }
  ],
  "summary": {
-  "days": 9,
+  "days": 10,
   "total_picks": 22,
-  "total_watchlist": 138,
+  "total_watchlist": 143,
   "buckets": {
    "data_gap": 32,
-   "verification": 52,
+   "verification": 57,
    "model_judgment": 51,
    "timing": 2,
    "unknown": 1
@@ -528,10 +581,10 @@
   "observations": [
    "连续 3 天『近期状态数据不足』≥5 场（）；依据：各日报告 watchlist.withheld_category 计数【已验证】报告字段",
    "窗口内最多有 47 场因筛查上限未进入候选（2026-11-07：79−32）；依据：报告 not_covered 文本【已验证】报告字段",
-   "未推场次中，数据/核验类合计 84 场、模型判断类 51 场；这是分类计数，不构成模型优劣或准确率结论【已验证】报告字段汇总",
+   "未推场次中，数据/核验类合计 89 场、模型判断类 51 场；这是分类计数，不构成模型优劣或准确率结论【已验证】报告字段汇总",
    "另有 1 场使用复合/未收录类别（深盘+机构分歧），已单列未分类，不猜测归属【已验证】报告字段",
    "旧版报告类别名（临近开赛、信号不足、已开球、无盘口、深盘、盘口与基本面背离、逆向退盘）已逐字收录并按语义单一性归并；复合类别不归并【已验证】报告字段",
-   "0 场推荐日：2026-11-09, 2026-11-10, 2026-11-11, 2026-11-12；漏斗照常出表，便于定位【已验证】报告字段",
+   "0 场推荐日：2026-11-09, 2026-11-10, 2026-11-11, 2026-11-12, 2026-11-13；漏斗照常出表，便于定位【已验证】报告字段",
    "报告自述『尚未自动采集伤停或首发』；不补造伤停信息【已验证】报告文本"
   ],
   "alerts": [
