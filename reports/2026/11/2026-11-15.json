@@ -1,0 +1,114 @@
+{
+  "date": "2026-11-15",
+  "generated_at": "2026-11-14T22:53:54Z",
+  "edition": "automatic",
+  "odds_format": "HK",
+  "picks": [],
+  "watched": [],
+  "watchlist": [
+    {
+      "match_id": "infs-evt_2MVRXPAY",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "Hokkaido Consadole Sapporo",
+      "away": "Sagan Tosu",
+      "kickoff_utc": "2026-11-15T04:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_E2R4K3F3",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "Vanraure Hachnohe",
+      "away": "Iwaki",
+      "kickoff_utc": "2026-11-15T04:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_A7SNMGX7",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "Vegalta Sendai",
+      "away": "B.Akita",
+      "kickoff_utc": "2026-11-15T04:05:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_5KC3ENTH",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "Imabari",
+      "away": "J.Iwata",
+      "kickoff_utc": "2026-11-15T05:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_H8BWX526",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "Kataller Toyama",
+      "away": "Tokushima Vortis",
+      "kickoff_utc": "2026-11-15T05:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    }
+  ],
+  "odds_source_note": "赛程、盘口与近期状态自动采集；推荐只用真实盘口，核验未完全通过的场次强制低信心并显式标注。",
+  "not_covered": "筛查上限 32 场；窗口内共发现 5 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；盘口采集：oddspapi:fixtures_error(BudgetExceeded) 5场；oddspapi:no_fixture_match 5场；盘口核验：sources:1<2 5场；stale>7200s 5场；verified:0<1 5场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded。",
+  "window_fixtures": 5,
+  "screening_cap": 32,
+  "outside_screen": 0,
+  "fixture_source_counts": {
+    "football_data": {
+      "raw": 0,
+      "added": 0
+    },
+    "infersports": {
+      "raw": 1296,
+      "added": 5
+    },
+    "titan007_fixtures": {
+      "raw": 750,
+      "added": 0
+    }
+  },
+  "collection_errors": [
+    "OddsPapi 赛程 acl_elite: BudgetExceeded",
+    "OddsPapi 赛程 csl: BudgetExceeded"
+  ],
+  "collection_notes": [
+    "API-Football 未启用",
+    "盘口采集：oddspapi:fixtures_error(BudgetExceeded) 5场；oddspapi:no_fixture_match 5场",
+    "盘口核验：sources:1<2 5场；stale>7200s 5场；verified:0<1 5场"
+  ],
+  "feature_evidence": {
+    "schema": 1,
+    "mode": "observation",
+    "note": "逐场因子证据；observation 模式不参与 score；无证据不得进评分",
+    "by_match": {}
+  }
+}

@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-14T02:03:54Z",
+  "checked_at": "2026-11-14T22:53:54Z",
   "evidence_grade": "【已验证】本地文件解析事实",
-  "report_date": "2026-11-14",
-  "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-14.json",
+  "report_date": "2026-11-15",
+  "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-15.json",
   "report_exists": true,
   "report_parsed": true,
   "note": "只读盘点：不写回 predictions.csv / 报告 / 台账，不改任何模型或核验口径；所有数字来自文件解析，缺字段写『未取得』，不推断原因、不补造任何赛程盘口水位比分；样本精度只说明区间宽度，不构成命中率或优势结论（是否达门槛由 review.py 判定）。",
@@ -28,29 +28,25 @@
       "severity": "info",
       "message": "报告已写明盘口核验各项场数，事实已抄录；不解释成因、不推断覆盖",
       "evidence": {
-        "no_quotes": 6,
-        "sources:1<2": 10,
-        "stale>1800s": 1,
-        "stale>7200s": 8,
-        "verified:0<1": 10
+        "sources:1<2": 5,
+        "stale>7200s": 5,
+        "verified:0<1": 5
       }
     }
   ],
   "candidate_coverage": {
-    "raw": "筛查上限 32 场；窗口内共发现 16 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；盘口采集：oddspapi:fixtures_error(BudgetExceeded) 15场；oddspapi:no_fixture_match 15场；盘口核验：no_quotes 6场；sources:1<2 10场；stale>1800s 1场；stale>7200s 8场；verified:0<1 10场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded。",
+    "raw": "筛查上限 32 场；窗口内共发现 5 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；盘口采集：oddspapi:fixtures_error(BudgetExceeded) 5场；oddspapi:no_fixture_match 5场；盘口核验：sources:1<2 5场；stale>7200s 5场；verified:0<1 5场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded。",
     "max_fixtures": 32,
-    "window_total": 16,
+    "window_total": 5,
     "not_covered_count": 0,
     "note": "只解析报告已写明的数字，不推断漏采原因"
   },
   "verification_facts": {
-    "raw": "no_quotes 6场；sources:1<2 10场；stale>1800s 1场；stale>7200s 8场；verified:0<1 10场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded",
+    "raw": "sources:1<2 5场；stale>7200s 5场；verified:0<1 5场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded",
     "items": {
-      "no_quotes": 6,
-      "sources:1<2": 10,
-      "stale>1800s": 1,
-      "stale>7200s": 8,
-      "verified:0<1": 10
+      "sources:1<2": 5,
+      "stale>7200s": 5,
+      "verified:0<1": 5
     },
     "note": "只抄录报告已写明的项目与场数，不解释成因、不推断数据充足"
   },
@@ -80,7 +76,7 @@
       "odds_if_known": 24
     },
     "snapshots_dir": "/home/runner/work/ah-predictions/ah-predictions/data/snapshots/odds",
-    "snapshot_files": 10,
+    "snapshot_files": 11,
     "snapshot_match_ids": 161,
     "joinable_rows": 22,
     "odds_estimated_true": 0,
@@ -106,8 +102,8 @@
     "is_zero_pick": true,
     "collection_notes": [
       "API-Football 未启用",
-      "盘口采集：oddspapi:fixtures_error(BudgetExceeded) 15场；oddspapi:no_fixture_match 15场",
-      "盘口核验：no_quotes 6场；sources:1<2 10场；stale>1800s 1场；stale>7200s 8场；verified:0<1 10场"
+      "盘口采集：oddspapi:fixtures_error(BudgetExceeded) 5场；oddspapi:no_fixture_match 5场",
+      "盘口核验：sources:1<2 5场；stale>7200s 5场；verified:0<1 5场"
     ],
     "collection_errors": [
       "OddsPapi 赛程 acl_elite: BudgetExceeded",
