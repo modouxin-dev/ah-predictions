@@ -1,11 +1,31 @@
 {
   "date": "2026-11-15",
-  "generated_at": "2026-11-14T22:53:54Z",
+  "generated_at": "2026-11-15T01:35:17Z",
   "edition": "automatic",
   "odds_format": "HK",
   "picks": [],
   "watched": [],
   "watchlist": [
+    {
+      "match_id": "titan007-3111579",
+      "fixture_id": null,
+      "league_id": "interim_titan_intl_friendly",
+      "league": "国际友谊（titan007 原名）",
+      "home": "新西兰",
+      "away": "印度",
+      "kickoff_utc": "2026-11-15T03:00:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过",
+      "titan007_observation": {
+        "source": "titan007",
+        "home_line": -2.25,
+        "home_water": 0.77,
+        "away_water": 1.05
+      }
+    },
     {
       "match_id": "infs-evt_2MVRXPAY",
       "fixture_id": null,
@@ -33,6 +53,66 @@
       "confidence": null,
       "withheld_category": "盘口跨来源核验未通过",
       "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "titan007-3000175",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "札幌冈萨多",
+      "away": "鸟栖沙岩",
+      "kickoff_utc": "2026-11-15T04:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过",
+      "titan007_observation": {
+        "source": "titan007",
+        "home_line": 0.5,
+        "home_water": 0.87,
+        "away_water": 1.02
+      }
+    },
+    {
+      "match_id": "titan007-3000181",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "八户云罗里",
+      "away": "磐城FC",
+      "kickoff_utc": "2026-11-15T04:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过",
+      "titan007_observation": {
+        "source": "titan007",
+        "home_line": 0.25,
+        "home_water": 0.99,
+        "away_water": 0.9
+      }
+    },
+    {
+      "match_id": "titan007-3000182",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "仙台维加泰",
+      "away": "秋田蓝色闪电",
+      "kickoff_utc": "2026-11-15T04:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过",
+      "titan007_observation": {
+        "source": "titan007",
+        "home_line": -1.0,
+        "home_water": 1.08,
+        "away_water": 0.81
+      }
     },
     {
       "match_id": "infs-evt_A7SNMGX7",
@@ -75,11 +155,51 @@
       "confidence": null,
       "withheld_category": "盘口跨来源核验未通过",
       "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "titan007-3000176",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "今治",
+      "away": "磐田喜悦",
+      "kickoff_utc": "2026-11-15T05:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过",
+      "titan007_observation": {
+        "source": "titan007",
+        "home_line": 0.5,
+        "home_water": 1.01,
+        "away_water": 0.87
+      }
+    },
+    {
+      "match_id": "titan007-3000180",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "富山胜利",
+      "away": "德岛漩涡",
+      "kickoff_utc": "2026-11-15T05:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过",
+      "titan007_observation": {
+        "source": "titan007",
+        "home_line": -0.75,
+        "home_water": 1.02,
+        "away_water": 0.86
+      }
     }
   ],
   "odds_source_note": "赛程、盘口与近期状态自动采集；推荐只用真实盘口，核验未完全通过的场次强制低信心并显式标注。",
-  "not_covered": "筛查上限 32 场；窗口内共发现 5 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；盘口采集：oddspapi:fixtures_error(BudgetExceeded) 5场；oddspapi:no_fixture_match 5场；盘口核验：sources:1<2 5场；stale>7200s 5场；verified:0<1 5场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded。",
-  "window_fixtures": 5,
+  "not_covered": "筛查上限 32 场；窗口内共发现 11 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；盘口采集：oddspapi:fixtures_error(BudgetExceeded) 10场；oddspapi:no_fixture_match 10场；盘口核验：no_quotes 6场；sources:1<2 5场；stale>7200s 5场；verified:0<1 5场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded。",
+  "window_fixtures": 11,
   "screening_cap": 32,
   "outside_screen": 0,
   "fixture_source_counts": {
@@ -88,12 +208,12 @@
       "added": 0
     },
     "infersports": {
-      "raw": 1296,
+      "raw": 448,
       "added": 5
     },
     "titan007_fixtures": {
-      "raw": 750,
-      "added": 0
+      "raw": 749,
+      "added": 6
     }
   },
   "collection_errors": [
@@ -102,8 +222,8 @@
   ],
   "collection_notes": [
     "API-Football 未启用",
-    "盘口采集：oddspapi:fixtures_error(BudgetExceeded) 5场；oddspapi:no_fixture_match 5场",
-    "盘口核验：sources:1<2 5场；stale>7200s 5场；verified:0<1 5场"
+    "盘口采集：oddspapi:fixtures_error(BudgetExceeded) 10场；oddspapi:no_fixture_match 10场",
+    "盘口核验：no_quotes 6场；sources:1<2 5场；stale>7200s 5场；verified:0<1 5场"
   ],
   "feature_evidence": {
     "schema": 1,
