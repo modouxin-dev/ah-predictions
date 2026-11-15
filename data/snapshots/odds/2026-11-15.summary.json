@@ -1,0 +1,1414 @@
+{
+ "report_date": "2026-11-15",
+ "updated_at": "2026-11-15T23:19:56Z",
+ "csv": "2026-11-15.csv",
+ "matches_screened": 11,
+ "skipped": [],
+ "bookmakers": [
+  "crown",
+  "hkjc",
+  "m8bet",
+  "macau",
+  "nova88",
+  "sbobet"
+ ],
+ "counts": {
+  "open": {
+   "missing": 6,
+   "single": 5
+  },
+  "report": {
+   "missing": 6,
+   "single": 5
+  },
+  "close": {
+   "missing": 11
+  }
+ },
+ "matches": [
+  {
+   "match_id": "titan007-3111579",
+   "kickoff_utc": "2026-11-15T03:00:00Z",
+   "league_id": "",
+   "home": "新西兰",
+   "away": "印度",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-15 11:00",
+   "phases": {
+    "open": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    },
+    "report": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    },
+    "close": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    }
+   },
+   "cross_verification": {
+    "enabled": true,
+    "advisory_only": true,
+    "phases": {
+     "open": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     },
+     "report": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     },
+     "close": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     }
+    },
+    "active_stage": "report",
+    "verdict": "pending",
+    "advisory": "pending"
+   },
+   "deep_line": false
+  },
+  {
+   "match_id": "infs-evt_2MVRXPAY",
+   "kickoff_utc": "2026-11-15T04:00:00Z",
+   "league_id": "j2",
+   "home": "Hokkaido Consadole Sapporo",
+   "away": "Sagan Tosu",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-15 12:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "infersports": {
+       "line": 0.25,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "report": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "infersports": {
+       "line": 0.5,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "close": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    }
+   },
+   "cross_verification": {
+    "enabled": true,
+    "advisory_only": true,
+    "phases": {
+     "open": {
+      "status": "ok",
+      "passed": true,
+      "reasons": [],
+      "sources": [
+       "infersports"
+      ],
+      "bookmakers_on_main": [
+       "crown",
+       "hkjc",
+       "m8bet",
+       "macau",
+       "nova88",
+       "sbobet"
+      ],
+      "verified_books": [],
+      "pinnacle_or_asian": true,
+      "stale_age_s": 562944,
+      "stale_detail": [
+       {
+        "book": "crown",
+        "source": "infersports",
+        "age_s": 550491
+       },
+       {
+        "book": "hkjc",
+        "source": "infersports",
+        "age_s": 223383
+       },
+       {
+        "book": "m8bet",
+        "source": "infersports",
+        "age_s": 548516
+       },
+       {
+        "book": "macau",
+        "source": "infersports",
+        "age_s": 399091
+       },
+       {
+        "book": "nova88",
+        "source": "infersports",
+        "age_s": 562944
+       },
+       {
+        "book": "sbobet",
+        "source": "infersports",
+        "age_s": 542931
+       }
+      ],
+      "freshness": "ok",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": 0.25
+     },
+     "report": {
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>7200s"
+      ],
+      "sources": [
+       "infersports"
+      ],
+      "bookmakers_on_main": [
+       "crown",
+       "hkjc",
+       "m8bet",
+       "macau",
+       "nova88",
+       "sbobet"
+      ],
+      "verified_books": [],
+      "pinnacle_or_asian": true,
+      "stale_age_s": 79654,
+      "stale_detail": [
+       {
+        "book": "crown",
+        "source": "infersports",
+        "age_s": 1905
+       },
+       {
+        "book": "hkjc",
+        "source": "infersports",
+        "age_s": 79654
+       },
+       {
+        "book": "m8bet",
+        "source": "infersports",
+        "age_s": 348
+       },
+       {
+        "book": "macau",
+        "source": "infersports",
+        "age_s": 11277
+       },
+       {
+        "book": "nova88",
+        "source": "infersports",
+        "age_s": 18
+       },
+       {
+        "book": "sbobet",
+        "source": "infersports",
+        "age_s": 64160
+       }
+      ],
+      "freshness": "stale_withdraw",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": 0.5
+     },
+     "close": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     }
+    },
+    "active_stage": "report",
+    "verdict": "review",
+    "advisory": "review"
+   },
+   "deep_line": false
+  },
+  {
+   "match_id": "infs-evt_E2R4K3F3",
+   "kickoff_utc": "2026-11-15T04:00:00Z",
+   "league_id": "j2",
+   "home": "Vanraure Hachnohe",
+   "away": "Iwaki",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-15 12:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "infersports": {
+       "line": 0.25,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "report": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "infersports": {
+       "line": 0.25,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "close": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    }
+   },
+   "cross_verification": {
+    "enabled": true,
+    "advisory_only": true,
+    "phases": {
+     "open": {
+      "status": "ok",
+      "passed": true,
+      "reasons": [],
+      "sources": [
+       "infersports"
+      ],
+      "bookmakers_on_main": [
+       "crown",
+       "hkjc",
+       "m8bet",
+       "macau",
+       "nova88",
+       "sbobet"
+      ],
+      "verified_books": [],
+      "pinnacle_or_asian": true,
+      "stale_age_s": 562944,
+      "stale_detail": [
+       {
+        "book": "crown",
+        "source": "infersports",
+        "age_s": 549584
+       },
+       {
+        "book": "hkjc",
+        "source": "infersports",
+        "age_s": 223363
+       },
+       {
+        "book": "m8bet",
+        "source": "infersports",
+        "age_s": 548516
+       },
+       {
+        "book": "macau",
+        "source": "infersports",
+        "age_s": 399091
+       },
+       {
+        "book": "nova88",
+        "source": "infersports",
+        "age_s": 562944
+       },
+       {
+        "book": "sbobet",
+        "source": "infersports",
+        "age_s": 542931
+       }
+      ],
+      "freshness": "ok",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": 0.25
+     },
+     "report": {
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>7200s"
+      ],
+      "sources": [
+       "infersports"
+      ],
+      "bookmakers_on_main": [
+       "crown",
+       "hkjc",
+       "m8bet",
+       "macau",
+       "nova88",
+       "sbobet"
+      ],
+      "verified_books": [],
+      "pinnacle_or_asian": true,
+      "stale_age_s": 79654,
+      "stale_detail": [
+       {
+        "book": "crown",
+        "source": "infersports",
+        "age_s": 1941
+       },
+       {
+        "book": "hkjc",
+        "source": "infersports",
+        "age_s": 79654
+       },
+       {
+        "book": "m8bet",
+        "source": "infersports",
+        "age_s": 317
+       },
+       {
+        "book": "macau",
+        "source": "infersports",
+        "age_s": 79654
+       },
+       {
+        "book": "nova88",
+        "source": "infersports",
+        "age_s": 332
+       },
+       {
+        "book": "sbobet",
+        "source": "infersports",
+        "age_s": 81
+       }
+      ],
+      "freshness": "stale_withdraw",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": 0.25
+     },
+     "close": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     }
+    },
+    "active_stage": "report",
+    "verdict": "review",
+    "advisory": "review"
+   },
+   "deep_line": false
+  },
+  {
+   "match_id": "titan007-3000175",
+   "kickoff_utc": "2026-11-15T04:00:00Z",
+   "league_id": "j2",
+   "home": "札幌冈萨多",
+   "away": "鸟栖沙岩",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-15 12:00",
+   "phases": {
+    "open": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    },
+    "report": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    },
+    "close": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    }
+   },
+   "cross_verification": {
+    "enabled": true,
+    "advisory_only": true,
+    "phases": {
+     "open": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     },
+     "report": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     },
+     "close": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     }
+    },
+    "active_stage": "report",
+    "verdict": "pending",
+    "advisory": "pending"
+   },
+   "deep_line": false
+  },
+  {
+   "match_id": "titan007-3000181",
+   "kickoff_utc": "2026-11-15T04:00:00Z",
+   "league_id": "j2",
+   "home": "八户云罗里",
+   "away": "磐城FC",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-15 12:00",
+   "phases": {
+    "open": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    },
+    "report": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    },
+    "close": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    }
+   },
+   "cross_verification": {
+    "enabled": true,
+    "advisory_only": true,
+    "phases": {
+     "open": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     },
+     "report": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     },
+     "close": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     }
+    },
+    "active_stage": "report",
+    "verdict": "pending",
+    "advisory": "pending"
+   },
+   "deep_line": false
+  },
+  {
+   "match_id": "titan007-3000182",
+   "kickoff_utc": "2026-11-15T04:00:00Z",
+   "league_id": "j2",
+   "home": "仙台维加泰",
+   "away": "秋田蓝色闪电",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-15 12:00",
+   "phases": {
+    "open": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    },
+    "report": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    },
+    "close": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    }
+   },
+   "cross_verification": {
+    "enabled": true,
+    "advisory_only": true,
+    "phases": {
+     "open": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     },
+     "report": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     },
+     "close": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     }
+    },
+    "active_stage": "report",
+    "verdict": "pending",
+    "advisory": "pending"
+   },
+   "deep_line": false
+  },
+  {
+   "match_id": "infs-evt_A7SNMGX7",
+   "kickoff_utc": "2026-11-15T04:05:00Z",
+   "league_id": "j2",
+   "home": "Vegalta Sendai",
+   "away": "B.Akita",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-15 12:05",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 5,
+     "sources": {
+      "infersports": {
+       "line": -0.75,
+       "books": 5
+      }
+     },
+     "book_status": {
+      "single": 5
+     }
+    },
+    "report": {
+     "verification": "single",
+     "books": 5,
+     "sources": {
+      "infersports": {
+       "line": -0.75,
+       "books": 5
+      }
+     },
+     "book_status": {
+      "single": 5
+     }
+    },
+    "close": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    }
+   },
+   "cross_verification": {
+    "enabled": true,
+    "advisory_only": true,
+    "phases": {
+     "open": {
+      "status": "ok",
+      "passed": true,
+      "reasons": [],
+      "sources": [
+       "infersports"
+      ],
+      "bookmakers_on_main": [
+       "crown",
+       "m8bet",
+       "macau",
+       "nova88",
+       "sbobet"
+      ],
+      "verified_books": [],
+      "pinnacle_or_asian": true,
+      "stale_age_s": 562942,
+      "stale_detail": [
+       {
+        "book": "crown",
+        "source": "infersports",
+        "age_s": 549595
+       },
+       {
+        "book": "m8bet",
+        "source": "infersports",
+        "age_s": 548516
+       },
+       {
+        "book": "macau",
+        "source": "infersports",
+        "age_s": 399091
+       },
+       {
+        "book": "nova88",
+        "source": "infersports",
+        "age_s": 562942
+       },
+       {
+        "book": "sbobet",
+        "source": "infersports",
+        "age_s": 542482
+       }
+      ],
+      "freshness": "ok",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": -0.75
+     },
+     "report": {
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>7200s"
+      ],
+      "sources": [
+       "infersports"
+      ],
+      "bookmakers_on_main": [
+       "crown",
+       "m8bet",
+       "macau",
+       "nova88",
+       "sbobet"
+      ],
+      "verified_books": [],
+      "pinnacle_or_asian": true,
+      "stale_age_s": 33670,
+      "stale_detail": [
+       {
+        "book": "crown",
+        "source": "infersports",
+        "age_s": 1936
+       },
+       {
+        "book": "m8bet",
+        "source": "infersports",
+        "age_s": 348
+       },
+       {
+        "book": "macau",
+        "source": "infersports",
+        "age_s": 33670
+       },
+       {
+        "book": "nova88",
+        "source": "infersports",
+        "age_s": 332
+       },
+       {
+        "book": "sbobet",
+        "source": "infersports",
+        "age_s": 2911
+       }
+      ],
+      "freshness": "stale_withdraw",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": -1.0
+     },
+     "close": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     }
+    },
+    "active_stage": "report",
+    "verdict": "review",
+    "advisory": "review"
+   },
+   "deep_line": false
+  },
+  {
+   "match_id": "infs-evt_5KC3ENTH",
+   "kickoff_utc": "2026-11-15T05:00:00Z",
+   "league_id": "j2",
+   "home": "Imabari",
+   "away": "J.Iwata",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-15 13:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 5,
+     "sources": {
+      "infersports": {
+       "line": 0.5,
+       "books": 5
+      }
+     },
+     "book_status": {
+      "single": 5
+     }
+    },
+    "report": {
+     "verification": "single",
+     "books": 5,
+     "sources": {
+      "infersports": {
+       "line": 0.5,
+       "books": 5
+      }
+     },
+     "book_status": {
+      "single": 5
+     }
+    },
+    "close": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    }
+   },
+   "cross_verification": {
+    "enabled": true,
+    "advisory_only": true,
+    "phases": {
+     "open": {
+      "status": "ok",
+      "passed": true,
+      "reasons": [],
+      "sources": [
+       "infersports"
+      ],
+      "bookmakers_on_main": [
+       "crown",
+       "m8bet",
+       "macau",
+       "nova88",
+       "sbobet"
+      ],
+      "verified_books": [],
+      "pinnacle_or_asian": true,
+      "stale_age_s": 562942,
+      "stale_detail": [
+       {
+        "book": "crown",
+        "source": "infersports",
+        "age_s": 549591
+       },
+       {
+        "book": "m8bet",
+        "source": "infersports",
+        "age_s": 548516
+       },
+       {
+        "book": "macau",
+        "source": "infersports",
+        "age_s": 399091
+       },
+       {
+        "book": "nova88",
+        "source": "infersports",
+        "age_s": 562942
+       },
+       {
+        "book": "sbobet",
+        "source": "infersports",
+        "age_s": 542931
+       }
+      ],
+      "freshness": "ok",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": 0.5
+     },
+     "report": {
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>7200s"
+      ],
+      "sources": [
+       "infersports"
+      ],
+      "bookmakers_on_main": [
+       "crown",
+       "m8bet",
+       "macau",
+       "nova88",
+       "sbobet"
+      ],
+      "verified_books": [],
+      "pinnacle_or_asian": true,
+      "stale_age_s": 12512,
+      "stale_detail": [
+       {
+        "book": "crown",
+        "source": "infersports",
+        "age_s": 12512
+       },
+       {
+        "book": "m8bet",
+        "source": "infersports",
+        "age_s": 70
+       },
+       {
+        "book": "macau",
+        "source": "infersports",
+        "age_s": 257
+       },
+       {
+        "book": "nova88",
+        "source": "infersports",
+        "age_s": 259
+       },
+       {
+        "book": "sbobet",
+        "source": "infersports",
+        "age_s": 81
+       }
+      ],
+      "freshness": "stale_withdraw",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": 0.5
+     },
+     "close": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     }
+    },
+    "active_stage": "report",
+    "verdict": "review",
+    "advisory": "review"
+   },
+   "deep_line": false
+  },
+  {
+   "match_id": "infs-evt_H8BWX526",
+   "kickoff_utc": "2026-11-15T05:00:00Z",
+   "league_id": "j2",
+   "home": "Kataller Toyama",
+   "away": "Tokushima Vortis",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-15 13:00",
+   "phases": {
+    "open": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "infersports": {
+       "line": -0.5,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "report": {
+     "verification": "single",
+     "books": 6,
+     "sources": {
+      "infersports": {
+       "line": -0.5,
+       "books": 6
+      }
+     },
+     "book_status": {
+      "single": 6
+     }
+    },
+    "close": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    }
+   },
+   "cross_verification": {
+    "enabled": true,
+    "advisory_only": true,
+    "phases": {
+     "open": {
+      "status": "ok",
+      "passed": true,
+      "reasons": [],
+      "sources": [
+       "infersports"
+      ],
+      "bookmakers_on_main": [
+       "crown",
+       "hkjc",
+       "m8bet",
+       "macau",
+       "nova88",
+       "sbobet"
+      ],
+      "verified_books": [],
+      "pinnacle_or_asian": true,
+      "stale_age_s": 562942,
+      "stale_detail": [
+       {
+        "book": "crown",
+        "source": "infersports",
+        "age_s": 549592
+       },
+       {
+        "book": "hkjc",
+        "source": "infersports",
+        "age_s": 223383
+       },
+       {
+        "book": "m8bet",
+        "source": "infersports",
+        "age_s": 548516
+       },
+       {
+        "book": "macau",
+        "source": "infersports",
+        "age_s": 399091
+       },
+       {
+        "book": "nova88",
+        "source": "infersports",
+        "age_s": 562942
+       },
+       {
+        "book": "sbobet",
+        "source": "infersports",
+        "age_s": 542931
+       }
+      ],
+      "freshness": "ok",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": -0.5
+     },
+     "report": {
+      "status": "fail",
+      "passed": false,
+      "reasons": [
+       "sources:1<2",
+       "verified:0<1",
+       "stale>7200s"
+      ],
+      "sources": [
+       "infersports"
+      ],
+      "bookmakers_on_main": [
+       "crown",
+       "hkjc",
+       "m8bet",
+       "macau",
+       "nova88",
+       "sbobet"
+      ],
+      "verified_books": [],
+      "pinnacle_or_asian": true,
+      "stale_age_s": 79654,
+      "stale_detail": [
+       {
+        "book": "crown",
+        "source": "infersports",
+        "age_s": 574
+       },
+       {
+        "book": "hkjc",
+        "source": "infersports",
+        "age_s": 79654
+       },
+       {
+        "book": "m8bet",
+        "source": "infersports",
+        "age_s": 211
+       },
+       {
+        "book": "macau",
+        "source": "infersports",
+        "age_s": 56425
+       },
+       {
+        "book": "nova88",
+        "source": "infersports",
+        "age_s": 262
+       },
+       {
+        "book": "sbobet",
+        "source": "infersports",
+        "age_s": 81
+       }
+      ],
+      "freshness": "stale_withdraw",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": -0.75
+     },
+     "close": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     }
+    },
+    "active_stage": "report",
+    "verdict": "review",
+    "advisory": "review"
+   },
+   "deep_line": false
+  },
+  {
+   "match_id": "titan007-3000176",
+   "kickoff_utc": "2026-11-15T05:00:00Z",
+   "league_id": "j2",
+   "home": "今治",
+   "away": "磐田喜悦",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-15 13:00",
+   "phases": {
+    "open": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    },
+    "report": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    },
+    "close": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    }
+   },
+   "cross_verification": {
+    "enabled": true,
+    "advisory_only": true,
+    "phases": {
+     "open": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     },
+     "report": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     },
+     "close": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     }
+    },
+    "active_stage": "report",
+    "verdict": "pending",
+    "advisory": "pending"
+   },
+   "deep_line": false
+  },
+  {
+   "match_id": "titan007-3000180",
+   "kickoff_utc": "2026-11-15T05:00:00Z",
+   "league_id": "j2",
+   "home": "富山胜利",
+   "away": "德岛漩涡",
+   "list": "watchlist",
+   "kickoff_bjt": "2026-11-15 13:00",
+   "phases": {
+    "open": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    },
+    "report": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    },
+    "close": {
+     "verification": "missing",
+     "books": 0,
+     "sources": {},
+     "book_status": {}
+    }
+   },
+   "cross_verification": {
+    "enabled": true,
+    "advisory_only": true,
+    "phases": {
+     "open": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     },
+     "report": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     },
+     "close": {
+      "status": "pending",
+      "passed": null,
+      "reasons": [],
+      "sources": [],
+      "bookmakers_on_main": [],
+      "verified_books": [],
+      "pinnacle_or_asian": false,
+      "stale_age_s": null,
+      "freshness": "pending",
+      "deep_line": false,
+      "shared_book": false,
+      "main_line": null
+     }
+    },
+    "active_stage": "report",
+    "verdict": "pending",
+    "advisory": "pending"
+   },
+   "deep_line": false
+  }
+ ],
+ "runs": [
+  {
+   "at": "2026-11-15T23:19:56Z",
+   "phases": [
+    "close"
+   ],
+   "calls": {},
+   "quota_after": {
+    "oddspapi": {
+     "used": 220,
+     "remaining": 30,
+     "limit": 250,
+     "month": "2026-11"
+    }
+   }
+  }
+ ]
+}
