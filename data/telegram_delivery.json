@@ -321,6 +321,23 @@
       "evidence": "Telegram sendMessage HTTP 200 / ok=true / message_id",
       "report_source": "fresh-artifact",
       "collect_result": "success"
+    },
+    {
+      "date": "2026-11-16",
+      "report_sha": "9701aea3afa24f4c",
+      "chat_id": "-1004312560482",
+      "status": "sent",
+      "message_ids": [
+        560
+      ],
+      "picks_count": 0,
+      "slot": "1",
+      "sent_at": "2026-11-16T01:38:05Z",
+      "run_id": "43787218608",
+      "report_path": "/home/runner/work/ah-predictions/ah-predictions/reports/2026/11/2026-11-16.json",
+      "evidence": "Telegram sendMessage HTTP 200 / ok=true / message_id",
+      "report_source": "fresh-artifact",
+      "collect_result": "success"
     }
   ]
 }
