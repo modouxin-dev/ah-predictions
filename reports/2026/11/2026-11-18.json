@@ -1,0 +1,71 @@
+{
+  "date": "2026-11-18",
+  "generated_at": "2026-11-18T03:22:52Z",
+  "edition": "automatic",
+  "odds_format": "HK",
+  "picks": [],
+  "watched": [],
+  "watchlist": [
+    {
+      "match_id": "titan007-3113112",
+      "fixture_id": null,
+      "league_id": "interim_titan_intl_friendly",
+      "league": "国际友谊（titan007 原名）",
+      "home": "西斯普林斯",
+      "away": "汤加",
+      "kickoff_utc": "2026-11-18T06:00:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "titan007-3113116",
+      "fixture_id": null,
+      "league_id": "interim_titan_egypt_cup",
+      "league": "埃及杯（titan007 原名）",
+      "home": "艾尔格纳",
+      "away": "艾德瀚德",
+      "kickoff_utc": "2026-11-18T15:00:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    }
+  ],
+  "odds_source_note": "赛程、盘口与近期状态自动采集；推荐只用真实盘口，核验未完全通过的场次强制低信心并显式标注。",
+  "not_covered": "筛查上限 32 场；窗口内共发现 2 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；盘口核验：no_quotes 2场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded。",
+  "window_fixtures": 2,
+  "screening_cap": 32,
+  "outside_screen": 0,
+  "fixture_source_counts": {
+    "football_data": {
+      "raw": 0,
+      "added": 0
+    },
+    "infersports": {
+      "raw": 195,
+      "added": 0
+    },
+    "titan007_fixtures": {
+      "raw": 271,
+      "added": 2
+    }
+  },
+  "collection_errors": [
+    "OddsPapi 赛程 acl_elite: BudgetExceeded",
+    "OddsPapi 赛程 csl: BudgetExceeded"
+  ],
+  "collection_notes": [
+    "API-Football 未启用",
+    "盘口核验：no_quotes 2场"
+  ],
+  "feature_evidence": {
+    "schema": 1,
+    "mode": "observation",
+    "note": "逐场因子证据；observation 模式不参与 score；无证据不得进评分",
+    "by_match": {}
+  }
+}
