@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-17T02:37:54Z",
+  "checked_at": "2026-11-18T01:52:03Z",
   "current_mode": "observation",
   "factors": {
     "home_away": {
-      "days_observed": 10,
+      "days_observed": 11,
       "consecutive_full_days": 0,
       "full_rows": 0,
       "total_rows": 0,
@@ -17,7 +17,7 @@
       "eligible": false
     },
     "motivation": {
-      "days_observed": 10,
+      "days_observed": 11,
       "consecutive_full_days": 0,
       "full_rows": 0,
       "total_rows": 0,
@@ -30,7 +30,7 @@
       "eligible": false
     },
     "line_value": {
-      "days_observed": 10,
+      "days_observed": 11,
       "consecutive_full_days": 0,
       "full_rows": 0,
       "total_rows": 0,
