@@ -1,0 +1,230 @@
+{
+  "date": "2026-11-19",
+  "generated_at": "2026-11-19T03:00:32Z",
+  "edition": "automatic",
+  "odds_format": "HK",
+  "picks": [],
+  "watched": [],
+  "watchlist": [
+    {
+      "match_id": "titan007-3114616",
+      "fixture_id": null,
+      "league_id": "interim_titan_intl_friendly",
+      "league": "国际友谊（titan007 原名）",
+      "home": "瑞士U17",
+      "away": "捷克U17",
+      "kickoff_utc": "2026-11-19T10:00:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "titan007-3112662",
+      "fixture_id": null,
+      "league_id": "interim_titan_intl_friendly",
+      "league": "国际友谊（titan007 原名）",
+      "home": "意大利女足U16",
+      "away": "德国女足U16",
+      "kickoff_utc": "2026-11-19T13:30:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "titan007-3113117",
+      "fixture_id": null,
+      "league_id": "interim_titan_egypt_cup",
+      "league": "埃及杯（titan007 原名）",
+      "home": "马斯里",
+      "away": "佩特雷姆",
+      "kickoff_utc": "2026-11-19T15:00:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过",
+      "titan007_observation": {
+        "source": "titan007",
+        "home_line": -0.5,
+        "home_water": 0.73,
+        "away_water": 0.97
+      }
+    },
+    {
+      "match_id": "titan007-3113118",
+      "fixture_id": null,
+      "league_id": "interim_titan_egypt_cup",
+      "league": "埃及杯（titan007 原名）",
+      "home": "阿拉伯建筑<font color=#880000>(中)</font>",
+      "away": "奥林比亚艾卡纳",
+      "kickoff_utc": "2026-11-19T15:00:00Z",
+      "tier": 3,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过",
+      "titan007_observation": {
+        "source": "titan007",
+        "home_line": -0.75,
+        "home_water": 0.8,
+        "away_water": 0.9
+      }
+    },
+    {
+      "match_id": "infs-evt_CG8D9HP3",
+      "fixture_id": null,
+      "league_id": "qsl",
+      "league": "卡塔尔联",
+      "home": "Ahli Doha",
+      "away": "Al Shamal",
+      "kickoff_utc": "2026-11-19T15:30:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "titan007-3037833",
+      "fixture_id": null,
+      "league_id": "qsl",
+      "league": "卡塔尔联",
+      "home": "多哈国民",
+      "away": "艾沙姆",
+      "kickoff_utc": "2026-11-19T15:30:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过",
+      "titan007_observation": {
+        "source": "titan007",
+        "home_line": 0.25,
+        "home_water": 1.01,
+        "away_water": 0.75
+      }
+    },
+    {
+      "match_id": "infs-evt_QNDEATCS",
+      "fixture_id": null,
+      "league_id": "aleague",
+      "league": "澳超",
+      "home": "Western Sydney Wanderers",
+      "away": "Adelaide Utd",
+      "kickoff_utc": "2026-11-20T08:40:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_PYMX8EWS",
+      "fixture_id": null,
+      "league_id": "j1",
+      "league": "日职联",
+      "home": "Kashiwa Reysol",
+      "away": "J.U.Ichihara",
+      "kickoff_utc": "2026-11-20T10:00:00Z",
+      "tier": 1,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_VE430DS2",
+      "fixture_id": null,
+      "league_id": "j1",
+      "league": "日职联",
+      "home": "Kashima Antlers",
+      "away": "Shimizu S-Pulse",
+      "kickoff_utc": "2026-11-20T10:00:00Z",
+      "tier": 1,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_YT1Z3HBW",
+      "fixture_id": null,
+      "league_id": "j1",
+      "league": "日职联",
+      "home": "Vissel Kobe",
+      "away": "M.Hollyhock",
+      "kickoff_utc": "2026-11-20T10:00:00Z",
+      "tier": 1,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_RVZJG9NK",
+      "fixture_id": null,
+      "league_id": "qsl",
+      "league": "卡塔尔联",
+      "home": "AL Duhail",
+      "away": "Qatar SC",
+      "kickoff_utc": "2026-11-20T13:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "infs-evt_T9PC3368",
+      "fixture_id": null,
+      "league_id": "qsl",
+      "league": "卡塔尔联",
+      "home": "Al Sadd Doha",
+      "away": "Lusail",
+      "kickoff_utc": "2026-11-20T13:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    }
+  ],
+  "odds_source_note": "赛程、盘口与近期状态自动采集；推荐只用真实盘口，核验未完全通过的场次强制低信心并显式标注。",
+  "not_covered": "筛查上限 32 场；窗口内共发现 12 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；盘口采集：oddspapi:fixtures_error(BudgetExceeded) 8场；oddspapi:no_fixture_match 8场；盘口核验：no_pinnacle_and_asian<2 2场；no_quotes 6场；no_shared_book 3场；sources:1<2 3场；stale>7200s 3场；verified:0<1 6场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded。",
+  "window_fixtures": 12,
+  "screening_cap": 32,
+  "outside_screen": 0,
+  "fixture_source_counts": {
+    "football_data": {
+      "raw": 0,
+      "added": 0
+    },
+    "infersports": {
+      "raw": 244,
+      "added": 7
+    },
+    "titan007_fixtures": {
+      "raw": 159,
+      "added": 5
+    }
+  },
+  "collection_errors": [
+    "OddsPapi 赛程 acl_elite: BudgetExceeded",
+    "OddsPapi 赛程 csl: BudgetExceeded"
+  ],
+  "collection_notes": [
+    "API-Football 未启用",
+    "盘口采集：oddspapi:fixtures_error(BudgetExceeded) 8场；oddspapi:no_fixture_match 8场",
+    "盘口核验：no_pinnacle_and_asian<2 2场；no_quotes 6场；no_shared_book 3场；sources:1<2 3场；stale>7200s 3场；verified:0<1 6场"
+  ],
+  "feature_evidence": {
+    "schema": 1,
+    "mode": "observation",
+    "note": "逐场因子证据；observation 模式不参与 score；无证据不得进评分",
+    "by_match": {}
+  }
+}
