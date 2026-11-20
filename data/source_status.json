@@ -6,23 +6,23 @@
     "remaining": 99,
     "limit": 100,
     "period": "日",
-    "as_of": "2026-11-19T02:57:54Z"
+    "as_of": "2026-11-20T02:52:47Z"
    },
    "last_ok_at": "2026-11-04T12:36:23Z",
-   "last_call_at": "2026-11-19T02:57:54Z",
-   "last_error_at": "2026-11-19T02:57:54Z",
+   "last_call_at": "2026-11-20T02:52:47Z",
+   "last_error_at": "2026-11-20T02:52:47Z",
    "last_error": "status errors: {\"access\": \"Your account is suspended, check on https://dashboard.api-football.com.\"}"
   },
   "odds_api": {
    "quota": {
-    "used": 282,
-    "remaining": 218,
+    "used": 296,
+    "remaining": 204,
     "limit": 500,
     "period": "月",
-    "as_of": "2026-11-19T02:59:11Z"
+    "as_of": "2026-11-20T03:00:04Z"
    },
-   "last_call_at": "2026-11-19T02:59:11Z",
-   "last_ok_at": "2026-11-19T02:59:11Z"
+   "last_call_at": "2026-11-20T03:00:04Z",
+   "last_ok_at": "2026-11-20T03:00:04Z"
   },
   "oddspapi": {
    "quota": {
@@ -31,10 +31,10 @@
     "limit": 250,
     "period": "月",
     "month": "2026-11",
-    "as_of": "2026-11-19T02:57:57Z"
+    "as_of": "2026-11-20T02:52:49Z"
    },
-   "last_call_at": "2026-11-19T02:57:57Z",
-   "last_ok_at": "2026-11-19T02:57:57Z",
+   "last_call_at": "2026-11-20T02:52:49Z",
+   "last_ok_at": "2026-11-20T02:52:49Z",
    "last_error_at": "2026-11-10T04:07:21Z",
    "last_error": "fixtures HTTP 404",
    "note": "odds_snapshots: historical-odds 免费；Kuching-Gangwon(id1000066873835336) historical 404"
@@ -44,36 +44,36 @@
     "remaining": 59,
     "limit": 60,
     "period": "小时",
-    "as_of": "2026-11-19T02:58:12Z"
+    "as_of": "2026-11-20T02:53:34Z"
    },
-   "last_call_at": "2026-11-19T02:58:12Z",
-   "last_ok_at": "2026-11-19T02:58:12Z"
+   "last_call_at": "2026-11-20T02:53:34Z",
+   "last_ok_at": "2026-11-20T02:53:34Z"
   },
   "titan007": {
-   "last_call_at": "2026-11-19T02:58:15Z",
-   "last_ok_at": "2026-11-19T02:58:15Z"
+   "last_call_at": "2026-11-20T02:53:37Z",
+   "last_ok_at": "2026-11-20T02:53:37Z"
   },
   "football_data": {
-   "last_call_at": "2026-11-19T02:57:58Z",
-   "last_ok_at": "2026-11-19T02:57:58Z",
+   "last_call_at": "2026-11-20T02:52:50Z",
+   "last_ok_at": "2026-11-20T02:52:50Z",
    "quota": {
     "remaining": 9,
     "limit": 10,
     "period": "分钟",
-    "as_of": "2026-11-19T02:57:58Z"
+    "as_of": "2026-11-20T02:52:50Z"
    }
   },
   "infersports": {
-   "last_call_at": "2026-11-19T03:00:32Z",
-   "last_ok_at": "2026-11-19T03:00:32Z",
+   "last_call_at": "2026-11-20T03:02:07Z",
+   "last_ok_at": "2026-11-20T03:02:07Z",
    "quota": {
-    "used": 16,
-    "remaining": 184,
+    "used": 55,
+    "remaining": 145,
     "limit": 200,
     "period": "日(UTC)",
-    "as_of": "2026-11-19T03:00:32Z"
+    "as_of": "2026-11-20T03:02:07Z"
    }
   }
  },
- "updated_at": "2026-11-19T03:00:32Z"
+ "updated_at": "2026-11-20T03:02:07Z"
 }
