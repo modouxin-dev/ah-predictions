@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-20T02:52:48Z",
+  "checked_at": "2026-11-21T03:00:12Z",
   "evidence_grade": "【已验证】本地配置与环境变量布尔事实；连通项为【运行时代理自检】",
   "policy": "免注册优先、缺凭据不静默、不阻断、不推断、不改源开关",
   "registered": [
@@ -291,40 +291,40 @@
     {
       "source": "uefa_fixtures",
       "url": "https://www.uefa.com/uefachampionsleague/",
-      "checked_at": "2026-11-20T02:52:47Z",
+      "checked_at": "2026-11-21T03:00:10Z",
       "http_status": 200,
       "bytes_read": 2048,
-      "elapsed_ms": 272,
+      "elapsed_ms": 436,
       "error_type": null,
       "note": "仅 HTTP 状态与首块字节数；不解析页面内容"
     },
     {
       "source": "jleague_acle",
       "url": "https://www.jleague.jp/en/acle/game/",
-      "checked_at": "2026-11-20T02:52:48Z",
+      "checked_at": "2026-11-21T03:00:10Z",
       "http_status": 200,
       "bytes_read": 2048,
-      "elapsed_ms": 506,
+      "elapsed_ms": 431,
       "error_type": null,
       "note": "仅 HTTP 状态与首块字节数；不解析页面内容"
     },
     {
       "source": "jleague",
       "url": "https://www.jleague.jp",
-      "checked_at": "2026-11-20T02:52:48Z",
+      "checked_at": "2026-11-21T03:00:11Z",
       "http_status": 200,
       "bytes_read": 2048,
-      "elapsed_ms": 45,
+      "elapsed_ms": 153,
       "error_type": null,
       "note": "仅 HTTP 状态与首块字节数；不解析页面内容"
     },
     {
       "source": "afc",
       "url": "https://www.the-afc.com/en/club/afc_champions_league_elite.html",
-      "checked_at": "2026-11-20T02:52:48Z",
-      "http_status": 403,
-      "bytes_read": 919,
-      "elapsed_ms": 127,
+      "checked_at": "2026-11-21T03:00:11Z",
+      "http_status": 200,
+      "bytes_read": 2048,
+      "elapsed_ms": 1415,
       "error_type": null,
       "note": "仅 HTTP 状态与首块字节数；不解析页面内容"
     }
@@ -336,7 +336,7 @@
     "registered_wired": 5,
     "keyless_total": 11,
     "keyless_probe_checked": 4,
-    "keyless_probe_reachable": 3
+    "keyless_probe_reachable": 4
   },
   "alerts": [
     {
