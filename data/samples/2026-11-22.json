@@ -3,18 +3,18 @@
   "kind": "pre-kickoff candidate pool",
   "date": "2026-11-22",
   "source_report": "reports/2026/11/2026-11-22.json",
-  "captured_at": "2026-11-21T22:36:10Z",
-  "generated_at": "2026-11-21T22:36:11Z",
+  "captured_at": "2026-11-22T02:05:02Z",
+  "generated_at": "2026-11-22T02:05:03Z",
   "counts": {
-    "total": 24,
+    "total": 25,
     "recommended": 0,
     "observed": 0,
-    "not_recommended": 24
+    "not_recommended": 25
   },
   "rows": [
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "infs-evt_VE4MW4S2",
       "league": "澳超",
       "home": "Wellington Phoenix",
@@ -30,8 +30,8 @@
       "odds": "未取得",
       "market_consensus": "未取得",
       "verification_advisory": false,
-      "withheld_reason": "盘口跨来源核验未通过",
-      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "比赛已开始",
+      "withheld_category": "比赛已开始",
       "sources": [],
       "reasons": [],
       "risks": [],
@@ -42,7 +42,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "titan007-3041401",
       "league": "澳超",
       "home": "惠灵顿凤凰",
@@ -58,8 +58,8 @@
       "odds": "未取得",
       "market_consensus": "未取得",
       "verification_advisory": false,
-      "withheld_reason": "盘口跨来源核验未通过",
-      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "比赛已开始",
+      "withheld_category": "比赛已开始",
       "sources": [],
       "reasons": [],
       "risks": [],
@@ -70,7 +70,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "infs-evt_G53JHQY6",
       "league": "韩K联",
       "home": "Gwangju FC",
@@ -98,7 +98,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "infs-evt_RVZ7K1NK",
       "league": "韩K联",
       "home": "Gimcheon sangmu",
@@ -126,7 +126,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "infs-evt_G53J2FY6",
       "league": "日职乙",
       "home": "Tokushima Vortis",
@@ -154,7 +154,35 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
+      "match_id": "titan007-3000190",
+      "league": "日职乙",
+      "home": "德岛漩涡",
+      "away": "湘南海洋",
+      "kickoff_utc": "2026-11-22T05:00:00Z",
+      "sample_role": "not_recommended",
+      "confidence": "未取得",
+      "score": "未取得",
+      "pick_side": "未取得",
+      "pick_team": "未取得",
+      "line": "未取得",
+      "line_open": "未取得",
+      "odds": "未取得",
+      "market_consensus": "未取得",
+      "verification_advisory": false,
+      "withheld_reason": "盘口跨来源核验未通过",
+      "withheld_category": "盘口跨来源核验未通过",
+      "sources": [],
+      "reasons": [],
+      "risks": [],
+      "observation": "未取得",
+      "result": "未取得",
+      "settled": false,
+      "note": "字段来自报告；不含预测结论与赛果；赛果待 settle 回填"
+    },
+    {
+      "date": "2026-11-22",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "fd-558521",
       "league": "意甲",
       "home": "Juventus FC",
@@ -182,7 +210,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "fd-561947",
       "league": "英冠",
       "home": "Burnley FC",
@@ -210,7 +238,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "fd-564749",
       "league": "西甲",
       "home": "FC Barcelona",
@@ -238,7 +266,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "fd-560646",
       "league": "英超",
       "home": "Hull City AFC",
@@ -266,7 +294,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "fd-558522",
       "league": "意甲",
       "home": "Bologna FC 1909",
@@ -294,7 +322,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "fd-558524",
       "league": "意甲",
       "home": "US Sassuolo Calcio",
@@ -322,7 +350,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "fd-559625",
       "league": "法甲",
       "home": "Paris FC",
@@ -350,7 +378,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "fd-565864",
       "league": "德甲",
       "home": "FC Augsburg",
@@ -378,7 +406,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "fd-564750",
       "league": "西甲",
       "home": "Real Racing Club de Santander",
@@ -406,7 +434,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "fd-559626",
       "league": "法甲",
       "home": "FC Lorient",
@@ -434,7 +462,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "infs-evt_2MVQYMAY",
       "league": "法甲",
       "home": "Lorient",
@@ -462,7 +490,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "fd-560645",
       "league": "英超",
       "home": "Liverpool FC",
@@ -490,7 +518,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "fd-565863",
       "league": "德甲",
       "home": "SV Werder Bremen",
@@ -518,7 +546,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "fd-558523",
       "league": "意甲",
       "home": "AC Milan",
@@ -546,7 +574,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "fd-564752",
       "league": "西甲",
       "home": "CA Osasuna",
@@ -574,7 +602,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "fd-558520",
       "league": "意甲",
       "home": "Atalanta BC",
@@ -602,7 +630,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "fd-559629",
       "league": "法甲",
       "home": "Olympique de Marseille",
@@ -630,7 +658,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "infs-evt_G532Z0Y6",
       "league": "意甲",
       "home": "Atalanta",
@@ -658,7 +686,7 @@
     },
     {
       "date": "2026-11-22",
-      "captured_at": "2026-11-21T22:36:10Z",
+      "captured_at": "2026-11-22T02:05:02Z",
       "match_id": "fd-564753",
       "league": "西甲",
       "home": "Getafe CF",

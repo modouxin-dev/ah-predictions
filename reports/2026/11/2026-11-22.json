@@ -1,6 +1,6 @@
 {
   "date": "2026-11-22",
-  "generated_at": "2026-11-21T22:36:10Z",
+  "generated_at": "2026-11-22T02:05:02Z",
   "edition": "automatic",
   "odds_format": "HK",
   "picks": [],
@@ -17,8 +17,8 @@
       "tier": 2,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过"
+      "withheld_category": "比赛已开始",
+      "withheld_reason": "比赛已开始"
     },
     {
       "match_id": "titan007-3041401",
@@ -31,8 +31,8 @@
       "tier": 2,
       "list": "watchlist",
       "confidence": null,
-      "withheld_category": "盘口跨来源核验未通过",
-      "withheld_reason": "盘口跨来源核验未通过",
+      "withheld_category": "比赛已开始",
+      "withheld_reason": "比赛已开始",
       "titan007_observation": {
         "source": "titan007",
         "home_line": -0.5,
@@ -81,6 +81,26 @@
       "confidence": null,
       "withheld_category": "盘口跨来源核验未通过",
       "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "titan007-3000190",
+      "fixture_id": null,
+      "league_id": "j2",
+      "league": "日职乙",
+      "home": "德岛漩涡",
+      "away": "湘南海洋",
+      "kickoff_utc": "2026-11-22T05:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过",
+      "titan007_observation": {
+        "source": "titan007",
+        "home_line": -0.0,
+        "home_water": 0.91,
+        "away_water": 0.97
+      }
     },
     {
       "match_id": "fd-558521",
@@ -350,22 +370,22 @@
     }
   ],
   "odds_source_note": "赛程、盘口与近期状态自动采集；推荐只用真实盘口，核验未完全通过的场次强制低信心并显式标注。",
-  "not_covered": "筛查上限 32 场；窗口内共发现 24 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；盘口采集：oddspapi:fixtures_error(BudgetExceeded) 24场；oddspapi:no_fixture_match 24场；盘口核验：no_quotes 3场；no_shared_book 18场；sources:1<2 3场；stale>7200s 4场；verified:0<1 21场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded。",
-  "window_fixtures": 24,
+  "not_covered": "筛查上限 32 场；窗口内共发现 25 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；盘口采集：oddspapi:fixtures_error(BudgetExceeded) 25场；oddspapi:no_fixture_match 25场；盘口核验：no_quotes 4场；no_shared_book 18场；sources:1<2 3场；stale>7200s 4场；verified:0<1 21场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded。",
+  "window_fixtures": 25,
   "screening_cap": 32,
   "outside_screen": 0,
   "fixture_source_counts": {
     "football_data": {
-      "raw": 54,
+      "raw": 17,
       "added": 17
     },
     "infersports": {
-      "raw": 1601,
+      "raw": 715,
       "added": 6
     },
     "titan007_fixtures": {
       "raw": 750,
-      "added": 1
+      "added": 2
     }
   },
   "collection_errors": [
@@ -374,8 +394,8 @@
   ],
   "collection_notes": [
     "API-Football 未启用",
-    "盘口采集：oddspapi:fixtures_error(BudgetExceeded) 24场；oddspapi:no_fixture_match 24场",
-    "盘口核验：no_quotes 3场；no_shared_book 18场；sources:1<2 3场；stale>7200s 4场；verified:0<1 21场"
+    "盘口采集：oddspapi:fixtures_error(BudgetExceeded) 25场；oddspapi:no_fixture_match 25场",
+    "盘口核验：no_quotes 4场；no_shared_book 18场；sources:1<2 3场；stale>7200s 4场；verified:0<1 21场"
   ],
   "feature_evidence": {
     "schema": 1,
