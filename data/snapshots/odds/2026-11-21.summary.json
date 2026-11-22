@@ -1,6 +1,6 @@
 {
  "report_date": "2026-11-21",
- "updated_at": "2026-11-21T23:43:17Z",
+ "updated_at": "2026-11-22T01:52:31Z",
  "csv": "2026-11-21.csv",
  "matches_screened": 32,
  "skipped": [],
@@ -4282,6 +4282,21 @@
  "runs": [
   {
    "at": "2026-11-21T23:43:17Z",
+   "phases": [
+    "close"
+   ],
+   "calls": {},
+   "quota_after": {
+    "oddspapi": {
+     "used": 220,
+     "remaining": 30,
+     "limit": 250,
+     "month": "2026-11"
+    }
+   }
+  },
+  {
+   "at": "2026-11-22T01:52:31Z",
    "phases": [
     "close"
    ],
