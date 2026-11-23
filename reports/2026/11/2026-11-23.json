@@ -1,0 +1,86 @@
+{
+  "date": "2026-11-23",
+  "generated_at": "2026-11-23T02:22:12Z",
+  "edition": "automatic",
+  "odds_format": "HK",
+  "picks": [],
+  "watched": [],
+  "watchlist": [
+    {
+      "match_id": "fd-558519",
+      "fixture_id": null,
+      "league_id": "seriea",
+      "league": "意甲",
+      "home": "AC Monza",
+      "away": "ACF Fiorentina",
+      "kickoff_utc": "2026-11-23T19:45:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "fd-560649",
+      "fixture_id": null,
+      "league_id": "epl",
+      "league": "英超",
+      "home": "Brentford FC",
+      "away": "Everton FC",
+      "kickoff_utc": "2026-11-23T20:00:00Z",
+      "tier": 1,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    },
+    {
+      "match_id": "fd-564757",
+      "fixture_id": null,
+      "league_id": "laliga",
+      "league": "西甲",
+      "home": "Levante UD",
+      "away": "Elche CF",
+      "kickoff_utc": "2026-11-23T20:00:00Z",
+      "tier": 2,
+      "list": "watchlist",
+      "confidence": null,
+      "withheld_category": "盘口跨来源核验未通过",
+      "withheld_reason": "盘口跨来源核验未通过"
+    }
+  ],
+  "odds_source_note": "赛程、盘口与近期状态自动采集；推荐只用真实盘口，核验未完全通过的场次强制低信心并显式标注。",
+  "not_covered": "筛查上限 32 场；窗口内共发现 3 场。尚未自动采集伤停或首发，亚洲赛事基本面仍需人工核查。 数据源状态：API-Football 未启用；盘口采集：oddspapi:fixtures_error(BudgetExceeded) 3场；oddspapi:no_fixture_match 3场；盘口核验：no_shared_book 3场；verified:0<1 3场；OddsPapi 赛程 acl_elite: BudgetExceeded；OddsPapi 赛程 csl: BudgetExceeded。",
+  "window_fixtures": 3,
+  "screening_cap": 32,
+  "outside_screen": 0,
+  "fixture_source_counts": {
+    "football_data": {
+      "raw": 3,
+      "added": 3
+    },
+    "infersports": {
+      "raw": 205,
+      "added": 0
+    },
+    "titan007_fixtures": {
+      "raw": 750,
+      "added": 0
+    }
+  },
+  "collection_errors": [
+    "OddsPapi 赛程 acl_elite: BudgetExceeded",
+    "OddsPapi 赛程 csl: BudgetExceeded"
+  ],
+  "collection_notes": [
+    "API-Football 未启用",
+    "盘口采集：oddspapi:fixtures_error(BudgetExceeded) 3场；oddspapi:no_fixture_match 3场",
+    "盘口核验：no_shared_book 3场；verified:0<1 3场"
+  ],
+  "feature_evidence": {
+    "schema": 1,
+    "mode": "observation",
+    "note": "逐场因子证据；observation 模式不参与 score；无证据不得进评分",
+    "by_match": {}
+  }
+}
