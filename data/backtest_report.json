@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-21T23:56:06Z",
+  "checked_at": "2026-11-23T00:28:52Z",
   "pool_days": 15,
-  "pool_rows": 258,
+  "pool_rows": 259,
   "ledger_rows": 24,
   "matched_rows": 15,
   "settled_rows": 15,
