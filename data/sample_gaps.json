@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-25T03:10:35Z",
-  "pool_days": 17,
-  "pool_rows": 294,
+  "checked_at": "2026-11-26T02:26:31Z",
+  "pool_days": 18,
+  "pool_rows": 326,
   "settled_rows": 15,
-  "unsettled_rows": 279,
+  "unsettled_rows": 311,
   "ledger_settled_rows": 24,
   "by_tier": {
     "high": {
@@ -23,8 +23,8 @@
     "min_total": 300
   },
   "recent_window_days": 7,
-  "recent_rows": 138,
-  "observed_daily_new_rows": 19.71,
+  "recent_rows": 168,
+  "observed_daily_new_rows": 24.0,
   "observed_daily_settled_rows": 0.0,
   "estimated_days_to_total_threshold": null,
   "estimate_note": "近期无已结算样本，无法推算达标天数（不编造估算）",
