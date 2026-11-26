@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-25T04:56:29Z",
+  "checked_at": "2026-11-26T04:06:55Z",
   "evidence_grade": "【已验证】本地文件解析事实",
   "ledger": "/home/runner/work/ah-predictions/ah-predictions/data/predictions.csv",
   "rows": 24,

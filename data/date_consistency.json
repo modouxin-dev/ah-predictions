@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "checked_at": "2026-11-25T04:48:35Z",
+  "checked_at": "2026-11-26T03:59:10Z",
   "evidence_grade": "【已验证】本地时间与环境变量布尔事实",
-  "ah_date": "2026-11-25",
+  "ah_date": "2026-11-26",
   "ah_date_valid": true,
   "allowed_by_entry_check": [
-    "2026-11-25"
+    "2026-11-26"
   ],
   "slot": "1",
   "consistent": true,
